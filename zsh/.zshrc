@@ -27,6 +27,11 @@ fi
 # Then, source plugins and add commands to $PATH
 zplug load
 
+export HISTFILE=~/.zsh_history
+export HISTFILESIZE=1000000000
+export HISTSIZE=1000000000
+setopt EXTENDED_HISTORY
+
 bindkey "^[[3~" delete-char
 eval "$(starship init zsh)"
 
