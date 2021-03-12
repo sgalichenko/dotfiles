@@ -1,0 +1,14 @@
+- name: Add startx to /etc/profile
+  blockinfile:
+     path: /etc/profile
+     block: |
+      if [[ -z $DISPLAY ]]; then
+         startx
+      fi
+
+- name: Add exec herbstluftwm to .xinitrc
+  become: yes
+  become_user: "{{ username }}"
+  lineinfile:
+      path: ~/.xinitrc
+      line: 'exec herbstluftwm --locked'

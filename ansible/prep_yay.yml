@@ -1,0 +1,28 @@
+- name: Get yay
+  become: yes
+  become_user: "{{ username }}"
+  git:
+     repo: 'https://aur.archlinux.org/yay.git'
+     dest: ~/yay
+
+- name: Install yay
+  become: yes
+  become_user: "{{ username }}"
+  command: chdir=~/yay makepkg -si --noconfirm
+
+- name: Install AUR helper package
+  become: yes
+  become_user: "{{ username }}"
+  command: yay -S --nocleanmenu --nodiffmenu --noeditmenu --noupgrademenu ansible-aur-git
+
+- name: Install AUR packages
+  become: yes
+  become_user: "{{ username }}"
+  aur:
+     name:
+        - neovim-nightly-bin
+        - thunderbird-beta-bin
+        - dotter-rs-bin
+        - tealdeer
+        - spotify
+        - polybar

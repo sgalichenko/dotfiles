@@ -1,0 +1,66 @@
+configuration {
+  show-icons: false;
+  font: "RobotoMono Nerd Font 12";
+  drun-display-format: "{icon} {name}";
+  display-drun: "  ";
+  display-window: "  ";
+  modi: "window,drun,file-browser";
+  terminal: "/usr/bin/alacritty";
+}
+
+* {
+  background-color: #2E3440;
+  bg-alt: #3B4252;
+  fg: #ECEFF4;
+
+  nord-blue-light: #88C0D0;
+  nord-white: #ECEFF4;
+
+  border: 0;
+  lines: 10;
+  padding: 0;
+  margin: 0;
+  spacing: 0;
+}
+
+window {
+  width: 45%;
+  transparency: "real";
+}
+
+mainbox {
+  children: [inputbar, listview];
+}
+
+listview {
+  columns: 1;
+}
+
+element {
+  padding: 10;
+  orientation: vertical;
+  text-color: @fg;
+}
+
+element selected {
+  background-color: @bg-alt;
+  text-color: @nord-blue-light;
+}
+
+inputbar {
+  background-color: @background;
+  children: [prompt, entry];
+}
+
+prompt {
+  enabled: false;
+  font: "RobotoMono Nerd Font 12";
+  padding: 2 0 0 2;
+  text-color: @nord-white;
+}
+
+entry {
+  padding: 10;
+  text-color: @nord-white;
+}
+

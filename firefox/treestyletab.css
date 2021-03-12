@@ -1,0 +1,36 @@
+/* Show title of unread tabs with red and italic font */
+/*
+tab-item.unread .label-content {
+  color: red !important;
+  font-style: italic !important;
+}
+*/
+
+/* Add private browsing indicator per tab */
+tab-item.private-browsing tab-label:before {
+  content: "🕶";
+}
+tab-item {
+  --tab-size: 18px !important;
+  height: var(--tab-size);
+}
+
+tab-item:hover {
+  background: #44475A !important;
+}
+
+tab-item:focus {
+  background: #44475A !important;
+}
+.newtab-button-box {
+  display: none;
+}
+#tabbar {
+  bottom: 0 !important; /* Eliminate dead space on bottom */
+}
+/* "#tabbar" is required for TST 3.4.0 and later! */
+#tabbar tab-item:not(:hover) tab-closebox {
+  display: none;
+}
+/* Hide scrollbar */
+#tabbar { border: 0; overflow-y: scroll !important; margin-left: -8px !important; }

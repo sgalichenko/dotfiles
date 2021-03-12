@@ -1,0 +1,16 @@
+---
+quotes: "[`'\"]"
+void: ""
+ff_dir: [] # Firefox directory (e.g. ~/.mozilla/firefox/o2oqfi8r.default)
+
+username: sammy
+
+dotfiles_repo: https://github.com/galichenkosemyon/dotfiles.git
+dotfiles_dir: "/home/{{ username|regex_replace(quotes, void) }}/dotfiles"
+
+dotter_local: "{{ dotfiles_dir|regex_replace(quotes, void) }}/.dotter/local.toml"
+dotter_local_packages: 'zsh", "tmux", "alacritty", "vim", "firefox", "herbstluftwm", "polybar", "rofi", "dunst", "picom", "vifm'
+
+pacman_pkgs: [pacman-contrib, git, networkmanager, nm-connection-editor, herbstluftwm, alacritty, pass, keybase, base-devel, xorg-server, firefox, nemo, zsh, fzf, rofi, tmux, lightdm, lightdm-webkit2-greeter, lightdm-webkit2-theme-arch, stow, nitrogen, picom, nodejs, ripgrep, exa, bat, flameshot, signal-desktop, telegram-desktop, slock, yad, pulseaudio, pulseaudio-alsa, pavucontrol, lxappearance-gtk3, arc-gtk-theme, arc-icon-theme, dunst, vifm, adobe-source-han-sans-jp-fonts, adobe-source-han-serif-jp-fonts, fcitx-im, fcitx-configtool, fcitx-mozc, neofetch, ueberzug, htop, ntfs-3g, shotwell, krita, redshift, light-locker, net-tools, mpv, code, evince, discord, prettyping, flake8, shellcheck, bluez, bluez-utils, xdotool, zathura, zathura-pdf-poppler, mplayer, translate-shell, qutebrowser, kitty, youtube-dl]
+
+yay_pkgs: [neovim-nightly-bin, thunderbird-beta-bin, dotter-rs-bin, tealdeer, spotify, polybar, bottom-bin, rofi-dmenu, nuclear-player-bin, color-picker, spicetify-cli, rofi-translate-git, git-delta-bin]

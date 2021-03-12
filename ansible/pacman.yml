@@ -1,0 +1,8 @@
+- name: pacman -Syu
+  community.general.pacman:
+     update_cache: yes
+     upgrade: yes
+
+- name: Install packages
+  community.general.pacman:
+     name: "{{ pacman_pkgs }}"

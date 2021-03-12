@@ -1,0 +1,36 @@
+[zsh.files]
+"zsh/.zshrc" = "~/.zshrc"
+"zsh/starship.toml" = "~/.config/starship.toml"
+
+[tmux.files]
+"tmux/.tmux.conf" = "~/.tmux.conf"
+
+[alacritty.files]
+"alacritty/.alacritty.yml" = "~/.alacritty.yml"
+
+[vim.files]
+"vim/.vimrc" = "~/.config/nvim/init.vim"
+"vim/settings.vim" = "~/.config/nvim/general/settings.vim"
+"vim/coc.vim" = "~/.config/nvim/plug-config/coc.vim"
+
+[herbstluftwm.files]
+"herbstluftwm/autostart" = "~/.config/herbstluftwm/autostart"
+"herbstluftwm/cycletag" = "~/.config/herbstluftwm/cycletag"
+
+[polybar.files]
+"polybar" = "~/.config/polybar"
+
+[rofi.files]
+"rofi" = "~/.config/rofi"
+
+[dunst.files]
+"dunst" = "~/.config/dunst"
+
+[vifm.files]
+"vifm" = "~/.config/vifm"
+
+[picom.files]
+"picom/picom.conf" = "~/.config/picom.conf"
+
+[firefox.files]
+"firefox" = "firefox"

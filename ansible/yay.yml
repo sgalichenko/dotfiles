@@ -1,0 +1,5 @@
+- name: Install AUR packages
+  become: yes
+  become_user: "{{ username }}"
+  aur:
+     name: "{{ yay_pkgs }}"

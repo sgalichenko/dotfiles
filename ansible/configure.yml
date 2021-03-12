@@ -1,0 +1,39 @@
+---
+- name: Configure arch
+  hosts: localhost
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+  - block:
+    - include_tasks: "{{ item }}"
+      with_items:
+        - prep_pacman.yml
+        - prep_yay.yml
+    tags: otc
+
+  - block:
+    - include_tasks: "{{ item }}"
+      with_items:
+        - pacman.yml
+        - yay.yml
+    tags: pkgs
+
+  - block:
+    - include_tasks: "{{ item }}"
+      with_items:
+        - xinit.yml
+        - lightdm.yml
+        - nerdfonts.yml
+        - zsh.yml
+        - dotfiles.yml
+        - systemd.yml
+        - fcitx.yml
+    tags: otc
+
+  - block:
+    - include_tasks: "{{ item }}"
+      with_items:
+        - dotfiles.yml
+    tags: dots

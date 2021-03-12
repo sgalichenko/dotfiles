@@ -1,0 +1,11 @@
+- name: Get NerdFonts
+  become: yes
+  become_user: "{{ username }}"
+  git:
+     repo: 'https://github.com/ryanoasis/nerd-fonts.git'
+     dest: ~/nerdfonts
+
+- name: Install NerdFonts
+  become: yes
+  become_user: "{{ username }}"
+  shell: chdir=~/nerdfonts ./install.sh
