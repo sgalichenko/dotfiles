@@ -1,0 +1,44 @@
+# Don't print a new line at the start of the prompt
+add_newline = false
+
+format = """
+[$directory$git_branch$git_status $username$character](bold fg:cyan)
+"""
+
+[character]
+success_symbol = "[❯](bold cyan)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+truncation_length=3
+truncate_to_repo=false
+read_only=" "
+truncation_symbol=" "
+
+[git_branch]
+format="[$symbol$branch]($style)"
+symbol=" "
+style="bold fg:green"
+
+[git_status]
+#format = '( [ $all_status$ahead_behind]($style))'
+#format = '( [⏽ $all_status$ahead_behind⏽]($style))'
+#format = '( [ $all_status$ahead_behind]($style))'
+#format = '( [ $all_status$ahead_behind]($style))'
+format = '( [ $all_status$ahead_behind]($style))'
+style = "green bold"
+ahead = "⇡${count}"
+staged = "[+$count ](fg:#BAD8BB bold)"
+deleted = "[-$count ](fg:#fc949f bold)"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+behind = "⇣${count}"
+modified = "[*$count ](fg:#ebcb8b bold)"
+untracked = "[?$count ](fg:#b3cfe8 bold)"
+stashed = "[$$count ](fg:#e2c7ef bold)"
+
+[username]
+style_user = "cyan bold"
+style_root = "red bold"
+format = "[❯]($style)"
+disabled = false
+show_always = false

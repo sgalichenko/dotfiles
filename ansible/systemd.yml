@@ -1,0 +1,8 @@
+- name: Enable pulseaudio
+  become: yes
+  become_user: "{{ username }}"
+  systemd:
+      name: pulseaudio
+      enabled: yes
+      state: started
+      scope: user

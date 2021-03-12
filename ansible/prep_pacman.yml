@@ -1,0 +1,15 @@
+- name: Install community.general collection for ansible (to be able to use pacman)
+  command: ansible-galaxy collection install community.general
+
+- name: Add user to sudoers
+  lineinfile:
+     path: /etc/sudoers.d/allow-to-sudo-pacman
+     line: '"{{ username }}" ALL=(ALL) NOPASSWD: /usr/bin/pacman'
+     create: yes
+     validate: 'visudo -cf %s'
+
+- name: Add verbosity to pacman
+  lineinfile:
+    path: /etc/pacman.conf
+    regexp: '^#VerbosePkgLists'
+    line: 'VerbosePkgLists' 

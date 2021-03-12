@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+tag() {
+  herbstclient list_monitors | grep '[FOCUS]' | cut -d'"' -f2
+}
+
+tag=$(tag)
+
+for i in $(herbstclient attr clients | grep '0x')
+ do
+   if herbstclient attr clients."$i" | grep -q "tag = \"$tag\""; then
+     title=$(herbstclient attr clients."$i" | grep 'title' | cut -d'"' -f2)
+     if [[ $title = "Picture-in-Picture" ]]; then
+       winid=$(herbstclient attr clients."$i" | grep 'winid' | cut -d'"' -f2)
+     fi
+   fi
+done
+
+case "$@" in
+   +1)   herbstclient use_index +1 --skip-visible
+         ;;
+   -1)   herbstclient use_index -1 --skip-visible
+         ;;
+esac
+
+if [[ $winid -ne "" ]]; then
+   herbstclient bring "$winid"
+fi

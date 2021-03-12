@@ -1,0 +1,10 @@
+- name: Set lightdm greeter
+  lineinfile:
+      path: /etc/lightdm/lightdm.conf
+      insertafter: '^#greeter-session=example-gtk-gnome'
+      line: greeter-session=lightdm-webkit2-greeter
+
+- name: Enable greeter
+  systemd:
+      name: lightdm
+      enabled: yes
