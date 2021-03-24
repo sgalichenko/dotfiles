@@ -9,9 +9,9 @@
 "alacritty/.alacritty.yml" = "~/.alacritty.yml"
 
 [vim.files]
-"vim/.vimrc" = "~/.config/nvim/init.vim"
-"vim/settings.vim" = "~/.config/nvim/general/settings.vim"
-"vim/coc.vim" = "~/.config/nvim/plug-config/coc.vim"
+"vim/init.vim" = "~/.config/nvim/init.vim"
+"vim/plugins" = "~/.config/nvim/plugins"
+"vim/general" = "~/.config/nvim/general"
 
 [herbstluftwm.files]
 "herbstluftwm/autostart" = "~/.config/herbstluftwm/autostart"

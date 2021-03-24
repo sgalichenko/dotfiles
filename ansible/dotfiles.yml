@@ -91,7 +91,7 @@
 
 - name: Configure vim for root
   file:
-    src: "{{ dotfiles_dir }}/vim/.vimrc"
-    dest: ~/.vimrc
+    src: "{{ dotfiles_dir }}/vim"
+    dest: ~/.config/nvim
     state: link
 
