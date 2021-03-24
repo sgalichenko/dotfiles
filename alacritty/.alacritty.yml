@@ -28,7 +28,7 @@ window:
   # DPI and the specified value is always added at both opposing sides.
   padding:
     x: 5
-    y: 5
+    y: 0
 
   # Spread additional padding evenly around the terminal content.
   dynamic_padding: true
@@ -80,9 +80,6 @@ font:
   normal:
     family: "RobotoMono Nerd Font"
     style: Light
-    # family: "Fira Code"
-    # family: "Source Code Pro"
-    # style: Retina
 
   # The bold font face
   bold:
