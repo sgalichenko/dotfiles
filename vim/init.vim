@@ -1,7 +1,7 @@
 if empty(glob('~/.config/nvim/autoload/plug.vim'))
   silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall | source $MYVIMRC
+  " autocmd VimEnter * PlugInstall | source $MYVIMRC
 endif
 
 call plug#begin()
@@ -57,6 +57,8 @@ Plug 'nvim-telescope/telescope-fzy-native.nvim'
 
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+
 call plug#end()
 
 colorscheme deus
@@ -111,3 +113,4 @@ source $HOME/.config/nvim/plugins/easymotion.vim
 source $HOME/.config/nvim/plugins/quickscope.vim
 source $HOME/.config/nvim/plugins/syntastic.vim
 source $HOME/.config/nvim/plugins/telescope.vim
+source $HOME/.config/nvim/plugins/gitgutter.vim
