@@ -55,6 +55,8 @@ set smartindent
 set autoindent
 set laststatus=0
 set number
+set relativenumber
+set nu rnu
 set cursorline
 set background=dark
 set showtabline=2
