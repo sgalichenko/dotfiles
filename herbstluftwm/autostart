@@ -84,7 +84,7 @@ hc keybind 0x1008ff12 spawn ~/.config/polybar/scripts/i3vol mute
 hc keybind 0x1008ff11 spawn ~/.config/polybar/scripts/i3vol down 5
 hc keybind 0x1008ff13 spawn ~/.config/polybar/scripts/i3vol up 5
 #backlight control
-hc keybind 0x1008ff03 spawn xbacklight -dec 5 
+hc keybind 0x1008ff03 spawn xbacklight -dec 5
 hc keybind 0x1008ff02 spawn xbacklight -inc 5
 
 
@@ -181,9 +181,12 @@ hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on # p
 hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' floating=on focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 hc rule class~'[Yy]ad' floating=on
-#hc rule class~'[Tt]hunderbird' pseudotile=off floating=on #tag=3
+hc rule class~'firefox' pseudotile=off floating=off tag=1
+hc rule class~'[Tt]hunderbird' tag=2
+hc rule class~'TelegramDesktop' pseudotile=off floating=off tag=2
 hc rule class~'[Nn]m-connection-editor' pseudotile=off floating=on focus=on
 hc rule class~'[Pp]avucontrol' pseudotile=off floating=on focus=on
+hc rule class~'Gnome-calendar' pseudotile=off floating=on focus=on
 hc rule instance~'Flala' pseudotile=off floating=on focus=on floatplacement=center
 #hc rule class~'org.remmina.Remmina' pseudotile=off floating=on focus=on
 
