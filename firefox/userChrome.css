@@ -5,14 +5,17 @@
   --autocomplete-popup-highlight-background: #3B4252;
   --autocomplete-popup-highlight-color: #88C0D0;
   --urlbar-popup-action-color: #88C0D0;
-  --lwt-toolbar-field-highlight: #50586b;
-  --toolbar-bgcolor: #2F343F;
+  --lwt-toolbar-field-highlight: #3B4252;
   --lwt-toolbar-vertical-separator: #2F343F;
-  --tabs-border-color: #2F343F;
-  --lwt-toolbar-field-focus: #2F343F;
-  --chrome-content-separator-color: #2F343F;
   --lwt-toolbar-field-background-color: #2F343F;
+  --lwt-toolbar-field-focus: #2F343F;
+  --toolbar-bgcolor: #2F343F;
+  --toolbarbutton-hover-background: #3B4252;
+  --tabs-border-color: #2F343F;
   --tabs-navbar-shadow-size: 0px;
+  --chrome-content-separator-color: #2F343F;
+  --arrowpanel-background: #2F343F;
+  --arrowpanel-dimmed: #2F343F;
 }
 :root[lwt-toolbar-field-brighttext] #urlbar-search-mode-indicator {
   background-color: #88C0D0;
@@ -20,7 +23,6 @@
 
 #identity-box {
     max-width: 5px;
-    padding-inline: 15px;
 }
 
 #identity-box[pageproxystate="valid"].notSecureText, #identity-box[pageproxystate="valid"].chromeUI, #identity-box[pageproxystate="valid"].extensionPage, #urlbar-label-box {
