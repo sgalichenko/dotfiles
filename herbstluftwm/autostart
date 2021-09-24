@@ -30,10 +30,11 @@ hc keybind $Mod-Return spawn $Term
 hc keybind $Mod-Ctrl-p spawn flameshot gui
 hc keybind 0xff61 spawn flameshot full -c -p ~/Pictures/screenshots
 #hc keybind $Mod-z spawn import -window "$(xdotool getwindowfocus)" ~/Pictures/screenshots/"$(date '+%Y%m%d-%H%M%S')".png
-hc keybind 0xff7f spawn light-locker-command -l
+#hc keybind 0xff7f spawn light-locker-command -l
+hc keybind $Mod-l spawn light-locker-command -l
 
 # Rofi keybindings
-hc keybind Ctrl-space spawn rofi -modi window,drun,ssh,file-browser,combi -show combi -combi-modi window,drun,ssh,file-browser -display-combi drun -async-pre-read
+hc keybind Ctrl-space spawn rofi -modi window,drun,ssh,combi -show combi -combi-modi window,drun,ssh -display-combi drun -async-pre-read
 hc keybind Ctrl-Shift-space spawn rofi -modi file-browser -show file-browser
 hc keybind $Alt-Ctrl-p spawn ~/.config/rofi/bin/passmenu.sh
 hc keybind $Alt-Ctrl-r spawn ~/.config/rofi/bin/remmina.sh
@@ -46,10 +47,10 @@ hc keybind Ctrl-Left  focus left
 hc keybind Ctrl-Down  focus down
 hc keybind Ctrl-Up    focus up
 hc keybind Ctrl-Right focus right
-hc keybind $Mod-h     focus left
-hc keybind $Mod-j     focus down
-hc keybind $Mod-k     focus up
-hc keybind $Mod-l     focus right
+#hc keybind $Mod-h     focus left
+#hc keybind $Mod-j     focus down
+#hc keybind $Mod-k     focus up
+#hc keybind $Mod-l     focus right
 
 # moving clients
 hc keybind $Mod-Shift-Left  shift left
@@ -79,13 +80,17 @@ hc keybind $Mod-Control-Down    resize down +$resizestep
 hc keybind $Mod-Control-Up      resize up +$resizestep
 hc keybind $Mod-Control-Right   resize right +$resizestep
 
-#volume control
+# volume control
 hc keybind 0x1008ff12 spawn ~/.config/polybar/scripts/i3vol mute
 hc keybind 0x1008ff11 spawn ~/.config/polybar/scripts/i3vol down 5
 hc keybind 0x1008ff13 spawn ~/.config/polybar/scripts/i3vol up 5
-#backlight control
-hc keybind 0x1008ff03 spawn xbacklight -dec 5
-hc keybind 0x1008ff02 spawn xbacklight -inc 5
+# backlight control
+# xbacklight only works with intel. Radeon does not support the RandR backlight property
+#hc keybind 0x1008ff03 spawn xbacklight -dec 5
+#hc keybind 0x1008ff02 spawn xbacklight -inc 5
+# for AMD
+hc keybind 0x1008ff03 spawn light -U 5
+hc keybind 0x1008ff02 spawn light -A 5
 
 
 # tags
@@ -169,6 +174,9 @@ hc set mouse_recenter_gap 0
 
 hc keybind $Mod-Shift-f attr clients.focus.floating toggle
 
+hc set default_frame_layout 1
+hc set_layout horizontal
+
 # rules
 hc unrule -F
 #hc rule class=XTerm tag=3 # move all xterms to tag 3
@@ -182,6 +190,8 @@ hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' floating=on focus=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 hc rule class~'[Yy]ad' floating=on
 hc rule class~'firefox' pseudotile=off floating=off tag=1
+hc rule title~'Picture-in-Picture' pseudotile=off floating=on focus=on
+hc rule instance~'Toolkit' pseudotile=off floating=on focus=on
 hc rule class~'[Tt]hunderbird' tag=2
 hc rule class~'TelegramDesktop' pseudotile=off floating=off tag=2
 hc rule class~'[Nn]m-connection-editor' pseudotile=off floating=on focus=on
