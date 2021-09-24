@@ -1,0 +1,10 @@
+~  ❯ xrandr --output eDP --set TearFree on
+~  ❯ sudo cat /etc/X11/xorg.conf.d/20-amdgpu.conf
+───────┬─────────────────────────────────────────────────────────────────────
+       │ File: /etc/X11/xorg.conf.d/20-amdgpu.conf
+───────┼─────────────────────────────────────────────────────────────────────
+   1   │ Section "Device"
+   2   │      Identifier "AMD"
+   3   │      Driver "amdgpu"
+   4   │      Option "TearFree" "true"
+   5   │ EndSection
