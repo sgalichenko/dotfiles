@@ -4,63 +4,156 @@ configuration {
   drun-display-format: "{icon} {name}";
   display-drun: "  ";
   display-window: "  ";
-  modi: "window,drun,file-browser";
+  modi: "window,drun";
   terminal: "/usr/bin/alacritty";
 }
 
 * {
-  background-color: #2E3440;
-  bg-alt: #3B4252;
-  fg: #ECEFF4;
+    border: 0;
+    lines: 10;
+    padding: 0;
+    margin: 0;
+    spacing: 0;
 
-  nord-blue-light: #88C0D0;
-  nord-white: #ECEFF4;
+    text-color:                  #ECEFF4;
+    foreground:                  #ECEFF4;
+    background:                  #2E3440;
+    bordercolor:                 #2E3440;
+    separatorcolor:              #2E3440;
+    background-alt:              #3B4252;
+    lightbg:                     #534c48;
+    nord-blue-light:             #88C0D0;
+    nord-white:                  #ECEFF4;
 
-  border: 0;
-  lines: 10;
-  padding: 0;
-  margin: 0;
-  spacing: 0;
+    selected-normal-foreground:  @nord-blue-light;
+    normal-foreground:           @nord-white;
+    alternate-normal-background: @background;
+    selected-urgent-foreground:  @nord-blue-light;
+    urgent-foreground:           @foreground;
+    alternate-urgent-background: @background;
+    active-foreground:           @foreground;
+    selected-active-foreground:  @nord-blue-light;
+    alternate-normal-foreground: @foreground;
+    alternate-active-background: @background;
+    bordercolor:                 @foreground;
+    normal-background:           @background;
+    selected-normal-background:  @background-alt;
+    separatorcolor:              @background;
+    spacing:                     5;
+    urgent-background:           @background;
+    alternate-urgent-foreground: @foreground;
+    selected-urgent-background:  @background-alt;
+    alternate-active-foreground: @foreground;
+    selected-active-background:  @background-alt;
+    active-background:           @background;
 }
-
 window {
-  width: 45%;
-  transparency: "real";
+    width:      45%;
+    transparency: "real";
+    border:     0;
+    text-color: @foreground;
+    background-color: rgba ( 0, 0, 0, 0 % );
+    padding:    7;
+    text-color: @bordercolor;
+    background-color: @background;
 }
-
 mainbox {
-  children: [inputbar, listview];
+    border:  0;
+    padding: 0;
 }
-
+message {
+    border:     1px dash 0px 0px ;
+    text-color: @separatorcolor;
+    padding:    2px 0px 0px ;
+}
+textbox {
+    text-color: @foreground;
+}
 listview {
-  columns: 1;
+    fixed-height: 0;
+    border:       2px 0px 0px ;
+    padding:      2px 0px 0px ;
+    text-color: @separatorcolor;
 }
-
 element {
-  padding: 10;
-  orientation: vertical;
-  text-color: @fg;
+    padding: 10;
+    orientation: vertical;
+    text-color: @foreground;
+    border: 0;
 }
-
-element selected {
-  background-color: @bg-alt;
-  text-color: @nord-blue-light;
+element-text {
+    background-color: inherit;
+    text-color:       inherit;
+}
+element.normal.normal {
+    text-color: @normal-foreground;
+    background-color: @normal-background;
+}
+element.normal.urgent {
+    text-color: @urgent-foreground;
+    background-color: @urgent-background;
+}
+element.normal.active {
+    text-color: @active-foreground;
+    background-color: @active-background;
+}
+element.selected.normal {
+    background-color: @background-alt;
+    text-color: @selected-normal-foreground;
+    background-color: @selected-normal-background;
+}
+element.selected.urgent {
+    text-color: @selected-urgent-foreground;
+    background-color: @selected-urgent-background;
+}
+element.selected.active {
+    text-color: @selected-active-foreground;
+    background-color: @selected-active-background;
+}
+element.alternate.normal {
+    text-color: @alternate-normal-foreground;
+    background-color: @alternate-normal-background;
+}
+element.alternate.urgent {
+    text-color: @alternate-urgent-foreground;
+    background-color: @alternate-urgent-background;
+}
+element.alternate.active {
+    text-color: @alternate-active-foreground;
+    background-color: @alternate-active-background;
+}
+mode-switcher {
+    border: 0px dash 0px 0px ;
+}
+button selected {
+    text-color: @selected-normal-foreground;
+    background-color: @selected-normal-background;
+}
+button normal {
+    text-color: @foreground;
 }
 
 inputbar {
-  background-color: @background;
-  children: [prompt, entry];
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    spacing: 0;
+    border: 0px;
+    children:   [ prompt,textbox-prompt-colon,entry,case-indicator ];
 }
-
+textbox-prompt-colon {
+    expand:     false;
+    str:        "";
+    margin:     0px 0.5em 0em 0em ;
+    text-color: @normal-foreground;
+}
 prompt {
-  enabled: false;
-  font: "RobotoMono Nerd Font 12";
-  padding: 2 0 0 2;
-  text-color: @nord-white;
+    enabled: false;
 }
-
 entry {
-  padding: 10;
-  text-color: @nord-white;
+    placeholder: "";
 }
-
+scrollbar {
+    width:        0;
+    border:       0;
+    handle-width: 0;
+    padding:      0;
+}
