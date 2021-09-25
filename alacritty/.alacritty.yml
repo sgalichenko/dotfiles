@@ -97,7 +97,7 @@ font:
     # style: "Medium Italic"
 
   # Point size of the font
-  size: 6.5
+  size: 7
 
   # Offset is the extra space around each character. offset.y can be thought of
   # as modifying the linespacing, and offset.x as modifying the letter spacing.
@@ -321,6 +321,7 @@ key_bindings:
   - { key: Q,        mods: Command,       action: Quit                         }
   - { key: N,        mods: Command,       action: SpawnNewInstance             }
   - { key: Return,   mods: Command,       action: ToggleFullscreen             }
+  - { key: A,        mods: Shift|Control, action: ToggleViMode                 }
 
   - { key: Home,                          chars: "\x1bOH",   mode: AppCursor   }
   - { key: Home,                          chars: "\x1b[H",   mode: ~AppCursor  }
@@ -461,7 +462,8 @@ live_config_reload: true
 # You can set shell.program to the path of your favorite shell, e.g. /bin/fish.
 # Entries in shell.args are passed unmodified as arguments to the shell.
 shell:
-  program: /usr/bin/zsh #/usr/bin/tmux
+  #program: /usr/bin/tmux
+  program: /usr/bin/zsh
   #args:
   #   - -u # force UTF-8 in tmux
   #   - --command=tmux
