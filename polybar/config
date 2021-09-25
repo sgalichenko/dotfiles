@@ -10,8 +10,10 @@ throttle-output-for = 10
 screenchange-reload = true
 
 [colors]
-background = #bb2c323b
-foreground = #b1b1b1
+#background = #bb2c323b
+background = #002c323b
+#foreground = #b1b1b1
+foreground = #ffffff
 format-foreground = #b1b1b1
 format-background = #2c323b
 ok = #BAD8BB
@@ -113,6 +115,7 @@ time = "%A, %d %B %Y, %H:%M:%S"
 label = "%time%"
 label-padding = 2
 format-background = ${colors.background}
+format =%{A1:gnome-calendar:}<label>%{A}
 
 [module/ewmh]
 type = internal/xworkspaces
