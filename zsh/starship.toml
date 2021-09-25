@@ -34,7 +34,7 @@ diverged = "⇕⇡${ahead_count}⇣${behind_count}"
 behind = "⇣${count}"
 modified = "[*$count ](fg:#ebcb8b bold)"
 untracked = "[?$count ](fg:#b3cfe8 bold)"
-stashed = "[$$count ](fg:#e2c7ef bold)"
+stashed = "[す$count ](fg:#e2c7ef bold)"
 
 [username]
 style_user = "cyan bold"
