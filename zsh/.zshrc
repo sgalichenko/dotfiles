@@ -55,6 +55,7 @@ alias ip='ip -color=auto'
 alias pping='prettyping'
 alias e='emacs'
 alias icat="kitty +kitten icat"
+alias copy='xclip -selection clipboard'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
@@ -94,6 +95,19 @@ export FZF_CTRL_P_COMMAND="$FZF_DEFAULT_COMMAND"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f /usr/share/fzf/key-bindings.zsh ] && source /usr/share/fzf/key-bindings.zsh
 [ -f /usr/share/fzf/completion.zsh ] && source /usr/share/fzf/completion.zsh
+
+_fzf_comprun() {
+  local command=$1
+  shift
+  case "$command" in
+    cd)           fzf "$@" --preview 'tree -C {} | head -200' ;;
+    export|unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
+    ssh)          fzf "$@" --preview 'dig {}' ;;
+    *)            fzf "$@" ;;
+  esac
+}
+
+export FZF_ALT_C_OPTS='--preview "tree -C {} | head -200"'
 
 export SPICETIFY_INSTALL="/home/sammy/spicetify-cli"
 export PATH="$SPICETIFY_INSTALL:$PATH"
