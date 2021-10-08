@@ -10,7 +10,7 @@ zplug "plugins/colored-man-pages",   from:oh-my-zsh
 # after executing compinit command and sourcing other plugins
 # (If the defer tag is given 2 or above, run after compinit command)
 #zplug "zsh-users/zsh-syntax-highlighting", defer:2
-zplug 'skywind3000/z.lua'
+#zplug 'skywind3000/z.lua'
 zplug 'zsh-users/zsh-autosuggestions'
 zplug 'wfxr/forgit'
 zplug 'wfxr/emoji-cli'
@@ -30,10 +30,13 @@ zplug load
 export HISTFILE=~/.zsh_history
 export HISTFILESIZE=1000000000
 export HISTSIZE=1000000000
+export SAVEHIST=1000000000
 setopt EXTENDED_HISTORY
+setopt SHARE_HISTORY
 
 bindkey "^[[3~" delete-char
 eval "$(starship init zsh)"
+eval "$(zoxide init zsh)"
 
 CASE_SENSITIVE="true"
 
@@ -46,16 +49,17 @@ DISABLE_LS_COLORS="true"
 source $HOME/.zplug/repos/wfxr/forgit/forgit.plugin.zsh
 
 alias sudo='sudo -v; sudo '
-alias vi="nvim"
-alias vim="nvim"
+alias vi='nvim'
+alias vim='nvim'
 alias tmux='TERM=screen-256color tmux'
 alias hlc='herbstclient'
 alias glog='git log --oneline --decorate --graph --remotes'
 alias ip='ip -color=auto'
 alias pping='prettyping'
 alias e='emacs'
-alias icat="kitty +kitten icat"
+alias icat='kitty +kitten icat'
 alias copy='xclip -selection clipboard'
+alias history='history -E'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
