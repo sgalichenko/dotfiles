@@ -6,9 +6,13 @@ endif
 
 call plug#begin()
 
-Plug 'dstein64/vim-startuptime'
-Plug 'mhinz/vim-startify'
+" Completion
+Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
+Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}
+Plug 'ms-jpq/coq.thirdparty', {'branch': '3p'}
+Plug 'neovim/nvim-lspconfig'
 
+" Airline
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'ryanoasis/vim-devicons'
@@ -20,17 +24,16 @@ Plug 'drewtempelmeyer/palenight.vim'
 Plug 'rakr/vim-one'
 Plug 'ajmwagar/vim-deus'
 
+" HEX to colors
 Plug 'norcalli/nvim-colorizer.lua'
 
+" FZF
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
 " Quick navigation
 Plug 'unblevable/quick-scope'
 Plug 'easymotion/vim-easymotion'
-
-" Completion
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Show marks
 Plug 'kshenoy/vim-signature'
@@ -44,22 +47,23 @@ Plug 'junegunn/gv.vim'
 Plug 'tpope/vim-commentary'
 
 " Smooth scrolling
-Plug 'psliwka/vim-smoothie'
-
-" Lint checks
-Plug 'vim-syntastic/syntastic'
+Plug 'karb94/neoscroll.nvim'
 
 " Telescope
 Plug 'nvim-lua/popup.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-fzy-native.nvim'
+
+"Plug 'nvim-telescope/telescope.nvim'
+"Plug 'nvim-telescope/telescope-fzy-native.nvim'
 
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+" Lint checks
+Plug 'dense-analysis/ale'
 
 call plug#end()
+
+let g:coq_settings = { 'auto_start': 'shut-up' }
 
 colorscheme deus
 let g:deus_termcolors=256
@@ -73,12 +77,8 @@ if (has('termguicolors'))
   set termguicolors
 endif
 
-" Enable transparency
-"hi Normal guibg=NONE ctermbg=NONE
-
-let g:startify_custom_header = []
 lua require'colorizer'.setup()
-
+lua require('neoscroll').setup()
 
 " Remove trailing whitespaces on save
 fun! TrimWhitespace()
@@ -107,10 +107,9 @@ endif
 " Configs
 source $HOME/.config/nvim/general/settings.vim
 source $HOME/.config/nvim/plugins/airline.vim
-source $HOME/.config/nvim/plugins/coc.vim
+source $HOME/.config/nvim/plugins/ale.vim
 source $HOME/.config/nvim/plugins/fzf.vim
 source $HOME/.config/nvim/plugins/easymotion.vim
 source $HOME/.config/nvim/plugins/quickscope.vim
-source $HOME/.config/nvim/plugins/syntastic.vim
-source $HOME/.config/nvim/plugins/telescope.vim
 source $HOME/.config/nvim/plugins/gitgutter.vim
+source $HOME/.config/nvim/plugins/treesitter.vim
