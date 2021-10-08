@@ -5,10 +5,15 @@
   --autocomplete-popup-highlight-background: #3B4252;
   --autocomplete-popup-highlight-color: #88C0D0;
   --urlbar-popup-action-color: #88C0D0;
-  --lwt-toolbar-field-highlight: #3B4252;
+  --lwt-toolbar-field-highlight: #5E758D;
   --lwt-toolbar-vertical-separator: #2F343F;
+  --toolbar-vertical-separator: #2F343F;
   --lwt-toolbar-field-background-color: #2F343F;
+  --toolbar-field-background-color: #2F343F;
   --lwt-toolbar-field-focus: #2F343F;
+  --toolbar-field-focus: #2F343F;
+  --toolbar-field-focus-background-color: #2F343F;
+  --toolbar-field-background-color: #2F343F;
   --toolbar-bgcolor: #2F343F;
   --toolbarbutton-hover-background: #3B4252;
   --tabs-border-color: #2F343F;
