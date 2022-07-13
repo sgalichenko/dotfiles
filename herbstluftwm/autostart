@@ -91,9 +91,9 @@ hc keybind $Mod-Control-Right   resize right +$resizestep
 #hc keybind 0x1008ff12 spawn ~/.config/polybar/scripts/i3vol mute
 #hc keybind 0x1008ff11 spawn ~/.config/polybar/scripts/i3vol down 5
 #hc keybind 0x1008ff13 spawn ~/.config/polybar/scripts/i3vol up 5
-hc keybind 0xffbe spawn ~/.config/polybar/scripts/pipewire.sh mute
-hc keybind 0xffbf spawn ~/.config/polybar/scripts/pipewire.sh down
-hc keybind 0xffc0 spawn ~/.config/polybar/scripts/pipewire.sh up
+hc keybind 0xffbe spawn pulseaudio-control togmute
+hc keybind 0xffbf spawn pulseaudio-control --volume-max 120 down
+hc keybind 0xffc0 spawn pulseaudio-control --volume-max 120 up
 # backlight control
 # xbacklight only works with intel. Radeon does not support the RandR backlight property
 #hc keybind 0x1008ff03 spawn xbacklight -dec 5
