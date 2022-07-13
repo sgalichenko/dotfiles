@@ -60,6 +60,7 @@ alias e='emacs'
 alias icat='kitty +kitten icat'
 alias copy='xclip -selection clipboard'
 alias history='history -E'
+alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
@@ -99,6 +100,7 @@ export FZF_CTRL_P_COMMAND="$FZF_DEFAULT_COMMAND"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f /usr/share/fzf/key-bindings.zsh ] && source /usr/share/fzf/key-bindings.zsh
 [ -f /usr/share/fzf/completion.zsh ] && source /usr/share/fzf/completion.zsh
+autoload -Uz compinit && compinit
 
 _fzf_comprun() {
   local command=$1
