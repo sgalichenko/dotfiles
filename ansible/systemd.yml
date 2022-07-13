@@ -1,8 +1,26 @@
-- name: Enable pulseaudio
+- name: Enable pipewire
   become: yes
   become_user: "{{ username }}"
   systemd:
-      name: pulseaudio
+      name: pipewire
+      enabled: yes
+      state: started
+      scope: user
+
+- name: Enable pipewire-pulse
+  become: yes
+  become_user: "{{ username }}"
+  systemd:
+      name: pipewire-pulse
+      enabled: yes
+      state: started
+      scope: user
+
+- name: Enable pipewire-media-session
+  become: yes
+  become_user: "{{ username }}"
+  systemd:
+      name: pipewire-media-session
       enabled: yes
       state: started
       scope: user
