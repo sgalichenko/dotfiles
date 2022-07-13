@@ -3,9 +3,16 @@ configuration {
   font: "RobotoMono Nerd Font 12";
   drun-display-format: "{icon} {name}";
   display-drun: "  ";
+  display-combi: "  ";
   display-window: "  ";
-  modi: "window,drun";
+  display-ssh: "  ";
+  display-file-browser-extended: "  ";
   terminal: "/usr/bin/alacritty";
+  sidebar-mode: true;
+  disable-history: false;
+  scroll-method: 0;
+  matching: "fuzzy";
+  window-thumbnail: true;
 }
 
 * {
@@ -23,6 +30,7 @@ configuration {
     background-alt:              #3B4252;
     lightbg:                     #534c48;
     nord-blue-light:             #88C0D0;
+    nord-purple-light:           #b9afce;
     nord-white:                  #ECEFF4;
 
     selected-normal-foreground:  @nord-blue-light;
@@ -30,7 +38,7 @@ configuration {
     alternate-normal-background: @background;
     selected-urgent-foreground:  @nord-blue-light;
     urgent-foreground:           @foreground;
-    alternate-urgent-background: @background;
+    alternate-urgent-background: @background-alt;
     active-foreground:           @foreground;
     selected-active-foreground:  @nord-blue-light;
     alternate-normal-foreground: @foreground;
@@ -41,19 +49,20 @@ configuration {
     separatorcolor:              @background;
     spacing:                     5;
     urgent-background:           @background;
-    alternate-urgent-foreground: @foreground;
+    alternate-urgent-foreground: @foreground-alt;
     selected-urgent-background:  @background-alt;
-    alternate-active-foreground: @foreground;
+    alternate-active-foreground: @foreground-alt;
     selected-active-background:  @background-alt;
     active-background:           @background;
 }
 window {
     width:      45%;
+    height:      45%;
     transparency: "real";
-    border:     0;
+    border:     1;
     text-color: @foreground;
     background-color: rgba ( 0, 0, 0, 0 % );
-    padding:    7;
+    padding:    5;
     text-color: @bordercolor;
     background-color: @background;
 }
@@ -71,12 +80,14 @@ textbox {
 }
 listview {
     fixed-height: 0;
-    border:       2px 0px 0px ;
-    padding:      2px 0px 0px ;
+    border:       0;
+    padding:      0;
+    margin:      0;
     text-color: @separatorcolor;
 }
 element {
     padding: 10;
+    margin: 0 5 0 5;
     orientation: vertical;
     text-color: @foreground;
     border: 0;
@@ -122,9 +133,6 @@ element.alternate.active {
     text-color: @alternate-active-foreground;
     background-color: @alternate-active-background;
 }
-mode-switcher {
-    border: 0px dash 0px 0px ;
-}
 button selected {
     text-color: @selected-normal-foreground;
     background-color: @selected-normal-background;
@@ -156,4 +164,16 @@ scrollbar {
     border:       0;
     handle-width: 0;
     padding:      0;
+}
+mode-switcher {
+  orientation: horizontal;
+  border-radius: 0px;
+  background-color:	inherit;
+  text-color:	inherit;
+  margin:	10px 5px 5px 5px;
+}
+button {
+  width: 10px;
+  padding:	5px 5px 5px 5px;
+  margin:	0px 0px 0px 0px;
 }
