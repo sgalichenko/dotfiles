@@ -16,6 +16,8 @@ env:
 window:
   # Window dimensions (changes require restart)
   #
+  opacity: 1
+  #
   # Specified in number of columns/lines, not pixels. If both are zero this
   # setting is ignored.
   dimensions:
@@ -218,9 +220,6 @@ bell:
   animation: EaseOutExpo
   color: '#ffffff'
   duration: 0
-
-# Background opacity
-background_opacity: 1
 
 # Key bindings
 #
