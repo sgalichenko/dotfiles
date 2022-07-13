@@ -1,0 +1,15 @@
+require('plugins.packer')
+require('plugins.gf')
+require('plugins.telescope')
+require('plugins.lualine')
+require('plugins.bufferline')
+require('plugins.gitgutter')
+require('plugins.colorschemes.nightfox')
+require('plugins.colorizer')
+require('plugins.neoscroll')
+require('plugins.lsp.config')
+require('plugins.lsp.servers')
+require('plugins.lsp.nvim-cmp')
+require('plugins.marks')
+
+vim.cmd 'source ~/.config/nvim/lua/plugins/easymotion.vim'
