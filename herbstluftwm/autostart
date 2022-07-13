@@ -11,12 +11,14 @@ nitrogen --restore &
 picom -b
 fcitx5 -d &
 light-locker &
+greenclip daemon &
+libinput-gestures-setup autostart start
 
 # remove all existing keybindings
 hc keyunbind --all
 setxkbmap -layout 'us,ru' -option 'grp:alt_shift_toggle,grp_led:scroll'
 
-# keybindings
+# keybindings (use xev to figure out the keysyms)
 Mod=Mod4   # Use the super key as the main modifier
 Alt=Mod1
 Term=alacritty
@@ -32,14 +34,19 @@ hc keybind 0xff61 spawn flameshot full -c -p ~/Pictures/screenshots
 #hc keybind $Mod-z spawn import -window "$(xdotool getwindowfocus)" ~/Pictures/screenshots/"$(date '+%Y%m%d-%H%M%S')".png
 #hc keybind 0xff7f spawn light-locker-command -l
 hc keybind $Mod-l spawn light-locker-command -l
+hc keybind $Mod-Escape spawn ~/.config/rofi/bin/sysmenu.sh
 
 # Rofi keybindings
-hc keybind Ctrl-space spawn rofi -modi window,drun,ssh,combi -show combi -combi-modi window,drun,ssh -display-combi drun -async-pre-read
-hc keybind Ctrl-Shift-space spawn rofi -modi file-browser -show file-browser
-hc keybind $Alt-Ctrl-p spawn ~/.config/rofi/bin/passmenu.sh
+hc keybind Ctrl-space spawn rofi -modi combi,ssh,file-browser-extended -show combi -combi-modi window,drun,ssh -async-pre-read -matching fuzzy -sidebar-mode -no-levenshtein-sort
+hc keybind Ctrl-0 spawn xclip -o | xclip -selection clipboard -i
+#hc keybind $Alt-Ctrl-p spawn ~/.config/rofi/bin/passmenu.sh
+hc keybind $Alt-Ctrl-p spawn rofi-pass
 hc keybind $Alt-Ctrl-r spawn ~/.config/rofi/bin/remmina.sh
+hc keybind $Alt-Ctrl-w spawn ~/.config/rofi/bin/watson-rofi
 hc keybind $Alt-Ctrl-t spawn rofi_trans
-hc keybind $Alt-Ctrl-n spawn alacritty -t fzf-nova --class 'Flala' -o window.dimensions.columns=80 -o window.dimensions.lines=20 -o window.startup_mode=Windowed -e ~/bin/fzf/fzf-nova
+hc keybind $Alt-Ctrl-n spawn networkmanager_dmenu
+hc keybind $Alt-Ctrl-b spawn rofi-bluetooth
+hc keybind $Alt-Ctrl-x spawn rofi -modi "clipboard:greenclip print" -show clipboard -run-command '{cmd}'
 
 # basic movement
 # focusing clients
@@ -81,16 +88,19 @@ hc keybind $Mod-Control-Up      resize up +$resizestep
 hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # volume control
-hc keybind 0x1008ff12 spawn ~/.config/polybar/scripts/i3vol mute
-hc keybind 0x1008ff11 spawn ~/.config/polybar/scripts/i3vol down 5
-hc keybind 0x1008ff13 spawn ~/.config/polybar/scripts/i3vol up 5
+#hc keybind 0x1008ff12 spawn ~/.config/polybar/scripts/i3vol mute
+#hc keybind 0x1008ff11 spawn ~/.config/polybar/scripts/i3vol down 5
+#hc keybind 0x1008ff13 spawn ~/.config/polybar/scripts/i3vol up 5
+hc keybind 0xffbe spawn ~/.config/polybar/scripts/pipewire.sh mute
+hc keybind 0xffbf spawn ~/.config/polybar/scripts/pipewire.sh down
+hc keybind 0xffc0 spawn ~/.config/polybar/scripts/pipewire.sh up
 # backlight control
 # xbacklight only works with intel. Radeon does not support the RandR backlight property
 #hc keybind 0x1008ff03 spawn xbacklight -dec 5
 #hc keybind 0x1008ff02 spawn xbacklight -inc 5
 # for AMD
-hc keybind 0x1008ff03 spawn light -U 5
-hc keybind 0x1008ff02 spawn light -A 5
+hc keybind 0xffc3 spawn light -U 5
+hc keybind 0xffc4 spawn light -A 5
 
 
 # tags
@@ -122,10 +132,10 @@ hc keybind $Mod-p pseudotile toggle
 # The following cycles through the available layouts within a frame, but skips
 # layouts, if the layout change wouldn't affect the actual window positions.
 # I.e. if there are two windows within a frame, the grid layout is skipped.
-hc keybind $Mod-space                                                           \
-            or , and . compare tags.focus.curframe_wcount = 2                   \
-                     . cycle_layout +1 vertical horizontal max vertical grid    \
-               , cycle_layout +1
+hc keybind $Mod-space                                                          \
+             or , and . compare tags.focus.curframe_wcount = 2                 \
+                      . cycle_layout +1 vertical horizontal max vertical grid  \
+                , cycle_layout +1
 
 # mouse
 hc mouseunbind --all
@@ -148,10 +158,11 @@ hc set frame_border_normal_color '#2f343f'
 hc set frame_bg_normal_color '#2f343f'
 hc set frame_bg_active_color '#FFFFFF'
 hc set frame_border_width 0
-hc set always_show_frame 0
-hc set frame_bg_transparent 1
+hc set show_frame_decorations on
+hc set frame_bg_transparent on
 hc set frame_transparent_width 0
 hc set frame_gap 10
+hc set tabbed_max true
 
 hc attr theme.active.color '#FCBF49'
 hc attr theme.normal.color '#FFFFFF'
@@ -166,11 +177,41 @@ hc attr theme.active.inner_color '#FCBF49'
 hc attr theme.active.outer_color '#FCBF49'
 hc attr theme.background_color '#2f3540'
 
+# hc attr theme.title_height 15
+# hc attr theme.title_font 'Dejavu Sans:pixelsize=12'
+# hc attr theme.padding_top 5
+# # hc attr theme.padding_bottom 5
+# # hc attr theme.padding_left 5
+# # hc attr theme.padding_right 5
+# hc attr theme.active.color '#FCBF49'
+# hc attr theme.title_color '#2f3540'
+# hc attr theme.normal.color '#323232dd'
+# hc attr theme.urgent.color '#7811A1dd'
+# hc attr theme.normal.title_color '#2f3540'
+# hc attr theme.inner_width 0
+# hc attr theme.inner_color black
+# hc attr theme.border_width 0
+# hc attr theme.floating.border_width 0
+# hc attr theme.floating.outer_width 0
+# hc attr theme.floating.outer_color black
+# hc attr theme.active.inner_color '#789161'
+# hc attr theme.urgent.inner_color '#9A65B0'
+# hc attr theme.normal.inner_color '#606060'
+# # copy inner color to outer_color
+# for state in active urgent normal ; do
+#     hc substitute C theme.${state}.inner_color \
+#         attr theme.${state}.outer_color C
+# done
+# hc attr theme.tiling.outer_width 1
+# hc attr theme.background_color '#141414'
+
+
 hc set window_gap 0
 hc set frame_padding 0
-hc set smart_window_surroundings 1
-hc set smart_frame_surroundings 0
+hc set smart_window_surroundings on
+hc set smart_frame_surroundings off
 hc set mouse_recenter_gap 0
+hc set hide_covered_windows false
 
 hc keybind $Mod-Shift-f attr clients.focus.floating toggle
 
@@ -185,20 +226,21 @@ hc rule focus=on # normally focus new clients
 # give focus to most common terminals
 #hc rule class~'(.*[Rr]xvt.*|.*[Tt]erm|Konsole)' focus=on
 # `xprop` to find out windowtype, class etc
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on # pseudotile=on
-hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' floating=on focus=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=off floating=on focus=on floatplacement=center
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
-hc rule class~'[Yy]ad' floating=on
-hc rule class~'firefox' pseudotile=off floating=off tag=1
 hc rule title~'Picture-in-Picture' pseudotile=off floating=on focus=on
 hc rule instance~'Toolkit' pseudotile=off floating=on focus=on
-hc rule class~'[Tt]hunderbird' tag=2
-hc rule class~'TelegramDesktop' pseudotile=off floating=off tag=2
+hc rule instance~'floatingTerminal' pseudotile=off floating=on focus=on floatplacement=center
+hc rule class~'[Yy]ad' floating=on
 hc rule class~'[Nn]m-connection-editor' pseudotile=off floating=on focus=on
-hc rule class~'[Pp]avucontrol' pseudotile=off floating=on focus=on
 hc rule class~'Gnome-calendar' pseudotile=off floating=on focus=on
-hc rule instance~'Flala' pseudotile=off floating=on focus=on floatplacement=center
-#hc rule class~'org.remmina.Remmina' pseudotile=off floating=on focus=on
+hc rule class~'qrcode' pseudotile=off floating=on focus=on floatplacement=center
+hc rule class~'firefox' pseudotile=off tag=1
+hc rule class~'[Tt]hunderbird-beta' tag=2
+hc rule class~'TelegramDesktop' pseudotile=off floating=off tag=2
+hc rule class~'f5vpn' pseudotile=off floating=on focus=on floatplacement=center tag=5
+hc rule class~'Blueman-manager' pseudotile=off floating=on focus=on floatplacement=center
+hc rule class~'Navigator' pseudotile=off floating=on focus=on floatplacement=center
 
 hc set tree_style '╾│ ├└╼─┐'
 
