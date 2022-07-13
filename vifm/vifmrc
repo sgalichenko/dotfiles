@@ -173,11 +173,14 @@ command! reload :write | restart
 
 " Pdf
 " fileviewer *.pdf pdftotext -nopgbrk %c -
-filextype *.pdf zathura %c %i &, apvlv %c, xpdf %c
+" filextype *.pdf zathura %c %i &, apvlv %c, xpdf %c
+" fileviewer *.pdf
+"    \ vifmimg pdfpreview %px %py %pw %ph %c
+"    \ %pc
+"    \ vifmimg clear
 fileviewer *.pdf
-    \ vifmimg pdfpreview %px %py %pw %ph %c
-    \ %pc
-    \ vifmimg clear
+  \ pdftotext %c -
+
 
 " PostScript
 filextype *.ps,*.eps,*.ps.gz
