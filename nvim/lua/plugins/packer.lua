@@ -32,7 +32,7 @@ return require'packer'.startup(function()
   use 'L3MON4D3/LuaSnip' -- Snippets plugin
   use 'onsails/lspkind-nvim'
 
-  use 'chentau/marks.nvim'
+  use 'chentoast/marks.nvim'
   use 'iamcco/markdown-preview.nvim'
 
 
