@@ -61,6 +61,7 @@ alias icat='kitty +kitten icat'
 alias copy='xclip -selection clipboard'
 alias history='history -E'
 alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
+alias lg='lazygit'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
