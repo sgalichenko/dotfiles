@@ -217,6 +217,11 @@ hc keybind $Mod-Shift-f attr clients.focus.floating toggle
 
 hc set default_frame_layout 1
 hc set_layout horizontal
+# Fix layout on all tags
+hc substitute ALGO settings.default_frame_layout \
+    foreach T tags.by-name. \
+    sprintf ATTR '%c.tiling.root.algorithm' T \
+    set_attr ATTR ALGO
 
 # rules
 hc unrule -F
