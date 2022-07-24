@@ -1,15 +1,11 @@
 # fcitx-configtool to select and configure input methods
 
 - name: Create .zshenv if it's not there yet
-  become: yes
-  become_user: "{{ username }}"
   file:
     path: ~/.zshenv
     state: touch
 
 - name: Populate .zshenv
-  become: yes
-  become_user: "{{ username }}"
   blockinfile:
     dest: ~/.zshenv
     content: |
@@ -19,15 +15,15 @@
       export XMODIFIERS='@im=fcitx'
 
 - name: Source .zshenv
-  become: yes
-  become_user: "{{ username }}"
   shell: source ~/.zshenv
 
 - name: Set locale
+  become: true
   lineinfile:
     dest: /etc/locale.gen
     regexp: '#ja_JP.UTF-8 UTF-8'
     line: 'ja_JP.UTF-8 UTF-8'
 
 - name: Generate locale
+  become: true
   command: locale-gen

@@ -6,34 +6,39 @@
 
   tasks:
 
+  # Configure pacman
+  # Install paru
+  # Install ansible modules for pacman and paru
   - block:
-    - include_tasks: "{{ item }}"
-      with_items:
-        - prep_pacman.yml
-        - prep_yay.yml
-    tags: otc
+    - import_tasks: prep_pacman.yml
+      become: true
+      tags: [pacman]
+    - import_tasks: prep_paru.yml
+      tags: [paru, aur]
+    tags: prepare
+
+  # Install packages specified in variables
+  - block:
+    - import_tasks: pacman.yml
+      become: true
+      tags: [pacman]
+    - import_tasks: paru.yml
+      tags: [paru, aur]
+    tags: packages
 
   - block:
-    - include_tasks: "{{ item }}"
-      with_items:
-        - pacman.yml
-        - yay.yml
-    tags: pkgs
-
-  - block:
-    - include_tasks: "{{ item }}"
-      with_items:
-        - xinit.yml
-        - lightdm.yml
-        - nerdfonts.yml
-        - zsh.yml
-        - dotfiles.yml
-        - systemd.yml
-        - fcitx.yml
-    tags: otc
-
-  - block:
-    - include_tasks: "{{ item }}"
-      with_items:
-        - dotfiles.yml
-    tags: dots
+    - import_tasks: xinit.yml
+      tags: [xinit]
+    - import_tasks: lightdm.yml
+      tags: [lightdm]
+    - import_tasks: nerdfonts.yml
+      tags: [nerdfonts, fonts]
+    - import_tasks: zsh.yml
+      tags: [zsh, shell]
+    - import_tasks: dotfiles.yml
+      tags: [dotfiles, dots]
+    - import_tasks: systemd.yml
+      tags: [systemd]
+    - import_tasks: fcitx.yml
+      tags: [fcitx, lang]
+    tags: configure

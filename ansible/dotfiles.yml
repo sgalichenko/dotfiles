@@ -1,6 +1,4 @@
 - name: Get dotfiles
-  become: yes
-  become_user: "{{ username }}"
   git:
      repo: "{{ dotfiles_repo }}"
      dest: "{{ dotfiles_dir }}"
@@ -8,8 +6,6 @@
   failed_when: False
 
 - name: Run firefox in headless mode (makes firefox create all directories it needs)
-  become: yes
-  become_user: "{{ username }}"
   shell: firefox -headless >/dev/null 2>&1 &
   ignore_errors: True
   failed_when: False
@@ -22,8 +18,6 @@
   no_log: True
 
 - name: Find firefox folder
-  become: yes
-  become_user: "{{ username }}"
   find:
     paths: ~/.mozilla/firefox
     patterns: '*.default-release*'
@@ -37,23 +31,17 @@
   no_log: True
 
 - name: Check if local.toml exist
-  become: yes
-  become_user: "{{ username }}"
   stat:
     path: "{{ dotter_local }}"
   register: stat_result
 
 - name: Create local.toml if it is not there yet
-  become: yes
-  become_user: "{{ username }}"
   file:
     path: "{{ dotter_local }}"
     state: touch
   when: not stat_result.stat.exists
 
 - name: Set dotfiles to be deployed
-  become: yes
-  become_user: "{{ username }}"
   blockinfile:
       dest: "{{ dotter_local }}"
       content: |
@@ -64,32 +52,34 @@
         firefox = "{{ ff_dir[0] }}/chrome"
 
 - name: Deploy dotfiles for user
-  become: yes
-  become_user: "{{ username }}"
   shell: chdir="{{ dotfiles_dir }}" dotter
   ignore_errors: True
   failed_when: False
   no_log: True
 
 - name: Configure zsh for root
+  become: true
   file:
     src: "{{ dotfiles_dir }}/zsh/.zshrc"
     dest: ~/.zshrc
     state: link
 
 - name: Configure alacritty for root
+  become: true
   file:
     src: "{{ dotfiles_dir }}/alacritty/.alacritty.yml"
     dest: ~/.alacritty.yml
     state: link
 
 - name: Configure starship for root
+  become: true
   file:
     src: "{{ dotfiles_dir }}/zsh/starship.toml"
     dest: ~/.config/starship.toml
     state: link
 
-- name: Configure vim for root
+- name: Configure nvim for root
+  become: true
   file:
     src: "{{ dotfiles_dir }}/vim"
     dest: ~/.config/nvim

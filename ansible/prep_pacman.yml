@@ -12,4 +12,10 @@
   lineinfile:
     path: /etc/pacman.conf
     regexp: '^#VerbosePkgLists'
-    line: 'VerbosePkgLists' 
+    line: 'VerbosePkgLists'
+
+- name: Set parallel downloads
+  lineinfile:
+    path: /etc/pacman.conf
+    regexp: '^#ParallelDownloads'
+    line: 'ParallelDownloads = 10'

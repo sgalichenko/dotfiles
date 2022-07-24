@@ -3,6 +3,42 @@
      update_cache: yes
      upgrade: yes
 
-- name: Install packages
+- name: Install system packages (pacman)
   community.general.pacman:
-     name: "{{ pacman_pkgs }}"
+     name: "{{ pacman_pkgs_system }}"
+  tags: [packages, system]
+
+- name: Install net packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_net }}"
+  tags: [packages, net]
+
+- name: Install sound packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_sound }}"
+  tags: [packages, sound]
+
+- name: Install apps packages(pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_apps }}"
+  tags: [packages, apps]
+
+- name: Install utils packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_utils }}"
+  tags: [packages, utils]
+
+- name: Install cli packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_cli }}"
+  tags: [packages, cli]
+
+- name: Install git packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_git }}"
+  tags: [packages, git]
+
+- name: Install fonts packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_fonts }}"
+  tags: [packages, fonts]

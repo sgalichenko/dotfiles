@@ -1,0 +1,10 @@
+- name: Get paru
+  git:
+     repo: 'https://aur.archlinux.org/paru.git'
+     dest: ~/paru
+
+- name: Install paru
+  command: chdir=~/paru makepkg -si --noconfirm
+
+- name: Install AUR helper package
+  command: paru -Sy --noupgrademenu --noconfirm ansible-aur-git

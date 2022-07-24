@@ -2,7 +2,7 @@
   lineinfile:
       path: /etc/lightdm/lightdm.conf
       insertafter: '^#greeter-session=example-gtk-gnome'
-      line: greeter-session=lightdm-webkit2-greeter
+      line: greeter-session=lightdm-mini-greeter
 
 - name: Enable greeter
   systemd:
