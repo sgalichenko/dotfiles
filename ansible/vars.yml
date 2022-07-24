@@ -11,6 +11,17 @@ dotfiles_dir: "/home/{{ username|regex_replace(quotes, void) }}/dotfiles"
 dotter_local: "{{ dotfiles_dir|regex_replace(quotes, void) }}/.dotter/local.toml"
 dotter_local_packages: 'zsh", "tmux", "alacritty", "vim", "firefox", "herbstluftwm", "polybar", "rofi", "dunst", "picom", "vifm'
 
-pacman_pkgs: [pacman-contrib, git, git-lfs, networkmanager, nm-connection-editor, alacritty, pass, pass-otp, keybase, base-devel, xorg-server, firefox, nemo, zsh, fzf, rofi, tmux, lightdm, lightdm-webkit2-greeter, lightdm-webkit2-theme-arch, stow, nitrogen, picom, nodejs, ripgrep, exa, bat, flameshot, signal-desktop, telegram-desktop, slock, yad, pipewire, pipewire-pulse, gst-plugin-pipewire, lxappearance-gtk3, arc-gtk-theme, arc-icon-theme, dunst, vifm, adobe-source-han-sans-jp-fonts, adobe-source-han-serif-jp-fonts, fcitx-im, fcitx-configtool, fcitx-mozc, neofetch, ueberzug, htop, ntfs-3g, shotwell, krita, redshift, light-locker, net-tools, mpv, code, evince, discord, prettyping, flake8, shellcheck, bluez, bluez-utils, xdotool, zathura, zathura-pdf-poppler, mplayer, translate-shell, qutebrowser, kitty, youtube-dl, rlwrap, dash, gitg, lsof, docker, duf, zoxide, glances, ipython, festival, festival-us, songrec, feh, pyright, bash-language-server, lua-language-server, wireplumber, lazygit, sshfs]
+pacman_pkgs_system: [pacman-contrib, base-devel, xorg-server, lxappearance-gtk3, arc-gtk-theme, arc-icon-theme, lightdm, nodejs-lts-gallium]
+pacman_pkgs_net: [networkmanager, nm-connection-editor, ntfs-3g, net-tools, bluez, bluez-utils, sshfs]
+pacman_pkgs_sound: [pipewire, pipewire-pulse, wireplumber, mplayer]
+pacman_pkgs_apps: [firefox, nemo, flameshot, signal-desktop, telegram-desktop, shotwell, krita, redshift, mpv, code, evince, discord, qutebrowser]
+pacman_pkgs_utils: [nitrogen, stow, picom, yad, dunst, ueberzug, light-locker, zathura, zathura-pdf-poppler, feh, rofi]
+pacman_pkgs_cli: [alacritty, pass, pass-otp, zsh, fzf, tmux, ripgrep, exa, bat, vifm, htop, flake8, shellcheck, xdotool, neofetch, kitty, rlwrap, dash, lsof, docker, duf, zoxide, glances, ipython, pyright, bash-language-server, lua-language-server]
+pacman_pkgs_git: [git, git-lfs, lazygit]
+pacman_pkgs_fonts: [adobe-source-han-sans-jp-fonts, adobe-source-han-serif-jp-fonts, fcitx5-im, fcitx5-configtool, fcitx5-mozc]
 
-yay_pkgs: [herbstluftwm-git, neovim-nightly-bin, thunderbird-beta-bin, dotter-rs-bin, tealdeer, spotify, polybar, bottom-bin, rofi-dmenu, nuclear-player-bin, color-picker, spicetify-cli, spicetify-themes-git, rofi-translate-git, git-delta-bin, cht.sh-git, dashbinsh, rofi-pass-git, libinput-gestures, packer, laptop-mode-tools, lightdm-mini-greeter]
+aur_pkgs_system: [herbstluftwm-git, lightdm-mini-greeter-git]
+aur_pkgs_sound: [spotify, nuclear-player-bin, spicetify-cli, spicetify-themes-git]
+aur_pkgs_apps: [thunderbird-beta-bin]
+aur_pkgs_utils: [polybar, rofi-dmenu, rofi-pass-git, libinput-gestures, packer, laptop-mode-tools]
+aur_pkgs_cli: [neovim-nightly-bin, dotter-rs-bin, tealdeer, bottom-bin, dashbinsh]

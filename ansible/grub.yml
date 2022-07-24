@@ -1,16 +1,12 @@
 - name: Get grub theme
-  become: yes
-  become_user: "{{ username }}"
   git:
      repo: 'https://github.com/vinceliuice/grub2-themes.git'
      dest: ~/.config/grub2-themes
 
 - name: Set background
-  become: yes
-  become_user: "{{ username }}"
   copy:
     src: ~/dotfiles/wallpapers/13.jpg
     dest: ~/.config/grub2-themes/13.jpg
 
-- name: Install grub theme 
+- name: Install grub theme
   shell: chdir=~/.config/grub2-themes ./install.sh -b -s 1080p -t tela -i white

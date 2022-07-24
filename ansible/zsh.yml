@@ -1,11 +1,10 @@
 - name: Install zplug
-  become: yes
-  become_user: "{{ username }}"
   shell: curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
   args:
     warn: false
 
 - name: Install zplug for root
+  become: true
   shell: curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
   args:
     warn: false
@@ -16,8 +15,6 @@
     warn: false
 
 - name: Remove .zshrc after it was created by oh-my-zsh installation
-  become: yes
-  become_user: "{{ username }}"
   file:
     path: ~/.zshrc
     state: absent
