@@ -4,6 +4,7 @@
      dest: "{{ dotfiles_dir }}"
   ignore_errors: True
   failed_when: False
+  tags: [dotfiles, fetch]
 
 - name: Run firefox in headless mode (makes firefox create all directories it needs)
   shell: firefox -headless >/dev/null 2>&1 &
@@ -56,6 +57,7 @@
   ignore_errors: True
   failed_when: False
   no_log: True
+  tags: [dotfiles, deploy]
 
 - name: Configure zsh for root
   become: true
