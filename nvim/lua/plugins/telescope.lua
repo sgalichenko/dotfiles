@@ -1,7 +1,7 @@
 local map = vim.api.nvim_set_keymap
 local opts = { noremap = true, silent = true }
 
-map('n', '<leader>f', ':Telescope find_files<CR>', opts)
+map('n', '<leader>f', ':Telescope find_files hidden=true<CR>', opts)
 map('n', '<leader>g', ':Telescope live_grep<CR>', opts)
 map('n', '<leader>b', ':Telescope buffers<CR>', opts)
 map('n', '<leader>h', ':Telescope help_tags<CR>', opts)
