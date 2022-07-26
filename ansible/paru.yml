@@ -1,34 +1,29 @@
 - name: Install system packages (AUR)
-  become: yes
-  become_user: "{{ username }}"
   aur:
      name: "{{ aur_pkgs_system }}"
   tags: [packages, system]
 
+- name: Install dev packages (AUR)
+  aur:
+     name: "{{ aur_pkgs_dev }}"
+  tags: [packages, dev]
+
 - name: Install sound packages (AUR)
-  become: yes
-  become_user: "{{ username }}"
   aur:
      name: "{{ aur_pkgs_sound }}"
   tags: [packages, sound]
 
 - name: Install apps packages (AUR)
-  become: yes
-  become_user: "{{ username }}"
   aur:
      name: "{{ aur_pkgs_apps }}"
   tags: [packages, apps]
 
 - name: Install utils packages (AUR)
-  become: yes
-  become_user: "{{ username }}"
   aur:
      name: "{{ aur_pkgs_utils }}"
   tags: [packages, utils]
 
 - name: Install cli packages (AUR)
-  become: yes
-  become_user: "{{ username }}"
   aur:
      name: "{{ aur_pkgs_cli }}"
   tags: [packages, cli]
