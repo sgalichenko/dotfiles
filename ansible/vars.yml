@@ -11,7 +11,8 @@ dotfiles_dir: "/home/{{ username|regex_replace(quotes, void) }}/dotfiles"
 dotter_local: "{{ dotfiles_dir|regex_replace(quotes, void) }}/.dotter/local.toml"
 dotter_local_packages: 'zsh", "tmux", "alacritty", "vim", "firefox", "herbstluftwm", "polybar", "rofi", "dunst", "picom", "vifm'
 
-pacman_pkgs_system: [pacman-contrib, base-devel, xorg-server, lxappearance-gtk3, arc-gtk-theme, arc-icon-theme, lightdm, nodejs-lts-gallium]
+pacman_pkgs_system: [pacman-contrib, base-devel, xorg-server, lxappearance-gtk3, arc-gtk-theme, arc-icon-theme, lightdm]
+pacman_pkgs_dev: [nodejs-lts-gallium]
 pacman_pkgs_net: [networkmanager, nm-connection-editor, ntfs-3g, net-tools, bluez, bluez-utils, sshfs]
 pacman_pkgs_sound: [pipewire, pipewire-pulse, wireplumber, mplayer]
 pacman_pkgs_apps: [firefox, nemo, flameshot, signal-desktop, telegram-desktop, shotwell, krita, redshift, mpv, code, evince, discord, qutebrowser]
@@ -21,6 +22,7 @@ pacman_pkgs_git: [git, git-lfs, lazygit]
 pacman_pkgs_fonts: [adobe-source-han-sans-jp-fonts, adobe-source-han-serif-jp-fonts, fcitx5-im, fcitx5-configtool, fcitx5-mozc]
 
 aur_pkgs_system: [herbstluftwm-git, lightdm-mini-greeter-git]
+aur_pkgs_dev: [rust-nightly-bin]
 aur_pkgs_sound: [spotify, nuclear-player-bin, spicetify-cli, spicetify-themes-git]
 aur_pkgs_apps: [thunderbird-beta-bin]
 aur_pkgs_utils: [polybar, rofi-dmenu, rofi-pass-git, libinput-gestures, packer, laptop-mode-tools]

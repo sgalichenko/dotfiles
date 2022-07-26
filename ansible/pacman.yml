@@ -8,6 +8,11 @@
      name: "{{ pacman_pkgs_system }}"
   tags: [packages, system]
 
+- name: Install dev packages (pacman)
+  community.general.pacman:
+     name: "{{ pacman_pkgs_dev }}"
+  tags: [packages, dev]
+
 - name: Install net packages (pacman)
   community.general.pacman:
      name: "{{ pacman_pkgs_net }}"
