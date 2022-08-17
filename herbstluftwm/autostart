@@ -240,7 +240,7 @@ hc rule class~'[Yy]ad' floating=on
 hc rule class~'[Nn]m-connection-editor' pseudotile=off floating=on focus=on
 hc rule class~'qrcode' pseudotile=off floating=on focus=on floatplacement=center
 hc rule class~'firefox' pseudotile=off tag=1
-hc rule class~'[Tt]hunderbird-beta' tag=2
+hc rule class~'[Tt]hunderbird-beta' tag=2 switchtag=on
 hc rule class~'TelegramDesktop' pseudotile=off floating=off tag=2
 hc rule class~'F5 VPN' pseudotile=off floating=on focus=off floatplacement=center tag=5
 hc rule class~'Blueman-manager' pseudotile=off floating=on focus=on floatplacement=center
