@@ -28,12 +28,12 @@ require('bufferline').setup {
   },
   highlights = {
     fill = {
-        guifg = '#2e3440',
-        guibg = '#2e3440',
+        fg = '#2e3440',
+        bg = '#2e3440',
     },
     buffer_selected = {
-        guibg = '#2e3440', -- #2e2
-        gui = "bold"
+        bg = '#2e3440', -- #2e2
+        bold = true
     }
   }
 }
