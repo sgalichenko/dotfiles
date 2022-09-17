@@ -49,9 +49,9 @@ configuration {
     separatorcolor:              @background;
     spacing:                     5;
     urgent-background:           @background;
-    alternate-urgent-foreground: @foreground-alt;
+    alternate-urgent-foreground: @foreground;
     selected-urgent-background:  @background-alt;
-    alternate-active-foreground: @foreground-alt;
+    alternate-active-foreground: @foreground;
     selected-active-background:  @background-alt;
     active-background:           @background;
 }
