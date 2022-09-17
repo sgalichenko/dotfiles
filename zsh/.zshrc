@@ -19,6 +19,7 @@ source $HOME/.zplug/repos/wfxr/forgit/forgit.plugin.zsh
 ### Settings ###
 
 export PATH="$HOME/.local/bin:$HOME/go/bin:$HOME/.cargo/bin:$PATH"
+export GOBIN=~/go/bin/
 
 # History
 export HISTFILE=~/.zsh_history
@@ -89,6 +90,7 @@ alias copy='xclip -selection clipboard'
 alias history='history -E'
 alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
 alias lg='lazygit'
+alias mic='arecord -vvv -f dat /dev/null'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
