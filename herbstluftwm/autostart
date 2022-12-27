@@ -171,8 +171,8 @@ hc attr theme.inner_width 1
 hc attr theme.inner_color black
 hc attr theme.border_width 0
 hc attr theme.floating.border_width 0
-hc attr theme.floating.outer_width 1
-hc attr theme.floating.outer_color black
+hc attr theme.floating.outer_width 0
+hc attr theme.floating.outer_color '#2f3540'
 hc attr theme.active.inner_color '#FCBF49'
 hc attr theme.active.outer_color '#FCBF49'
 hc attr theme.background_color '#2f3540'
@@ -249,19 +249,13 @@ hc rule class~'gnome-calendar' pseudotile=off floating=on focus=on floatplacemen
 
 hc set tree_style '╾│ ├└╼─┐'
 
-# unlock, just to be sure
 hc unlock
 
-# do multi monitor setup here, e.g.:
-# hc set_monitors 1280x1024+0+0 1280x1024+1280+0
-# or simply:
 hc detect_monitors
-#hc set_monitors 1920x1175+0+25 1920x1055+1920+25
-#hc set_monitors 1920x1055+0+25
+#hc set_monitors 1920x1080+0+0 1920x1080+1920+0
 hc pad 0 25 0 0 0
+hc pad 1 25 0 0 0
 
-# find the panel
-#panel=~/.config/herbstluftwm/panel.sh
 panel=$HOME/.config/polybar/launch.sh
 [ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
 for monitor in $(herbstclient list_monitors | cut -d: -f1) ; do
