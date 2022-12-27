@@ -91,6 +91,10 @@
   display: none;
 }
 
+.urlbar-input-box {
+  margin-left: 3em;
+}
+
 
 /* menubar, */
 /* menubutton, */
