@@ -91,6 +91,7 @@ alias history='history -E'
 alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
 alias lg='lazygit'
 alias mic='arecord -vvv -f dat /dev/null'
+alias vd='vidir'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
