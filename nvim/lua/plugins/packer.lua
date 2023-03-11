@@ -35,5 +35,6 @@ return require'packer'.startup(function()
   use 'chentoast/marks.nvim'
   use 'iamcco/markdown-preview.nvim'
 
+  use "williamboman/mason.nvim"
 
 end)
