@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export FZF_DEFAULT_OPTS='
+--height=20%
+--reverse
+--prompt="SSH ❯ "
+--preview="awk -v HOST={} -f ~/.ssh/bin/host2conf.awk ~/.ssh/config"'
+
+host=$(grep '^[[:space:]]*Host[[:space:]]' ~/.ssh/config | awk -F: '{ print $2 }' | cut -d ' ' -f 2 | fzf-tmux -p70%,50%)
+echo "$host"
+#[ $? -eq 0 ] && ssh "$host"
