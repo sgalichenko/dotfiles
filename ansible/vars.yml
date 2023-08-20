@@ -23,7 +23,7 @@ pacman_pkgs_fonts: [adobe-source-han-sans-jp-fonts, adobe-source-han-serif-jp-fo
 
 aur_pkgs_system: [herbstluftwm-git, lightdm-mini-greeter-git]
 aur_pkgs_dev: [rust-nightly-bin]
-aur_pkgs_sound: [spotify, nuclear-player-bin, spicetify-cli, spicetify-themes-git]
+aur_pkgs_sound: [spotify, nuclear-player-bin, spicetify-cli, spicetify-themes-git, earbuds-git]
 aur_pkgs_apps: [thunderbird-beta-bin]
 aur_pkgs_utils: [polybar, rofi-dmenu, rofi-pass-git, libinput-gestures, packer, laptop-mode-tools]
 aur_pkgs_cli: [neovim-nightly-bin, dotter-rs-bin, tealdeer, bottom-bin, dashbinsh, navi-bin]
