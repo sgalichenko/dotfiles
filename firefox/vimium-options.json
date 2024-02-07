@@ -1,34 +1,25 @@
 {
-  "settingsVersion": "1.67",
-  "exclusionRules": [
-    {
-      "pattern": "https?://*:8006/*",
-      "passKeys": ""
-    },
-    {
-      "pattern": "https?://*.console.aws.amazon.com/*",
-      "passKeys": ""
-    },
-    {
-      "pattern": "*",
-      "passKeys": "<<>>"
-    }
-  ],
   "filterLinkHints": true,
-  "waitForEnterForFilteredHints": true,
-  "hideHud": false,
   "keyMappings": "",
-  "linkHintCharacters": "sadfjklewcmpgh",
-  "linkHintNumbers": "0123456789",
-  "newTabUrl": "about:newtab",
-  "nextPatterns": "next,more,newer,>,›,→,»,≫,>>",
-  "previousPatterns": "prev,previous,back,older,<,‹,←,«,≪,<<",
-  "regexFindMode": false,
   "ignoreKeyboardLayout": true,
   "scrollStepSize": 100,
-  "smoothScroll": true,
   "grabBackFocus": true,
   "searchEngines": "wiki: https://www.wikipedia.org/w/index.php?title=Special:Search&search=%s Wikipedia\naw: https://wiki.archlinux.org/index.php?search=%s Arch Wiki\nyt: https://www.youtube.com/results?search_query=%s Youtube\nre: https://www.reddit.com/search/?q=%s Reddit\n\n\n# More examples.\n#\n# (Vimium supports search completion Wikipedia, as\n# above, and for these.)\n#\n# g: https://www.google.com/search?q=%s Google\n# l: https://www.google.com/search?q=%s&btnI I'm feeling lucky...\n# y: https://www.youtube.com/results?search_query=%s Youtube\n# gm: https://www.google.com/maps?q=%s Google maps\n# b: https://www.bing.com/search?q=%s Bing\n# d: https://duckduckgo.com/?q=%s DuckDuckGo\n# az: https://www.amazon.com/s/?field-keywords=%s Amazon\n# qw: https://www.qwant.com/?q=%s Qwant",
   "searchUrl": "https://duckduckgo.com/?q=",
-  "userDefinedLinkHintCss": "div > .vimiumHintMarker {\nbackground: #ffd700;\nborder: 1px solid #3b3d64;\n}\ndiv > .vimiumHintMarker span {\n    color: #3b3d64;\n    font-weight: bold;\n    font-size: 12px;\n}\n\n#vomnibar {\n  box-shadow: none;\n  border: none;\n  border-radius: 0;\n  background-color: #2e3440;\n  width: calc(70%);\n  top: 0%;\n  left: 15%;\n}\n\n#vomnibar .vomnibarSearchArea {\n  box-shadow: none;\n  border: none;\n  background-color: #2e3440;\n\n}\n\n#vomnibar input {\n border: none;\n background-color: #2e3440;\n color: #f7f7f7;\n box-shadow: none;\n}\n#vomnibar input::selection {\n    background: #475164;\n}\n\n#vomnibar ul {\n background-color: #2e3440;\n color: #f7f7f7;\n margin-top: 0;\n margin-bottom: 0;  \n}\n\n\n#vomnibar li {\n background-color: #2e3440;\n color: #f7f7f7;\n border: none;\n}\n\n.vimiumReset, div.vimiumReset, span.vimiumReset, table.vimiumReset, a.vimiumReset, a:visited.vimiumReset, a:link.vimiumReset, a:hover.vimiumReset, td.vimiumReset, tr.vimiumReset {\n   color: #f7f7f7;\n}\n#vomnibar li .vomnibarSource {\n   color: #c49ec8;\n   font-weight: bolder;\n}\n#vomnibar li em, #vomnibar li .vomnibarTitle {\n   color: #f7f7f7;\n}\n#vomnibar li em .vomnibarMatch, #vomnibar li .vomnibarTitle .vomnibarMatch {\n  color: #f7f7f7;\n}\n#vomnibar li .vomnibarMatch {\n  color: #b1ffb6;\n  font-weight: bold;\n}\n#vomnibar li .vomnibarUrl {\n   color: #73b5f0;\n   font-weight: bold;\n}\n#vomnibar li.vomnibarSelected {\n    background-color: #475164;\n}\n\ndiv > .vimiumHintMarker span {\n/* linkhint text */\ncolor: black;\nfont-weight: bold;\nfont-size: 12px;\n}\n\ndiv > .vimiumHintMarker > .matchingCharacter {\n}\n\n\n\n\ndiv.vimiumHUD {\n    box-shadow: none;\n    border: none;\n    background-color: #2e3440;\n    border-radius: 0px; \n    width: 100%;\n}\ndiv.vimiumHUD .hud-find {\n    background: #2e3440;\n    border: none;\n}\ndiv.vimiumHUD .vimiumHUDSearchArea {\n    box-shadow: none;\n    border: none;\n    background-color: #2e3440;\n}\ndiv.vimiumHUD .vimiumHUDSearchAreaInner {\n    color: #73b5f0;\n    font-weight: bold;\n}\ndiv.vimiumHUD span#hud-find-input, div.vimiumHUD span#hud-match-count {\n    color: #fff;\n    display: inline;\n    outline: none;\n    white-space: nowrap;\n    overflow-y: hidden;\n}"
+  "settingsVersion": "2.0.6",
+  "userDefinedLinkHintCss": "div > .vimiumHintMarker {\n  padding: 2px 3px;\n  background-color: #eceff4;\n  border: 3px;\n  border-radius: 0px;\n  background-image: none;\n}\n\ndiv > .vimiumHintMarker span {\n  font-size: 18px;\n  font-weight: bold;\n  text-shadow: none;\n  color: #2f343f;\n}\n\ndiv > .vimiumHintMarker > .matchingCharacter {\n  color: #bf616a;\n}\n\n\n#vomnibar {\n  box-shadow: none;\n  border: none;\n  border-radius: 0;\n  background-color: #2e3440;\n  width: calc(70%);\n  top: 0%;\n  left: 15%;\n}\n\n#vomnibar .vomnibarSearchArea {\n  box-shadow: none;\n  border: none;\n  background-color: #2e3440;\n\n}\n\n#vomnibar input {\n border: none;\n background-color: #2e3440;\n color: #f7f7f7;\n box-shadow: none;\n}\n#vomnibar input::selection {\n    background: #475164;\n}\n\n#vomnibar ul {\n background-color: #2e3440;\n color: #f7f7f7;\n margin-top: 0;\n margin-bottom: 0;  \n}\n\n\n#vomnibar li {\n background-color: #2e3440;\n color: #f7f7f7;\n border: none;\n}\n\n.vimiumReset, div.vimiumReset, span.vimiumReset, table.vimiumReset, a.vimiumReset, a:visited.vimiumReset, a:link.vimiumReset, a:hover.vimiumReset, td.vimiumReset, tr.vimiumReset {\n   color: #f7f7f7;\n}\n#vomnibar li .vomnibarSource {\n   color: #c49ec8;\n   font-weight: bolder;\n}\n#vomnibar li em, #vomnibar li .vomnibarTitle {\n   color: #f7f7f7;\n}\n#vomnibar li em .vomnibarMatch, #vomnibar li .vomnibarTitle .vomnibarMatch {\n  color: #f7f7f7;\n}\n#vomnibar li .vomnibarMatch {\n  color: #b1ffb6;\n  font-weight: bold;\n}\n#vomnibar li .vomnibarUrl {\n   color: #73b5f0;\n   font-weight: bold;\n}\n#vomnibar li.vomnibarSelected {\n    background-color: #475164;\n}\n\n\n\ndiv.vimiumHUD {\n    box-shadow: none;\n    border: none;\n    background-color: #2e3440;\n    border-radius: 0px; \n    width: 100%;\n}\ndiv.vimiumHUD .hud-find {\n    background: #2e3440;\n    border: none;\n}\ndiv.vimiumHUD .vimiumHUDSearchArea {\n    box-shadow: none;\n    border: none;\n    background-color: #2e3440;\n}\ndiv.vimiumHUD .vimiumHUDSearchAreaInner {\n    color: #73b5f0;\n    font-weight: bold;\n}\ndiv.vimiumHUD span#hud-find-input, div.vimiumHUD span#hud-match-count {\n    color: #fff;\n    display: inline;\n    outline: none;\n    white-space: nowrap;\n    overflow-y: hidden;\n}",
+  "exclusionRules": [
+    {
+      "passKeys": "",
+      "pattern": "https?://*:8006/*"
+    },
+    {
+      "passKeys": "",
+      "pattern": "https?://*.console.aws.amazon.com/*"
+    },
+    {
+      "passKeys": "<<>>",
+      "pattern": "*"
+    }
+  ]
 }
