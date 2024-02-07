@@ -6,8 +6,8 @@ format = """
 """
 
 [character]
-success_symbol = "[❯](bold cyan)"
-error_symbol = "[❯](bold red)"
+success_symbol = "[](bold blue)"
+error_symbol = "[](bold red)"
 
 [directory]
 truncation_length=3
@@ -25,20 +25,20 @@ style="bold fg:green"
 #format = '( [⏽ $all_status$ahead_behind⏽]($style))'
 #format = '( [ $all_status$ahead_behind]($style))'
 #format = '( [ $all_status$ahead_behind]($style))'
-format = '( [ $all_status$ahead_behind]($style))'
+format = '( [⏽ $all_status$ahead_behind⏽]($style))'
 style = "green bold"
 ahead = "⇡${count}"
-staged = "[+$count ](fg:#BAD8BB bold)"
-deleted = "[-$count ](fg:#fc949f bold)"
+staged = "[+$count ](fg:green bold)"
+deleted = "[-$count ](fg:red bold)"
 diverged = "⇕⇡${ahead_count}⇣${behind_count}"
 behind = "⇣${count}"
-modified = "[*$count ](fg:#ebcb8b bold)"
-untracked = "[?$count ](fg:#b3cfe8 bold)"
+modified = "[*$count ](fg:yellow bold)"
+untracked = "[?$count ](fg:blue bold)"
 stashed = "[す$count ](fg:#e2c7ef bold)"
 
 [username]
 style_user = "cyan bold"
 style_root = "red bold"
-format = "[❯]($style)"
+format = "[]($style)"
 disabled = false
 show_always = false
