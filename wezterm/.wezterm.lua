@@ -6,7 +6,6 @@ if wezterm.config_builder then
   config = wezterm.config_builder()
 end
 
-
 wezterm.on('gui-startup', function(cmd)
   local tab, pane, window = mux.spawn_window(cmd or {})
   window:gui_window():toggle_fullscreen()
@@ -15,9 +14,11 @@ end)
 config.default_prog = { '/usr/bin/zsh', '-c', 'tmux' }
 config.color_scheme = 'nord'
 config.font = wezterm.font 'RobotoMono Nerd Font'
-config.font_size = 10.0
+config.font_size = 14.0
 config.enable_tab_bar = false
 config.warn_about_missing_glyphs = false
+config.window_background_opacity = 1
+config.hide_mouse_cursor_when_typing = false
 
 config.colors = {
   quick_select_label_bg = { Color = '#bf616a' },
