@@ -28,9 +28,13 @@ did_find_host {
 	width = max(length($1), width)  # Width of the widest key for padding
   $1="" # Clear the keys to get all left columns into values with $0
 	values[n++] = $0
+  file=FILENAME
 }
 
 END {
+  printf " \n\033[1;38;5;143m %s \033[0m \n", file
+  printf " \n"
+
 	for (i = 0; i < n; ++i)
 		printf "\033[1;38;5;151m %-"width"s \033[1;38;5;73m %s \033[0m \n", keys[i], values[i]
 }
