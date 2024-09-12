@@ -4,6 +4,9 @@ export LC_ALL="en_US.UTF-8"
 export LANG="en_US.UTF-8"
 export LC_TYPE="en_US.UTF-8"
 
+export PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$HOME/go/bin:$HOME/.cargo/bin:$PATH"
+export GOBIN=~/go/bin/
+
 stty -ixon
 
 # Enable vi mode
@@ -44,17 +47,15 @@ zplug load
 # }
 
 # FZF
-. /etc/profile.d/fzf.zsh
-[ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# . /etc/profile.d/fzf.zsh
+# [ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
+# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+source <(fzf --zsh)
 
 # GRC
 [[ -s "/etc/grc.zsh" ]] && source /etc/grc.zsh
 
 ### Settings ###
-
-export PATH="$HOME/.local/bin:$HOME/go/bin:$HOME/.cargo/bin:$PATH"
-export GOBIN=~/go/bin/
 
 # History
 export HISTFILE=~/.zsh_history
@@ -75,7 +76,8 @@ less_termcap[us]="${fg_bold[cyan]}"
 less_termcap[so]="${fg_bold[black]}${bg_bold[cyan]}"
 
 # Prompt
-export SUDO_PROMPT=' %p: '
+export FULLNAME=$(getent passwd "${1:-$USER}" | cut -d: -f5 | cut -d, -f1;)
+export SUDO_PROMPT=" $FULLNAME: "
 bindkey "^[[3~" delete-char
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
@@ -110,8 +112,9 @@ alias vd='vidir'
 alias pbcopy='xsel --clipboard --input'
 alias pbpaste='xsel --clipboard --output'
 alias cal='cal -m'
-alias sup='sudo apt update && sudo apt upgrade'
+alias sup='sudo apt update && sudo apt upgrade && snap refresh && brew upgrade'
 alias tx='tmuxinator'
+alias sadd='pkill ssh-agent && eval ssh-agent && ssh-add -s /usr/lib/libeToken.so'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
@@ -141,7 +144,7 @@ nord1="#d8dee9"
 nord2="#81a1c1"
 nord3="#ebcb8b"
 
-fzf_general_opts="--border=none \
+fzf_general_opts="--border \
                   --no-separator \
                   --no-scrollbar \
                   --reverse \
@@ -149,7 +152,7 @@ fzf_general_opts="--border=none \
                   --pointer='' \
                   --marker='󰄲 ' \
                   --bind='?:toggle-preview' \
-                  --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3'"
+                  --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3,label:$nord1'"
 
 #export FZF_DEFAULT_OPTS="$fzf_general_opts"
 
@@ -160,8 +163,12 @@ function __fsel_ssh() {
 
   fzf_opts=$(cat << END
             $fzf_general_opts
-            --preview-window="right:60%:wrap"
+            --preview-window="right:60%:nowrap"
+            --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
             --prompt="󰒋 SSH  "
+            --bind "ctrl-e:execute($HOME/.ssh/bin/vissh edit {} --reuse-window)+refresh-preview"
+            --bind "ctrl-y:execute($HOME/.ssh/bin/vissh yank {})+abort"
+            --bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
             --preview='awk -v HOST={} -f ~/.ssh/bin/host2conf.awk $all_ssh_configs | grep -E -v "^#|^$"'
 END
 )
@@ -179,14 +186,28 @@ END
 }
 
 function fzf-ssh {
-    selected=$(__fsel_ssh)
-    if [[ -z "$selected" ]]; then
-        zle redisplay
-        return 0
-    fi
-    zle push-line # Clear buffer
+  selected=($(__fsel_ssh))
+  if [[ -z "$selected" ]]; then
+    zle redisplay
+    return 0
+  fi
+  zle push-line # Clear buffer
+  if [[ ${#selected} -ge 2 ]]; then
+    first=1
+    multi_ssh_command=""
+    for host in ${selected[@]}; do
+      if [[ $first -eq 1 ]]; then
+        multi_ssh_command+="tmux neww ssh $host; "
+        first=0
+      else
+        multi_ssh_command+="tmux splitw ssh $host; tmux select-layout tiled; "
+      fi
+    done
+    BUFFER="$multi_ssh_command"
+  else
     BUFFER="ssh $(echo $selected | awk -F'\' '{ print $1 }')";
-    zle accept-line
+  fi
+  zle accept-line
 }
 zle -N fzf-ssh
 bindkey "^s" fzf-ssh
@@ -303,3 +324,7 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # fi
 # export SSH_AGENT_PID
 # export SSH_AUTH_SOCK
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
