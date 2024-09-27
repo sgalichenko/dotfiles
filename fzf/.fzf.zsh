@@ -1,16 +1,16 @@
 # Setup fzf
 # ---------
-if [[ ! "$PATH" == */home/semyon/.fzf/bin* ]]; then
-  PATH="${PATH:+${PATH}:}/home/semyon/.fzf/bin"
+if [[ ! "$PATH" == */home/semyon/fzf/bin* ]]; then
+  PATH="${PATH:+${PATH}:}/home/semyon/fzf/bin"
 fi
 
 # Auto-completion
 # ---------------
-source "/home/semyon/.fzf/shell/completion.zsh"
+source "/home/semyon/fzf/shell/completion.zsh"
 
 # Key bindings
 # ------------
-source "/home/semyon/.fzf/shell/key-bindings.zsh"
+source "/home/semyon/fzf/shell/key-bindings.zsh"
 
 bgdefault="#2f343f"
 nord0="#495c6e"
@@ -18,7 +18,7 @@ nord1="#d8dee9"
 nord2="#81a1c1"
 nord3="#ebcb8b"
 
-fzf_general_opts="--border=none \
+fzf_general_opts="--border sharp \
                   --no-separator \
                   --no-scrollbar \
                   --pointer='' \
