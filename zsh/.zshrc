@@ -38,18 +38,10 @@ fi
 
 zplug load
 
-# ZVM_CURSOR_STYLE_ENABLED=false
-# function zvm_after_init() {
-#   . /etc/profile.d/fzf.zsh
-#   [ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
-#   [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-#   [[ -s "/etc/grc.zsh" ]] && source /etc/grc.zsh
-# }
-
 # FZF
 # . /etc/profile.d/fzf.zsh
 # [ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
-# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 source <(fzf --zsh)
 
 # GRC
@@ -132,7 +124,7 @@ if [ "$(command -v bat)" ]; then
     export BAT_THEME="Nord"
     export BAT_STYLE="changes"
     #export BAT_STYLE="numbers,changes,header"
-    alias cat='bat'
+    alias cat='bat --no-pager -p'
 fi
 
 ###############################
@@ -144,15 +136,16 @@ nord1="#d8dee9"
 nord2="#81a1c1"
 nord3="#ebcb8b"
 
-fzf_general_opts="--border \
+# --marker='󰄲 ' \
+fzf_general_opts="--border sharp \
                   --no-separator \
                   --no-scrollbar \
                   --reverse \
                   --bind 'ctrl-a:select-all' \
                   --pointer='' \
-                  --marker='󰄲 ' \
+                  --marker=' ' \
                   --bind='?:toggle-preview' \
-                  --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3,label:$nord1'"
+                  --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3,label:$nord1,selected-fg:$nord3:bold,selected-bg:$nord0'"
 
 #export FZF_DEFAULT_OPTS="$fzf_general_opts"
 
@@ -163,11 +156,12 @@ function __fsel_ssh() {
 
   fzf_opts=$(cat << END
             $fzf_general_opts
-            --preview-window="right:60%:nowrap"
+            --border sharp
+            --preview-window="right:60%:nowrap:border,sharp"
             --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
             --prompt="󰒋 SSH  "
-            --bind "ctrl-e:execute($HOME/.ssh/bin/vissh edit {} --reuse-window)+refresh-preview"
-            --bind "ctrl-y:execute($HOME/.ssh/bin/vissh yank {})+abort"
+            --bind "ctrl-e:execute($HOME/.ssh/bin/vissh edit {})+refresh-preview"
+            --bind "ctrl-y:execute-silent($HOME/.ssh/bin/vissh yank {})+abort"
             --bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
             --preview='awk -v HOST={} -f ~/.ssh/bin/host2conf.awk $all_ssh_configs | grep -E -v "^#|^$"'
 END
@@ -299,31 +293,6 @@ typeset -A ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[cursor]=underline
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-# SSH agent
-# ssh_pid_file="$HOME/.config/ssh-agent.pid"
-# SSH_AUTH_SOCK="$HOME/.config/ssh-agent.sock"
-# if [ -z "$SSH_AGENT_PID" ]
-# then
-# 	# no PID exported, try to get it from pidfile
-# 	SSH_AGENT_PID=$(cat "$ssh_pid_file")
-# fi
-
-# if ! kill -0 $SSH_AGENT_PID &> /dev/null
-# then
-# 	# the agent is not running, start it
-# 	rm "$SSH_AUTH_SOCK" &> /dev/null
-# 	>&2 echo "Starting SSH agent, since it's not running; this can take a moment"
-# 	eval "$(ssh-agent -s -a "$SSH_AUTH_SOCK")"
-# 	echo "$SSH_AGENT_PID" > "$ssh_pid_file"
-# 	ssh-add -A 2>/dev/null
-
-# 	>&2 echo "Started ssh-agent with '$SSH_AUTH_SOCK'"
-# # else
-# # 	>&2 echo "ssh-agent on '$SSH_AUTH_SOCK' ($SSH_AGENT_PID)"
-# fi
-# export SSH_AGENT_PID
-# export SSH_AUTH_SOCK
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
