@@ -136,14 +136,13 @@ nord1="#d8dee9"
 nord2="#81a1c1"
 nord3="#ebcb8b"
 
-# --marker='󰄲 ' \
 fzf_general_opts="--border sharp \
                   --no-separator \
                   --no-scrollbar \
                   --reverse \
                   --bind 'ctrl-a:select-all' \
                   --pointer='' \
-                  --marker=' ' \
+                  --marker='󰄲 ' \
                   --bind='?:toggle-preview' \
                   --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3,label:$nord1,selected-fg:$nord3:bold,selected-bg:$nord0'"
 
@@ -160,8 +159,8 @@ function __fsel_ssh() {
             --preview-window="right:60%:nowrap:border,sharp"
             --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
             --prompt="󰒋 SSH  "
-            --bind "ctrl-e:execute($HOME/.ssh/bin/vissh edit {})+refresh-preview"
-            --bind "ctrl-y:execute-silent($HOME/.ssh/bin/vissh yank {})+abort"
+            --bind "ctrl-e:execute($HOME/.ssh/bin/sshmgmt edit {})+refresh-preview"
+            --bind "ctrl-y:execute-silent($HOME/.ssh/bin/sshmgmt yank {})+abort"
             --bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
             --preview='awk -v HOST={} -f ~/.ssh/bin/host2conf.awk $all_ssh_configs | grep -E -v "^#|^$"'
 END
