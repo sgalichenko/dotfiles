@@ -6,11 +6,13 @@ if wezterm.config_builder then
   config = wezterm.config_builder()
 end
 
-wezterm.on('gui-startup', function(cmd)
+wezterm.on('gui-startup', function(window)
   local tab, pane, window = mux.spawn_window(cmd or {})
-  window:gui_window():toggle_fullscreen()
+  local gui_window = window:gui_window();
+  gui_window:perform_action(wezterm.action.ToggleFullScreen, pane)
 end)
 
+config.native_macos_fullscreen_mode = true
 config.default_prog = { '/usr/bin/zsh', '-c', 'tmux' }
 config.color_scheme = 'nord'
 config.font = wezterm.font 'RobotoMono Nerd Font'
@@ -52,6 +54,10 @@ config.keys = {
     mods = 'CTRL',
     action = wezterm.action.QuickSelectArgs {
       patterns = {
+        -- FQDNs
+        '[\\w.-]+\\.[a-zA-Z]{2,}',
+        -- Emails
+        '[\\w._\\+-]+@[\\w.-]+\\.[a-zA-Z]{2,}',
         -- user@hostname
         '\\w+\\@\\S+-?\\w+',
         -- paths
@@ -60,6 +66,8 @@ config.keys = {
         '\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b',
         -- HEX colors
         '(?i)#(?:[0-9a-f]{3}|[0-9a-f]{6})\\b',
+        -- Containers IDs
+        '[0-9a-f]{12}',
       },
     },
   },

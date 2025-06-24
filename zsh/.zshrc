@@ -43,6 +43,7 @@ zplug load
 # [ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 source <(fzf --zsh)
+source <(gopass completion bash)
 
 # GRC
 [[ -s "/etc/grc.zsh" ]] && source /etc/grc.zsh
@@ -106,7 +107,9 @@ alias pbpaste='xsel --clipboard --output'
 alias cal='cal -m'
 alias sup='sudo apt update && sudo apt upgrade && snap refresh && brew upgrade'
 alias tx='tmuxinator'
-alias sadd='pkill ssh-agent && eval ssh-agent && ssh-add -s /usr/lib/libeToken.so'
+#alias sadd='pkill ssh-agent && eval "$(ssh-agent -s)" && ssh-add -s /usr/lib/libeToken.so'
+alias sadd='ssh-add -s /usr/lib/libeToken.so'
+alias docker='podman'
 
 if [ "$(command -v exa)" ]; then
     unalias -m 'll'
@@ -146,7 +149,7 @@ fzf_general_opts="--border sharp \
                   --bind='?:toggle-preview' \
                   --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3,label:$nord1,selected-fg:$nord3:bold,selected-bg:$nord0'"
 
-#export FZF_DEFAULT_OPTS="$fzf_general_opts"
+export FZF_DEFAULT_OPTS="$fzf_general_opts"
 
 function __fsel_ssh() {
   ssh_config="$HOME/.ssh/config"
@@ -162,12 +165,13 @@ function __fsel_ssh() {
             --bind "ctrl-e:execute($HOME/.ssh/bin/sshmgmt edit {})+refresh-preview"
             --bind "ctrl-y:execute-silent($HOME/.ssh/bin/sshmgmt yank {})+abort"
             --bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
-            --preview='awk -v HOST={} -f ~/.ssh/bin/host2conf.awk $all_ssh_configs | grep -E -v "^#|^$"'
+            --preview='awk -v HOST={} -f ~/.ssh/bin/host2conf.awk $all_ssh_configs'
 END
 )
   export FZF_DEFAULT_OPTS="$fzf_opts"
 
-  host=$(grep '^[[:space:]]*Host[[:space:]]' $(bash -c "echo $all_ssh_configs") | awk -F' ' '!/\*/ { $1=""; print $0 }' | cut -d ' ' -f2- | sort | uniq)
+  #host=$(grep -h '^\s*Host\s\+' $(bash -c "echo $all_ssh_configs") | awk '$2 != "*" { print $2 }' | sort -u)
+  host=$(grep -h '^\s*Host\s\+' $(bash -c "echo $all_ssh_configs") | awk '{ print $2 }' | sort -u)
 
   setopt localoptions pipefail no_aliases 2> /dev/null
   echo $host | fzf-tmux -p50%,50% -m "$@" | while read item; do
@@ -185,20 +189,14 @@ function fzf-ssh {
     return 0
   fi
   zle push-line # Clear buffer
-  if [[ ${#selected} -ge 2 ]]; then
-    first=1
-    multi_ssh_command=""
-    for host in ${selected[@]}; do
-      if [[ $first -eq 1 ]]; then
-        multi_ssh_command+="tmux neww ssh $host; "
-        first=0
-      else
-        multi_ssh_command+="tmux splitw ssh $host; tmux select-layout tiled; "
-      fi
+  if [[ ${#selected[@]} -gt 1 ]]; then
+    multi_ssh_command="tmux neww ssh ${selected[1]}; "
+    for host in "${selected[@]:1}"; do
+      multi_ssh_command+="tmux splitw ssh $host; tmux select-layout tiled; "
     done
     BUFFER="$multi_ssh_command"
   else
-    BUFFER="ssh $(echo $selected | awk -F'\' '{ print $1 }')";
+    BUFFER="ssh ${selected[1]}"
   fi
   zle accept-line
 }

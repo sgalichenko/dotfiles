@@ -37,17 +37,17 @@ set.timeoutlen = 500
 set.clipboard = 'unnamedplus'
 
 -- Remove trailing whitespaces on save
-vim.api.nvim_exec(
-[[
-fun! TrimWhitespace()
-  let l:save = winsaveview()
-  keeppatterns %s/\s\+$//e
-  call winrestview(l:save)
-endfun
+-- vim.api.nvim_exec(
+-- [[
+-- fun! TrimWhitespace()
+--   let l:save = winsaveview()
+--   keeppatterns %s/\s\+$//e
+--   call winrestview(l:save)
+-- endfun
 
-augroup Trim
-  autocmd!
-  autocmd BufWritePre * :call TrimWhitespace()
-augroup END
-]],
-true)
+-- augroup Trim
+--   autocmd!
+--   autocmd BufWritePre * :call TrimWhitespace()
+-- augroup END
+-- ]],
+-- true)
