@@ -1,1 +1,4 @@
-require("mason").setup()
+return {
+    "mason-org/mason.nvim",
+    opts = {}
+}
