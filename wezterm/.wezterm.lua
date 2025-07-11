@@ -6,15 +6,18 @@ if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
 
-wezterm.on("gui-startup", function(cmd)
-	local tab, pane, window = mux.spawn_window(cmd or {})
-	window:gui_window():maximize()
+
+wezterm.on('gui-startup', function(window)
+  local tab, pane, window = mux.spawn_window(cmd or {})
+  local gui_window = window:gui_window();
+  gui_window:perform_action(wezterm.action.ToggleFullScreen, pane)
 end)
 
-config.default_prog = { "/usr/bin/zsh", "-c", "tmux" }
-config.color_scheme = "nord"
-config.font = wezterm.font("RobotoMono Nerd Font")
-config.font_size = 18.0
+config.native_macos_fullscreen_mode = true
+config.default_prog = { '/usr/bin/zsh', '-c', 'tmux' }
+config.color_scheme = 'nord'
+config.font = wezterm.font 'RobotoMono Nerd Font'
+config.font_size = 14.0
 config.enable_tab_bar = false
 config.warn_about_missing_glyphs = false
 config.window_background_opacity = 1

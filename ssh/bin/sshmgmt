@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Colors
+BLUE='\033[1;34m'; YELLOW='\033[1;33m'; PURPLE='\033[1;35m'; NC="\033[0m"
+
+# Help
+if [[ $# -ne 2 ]]; then
+  echo -e "\n${YELLOW}Please specify an action and a host.${NC}\n"
+  echo -e "${BLUE}Available options:${NC}"
+  echo -e "${PURPLE}$0 yank <host>${NC}  – copy ssh command to clipboard"
+  echo -e "${PURPLE}$0 edit <host>${NC}  – edit host config\n"
+  exit 0
+fi
+
+action="$1"
+target="$2"
+editor="nvim"
+main="$HOME/.ssh/config"
+configs=("$main" $(awk '/^Include / {print $2}' "$main"))
+
+# Find the first config file that matches the target host
+for cfg in "${configs[@]}"; do
+  if grep -qE "^Host.*\b$target\b" "$cfg"; then
+    config="$cfg"
+    break
+  fi
+done
+
+[[ -z ${config:-} ]] && { echo "Host '$target' not found."; exit 1; }
+
+line=$(awk -v target="$target" '$1 == "Host" && index($0, target) { print NR; exit }' "$config")
+
+get_val() {
+  local key="$1"
+  sed -n "$line,$ {/$key/{p;q}}" "$config" | awk '{print $2}' | tr -d ' |\n'
+}
+
+if [[ $action == "edit" ]]; then
+  eval "$editor $config +$line"
+elif [[ $action == "yank" ]]; then
+  ssh_cmd="ssh "
+  id_file=$(get_val IdentityFile)
+  pjump=$(get_val ProxyJump)
+  port=$(get_val Port)
+  user=$(get_val User)
+  host=$(get_val Hostname)
+
+  [[ $id_file ]] && ssh_cmd+="-i $id_file "
+  [[ $pjump ]]   && ssh_cmd+="-J $pjump "
+  [[ $port ]]    && ssh_cmd+="-P $port "
+  [[ $user ]]    && ssh_cmd+="$user@"
+  [[ $host ]]    && ssh_cmd+="$host"
+
+  echo -n "$ssh_cmd" | xsel -ib
+fi
