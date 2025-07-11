@@ -25,3 +25,10 @@ map('v', '<', '<gv', opts)
 map('v', '>', '>gv', opts)
 
 map('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic message' })
+
+--- Tables
+map('v', 't', ":! tr -s ' ' | column -t -s '|' -o '  |  '| sed 's/^[[:space:]]*//;s/[[:space:]]*$//'<CR>", opts)
+
+--- Execute command
+map('v', '<leader>e', ":y<CR>p0v$:!sh<CR>", opts)
+map('n', '<leader>e', "0v$:y<CR>p0v$:!sh<CR>", opts)
