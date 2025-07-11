@@ -1,6 +1,6 @@
 configuration {
   show-icons: false;
-  font: "RobotoMono Nerd Font 12";
+  font: "RobotoMono Nerd Font 16";
   drun-display-format: "{icon} {name}";
   display-drun: "  ";
   display-combi: "  ";
@@ -13,6 +13,7 @@ configuration {
   scroll-method: 0;
   matching: "fuzzy";
   window-thumbnail: true;
+  /* dpi: 110; */
 }
 
 * {
@@ -59,7 +60,7 @@ window {
     width:      45%;
     height:      45%;
     transparency: "real";
-    border:     1;
+    border:     4;
     text-color: @foreground;
     background-color: rgba ( 0, 0, 0, 0 % );
     padding:    5;
