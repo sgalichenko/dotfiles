@@ -1,4 +1,5 @@
-local map = vim.api.nvim_set_keymap
+-- local map = vim.api.nvim_set_keymap
+local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
 vim.g.mapleader = ' '
@@ -22,3 +23,5 @@ map('v', '#', ':Commentary<CR>', opts)
 -- Keep selection after indentation
 map('v', '<', '<gv', opts)
 map('v', '>', '>gv', opts)
+
+map('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic message' })
