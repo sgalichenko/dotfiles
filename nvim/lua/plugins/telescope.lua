@@ -6,6 +6,7 @@ return {
     defaults = {
       prompt_prefix = '  ',
       selection_caret = ' ',
+      wrap_results = true,
     },
   },
   config = function(_, opts)
@@ -25,5 +26,6 @@ return {
     keymap('n', '<leader>l', builtin.current_buffer_fuzzy_find, km_opts)
     keymap('n', '<leader>s', builtin.git_status, km_opts)
     keymap('n', '<leader>d', builtin.diagnostics, { desc = 'Show diagnostics' })
+
   end,
 }

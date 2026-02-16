@@ -1,1 +1,0 @@
-{ "EdenEast/nightfox.nvim" }
