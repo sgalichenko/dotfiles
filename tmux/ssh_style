@@ -1,4 +1,4 @@
-#/bin/sh
+#!/usr/bin/env bash
 
 [ -z "$TMUX_PANE" ] && exit
 [ "$#" -eq 1 ] || exit 1
