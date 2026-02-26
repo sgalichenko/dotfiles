@@ -4,7 +4,7 @@ export LC_ALL="en_US.UTF-8"
 export LANG="en_US.UTF-8"
 export LC_TYPE="en_US.UTF-8"
 
-export PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$HOME/go/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$HOME/go/bin:$HOME/.cargo/bin:$PATH:$HOME/bin/node/bin"
 export GOBIN=~/go/bin/
 
 stty -ixon
@@ -28,7 +28,7 @@ source ~/.zplug/init.zsh
 zplug "plugins/colored-man-pages",   from:oh-my-zsh
 zplug 'zsh-users/zsh-autosuggestions'
 
-if ! zplug check --verbose; then
+if ! zplug check 2>/dev/null; then
     printf "Install? [y/N]: "
     if read -q; then
         echo; zplug install
@@ -41,9 +41,9 @@ zplug load
 # FZF
 # . /etc/profile.d/fzf.zsh
 # [ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 source <(fzf --zsh)
-source <(gopass completion bash)
+source <(gopass completion zsh)
 
 # GRC
 [[ -s "/etc/grc.zsh" ]] && source /etc/grc.zsh
@@ -69,16 +69,11 @@ less_termcap[us]="${fg_bold[cyan]}"
 less_termcap[so]="${fg_bold[black]}${bg_bold[cyan]}"
 
 # Prompt
-export FULLNAME=$(getent passwd "${1:-$USER}" | cut -d: -f5 | cut -d, -f1;)
+export FULLNAME=$(getent passwd "$USER" | cut -d: -f5 | cut -d, -f1;)
 export SUDO_PROMPT=" $FULLNAME: "
 bindkey "^[[3~" delete-char
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
-CASE_SENSITIVE="true"
-# Uncomment the following line to disable colors in ls.
-DISABLE_LS_COLORS="true"
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
 
 # Editor
 export EDITOR='nvim'
@@ -97,7 +92,7 @@ alias pping='prettyping'
 alias e='emacs'
 alias icat='kitty +kitten icat'
 alias copy='xsel -ib'
-alias history='history -E'
+alias history='fc -il 1'
 alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
 alias lg='lazygit'
 alias mic='arecord -vvv -f dat /dev/null'
@@ -111,16 +106,52 @@ alias tx='tmuxinator'
 alias sadd='ssh-add -s /usr/lib/libeToken.so'
 alias docker='podman'
 
-if [ "$(command -v exa)" ]; then
+function clear_pane() {
+  clear && printf '\e[3J' && tmux clear-history
+}
+alias clp="clear_pane"
+
+# Define your bot token and chat ID
+REMOVED
+REMOVED
+# Text message alias
+alias tg='xargs -I {} curl -s -X POST "https://api.telegram.org/bot'$TG_BOT'/sendMessage" -H "Content-Type: application/json" -d "{\"chat_id\": \"'$TG_CHAT'\", \"text\": \"{}\"}"'
+# File sending alias
+function tgf {
+    if [ -t 0 ]; then
+        # File mode
+        curl -s -X POST "https://api.telegram.org/bot${TG_BOT}/sendDocument" \
+            -F "chat_id=${TG_CHAT}" \
+            -F "document=@$1" \
+            -F "caption=${2:-}"
+    else
+        # Stdin mode
+        local temp=$(mktemp)
+        local filename="${1:-output.txt}"
+        cat > "${temp}"
+        curl -s -X POST "https://api.telegram.org/bot${TG_BOT}/sendDocument" \
+            -F "chat_id=${TG_CHAT}" \
+            -F "document=@${temp};filename=${filename}" \
+            -F "caption=${filename}"
+        local result=$?
+        rm -f "${temp}"
+        return $result
+    fi
+}
+
+REMOVED
+REMOVED
+
+if [ "$(command -v eza)" ]; then
     unalias -m 'll'
     unalias -m 'l'
     unalias -m 'la'
     unalias -m 'ls'
-    alias ls='exa --icons'
-    alias l='exa -lbF --git --icons'
-    alias ll='exa -lbGF --git --icons'
-    alias la='exa -lbhHigUmuSa --time-style=long-iso --git --icons --color-scale'
-    alias lt='exa --tree --icons --level=2'
+    alias ls='eza --icons'
+    alias l='eza -lbF --git --icons'
+    alias ll='eza -lbGF --git --icons'
+    alias la='eza -lbhHigUmuSa --time-style=long-iso --git --icons --color-scale'
+    alias lt='eza --tree --icons --level=2'
 fi
 
 if [ "$(command -v bat)" ]; then
@@ -216,7 +247,7 @@ END
   export FZF_DEFAULT_OPTS="$fzf_opts"
 
   setopt localoptions pipefail no_aliases 2> /dev/null
-  eval rg . --files --hidden --no-ignore-vcs | fzf-tmux -p70%,70% -m "$@" | while read item; do
+  rg . --files --hidden --no-ignore-vcs | fzf-tmux -p70%,70% -m "$@" | while read item; do
     echo -n "${(q)item} "
   done
   local ret=$?
@@ -262,7 +293,7 @@ END
   export FZF_DEFAULT_OPTS="$fzf_opts"
 
   setopt localoptions pipefail no_aliases 2> /dev/null
-  eval rg --files --hidden | fzf-tmux -p70%,70% -m "$@" | while read item; do
+  rg --files --hidden | fzf-tmux -p70%,70% -m "$@" | while read item; do
     echo -n "${(q)item} "
   done
   local ret=$?
@@ -292,5 +323,8 @@ ZSH_HIGHLIGHT_STYLES[cursor]=underline
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+nvm() {
+  unset -f nvm node npm npx
+  [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+  nvm "$@"
+}

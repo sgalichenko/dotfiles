@@ -2,7 +2,7 @@
 add_newline = false
 
 format = """
-[$directory$git_branch$git_status $username$character](bold fg:cyan)
+[$directory$git_branch$git_status $character](bold fg:cyan)
 """
 
 [character]
@@ -31,10 +31,3 @@ behind = " ${count}"
 modified = "[󰓏 $count ](fg:yellow bold)"
 untracked = "[󰋗 $count ](fg:blue bold)"
 stashed = "[ $count ](fg:#e2c7ef bold)"
-
-[username]
-style_user = "cyan bold"
-style_root = "red bold"
-format = "[]($style)"
-disabled = false
-show_always = false
