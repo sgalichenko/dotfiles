@@ -7,7 +7,7 @@ configuration {
   display-window: "  ";
   display-ssh: "  ";
   display-file-browser-extended: "  ";
-  terminal: "/usr/bin/alacritty";
+  terminal: "/usr/bin/wezterm";
   sidebar-mode: true;
   disable-history: false;
   scroll-method: 0;
