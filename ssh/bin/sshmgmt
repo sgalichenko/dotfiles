@@ -17,7 +17,10 @@ action="$1"
 target="$2"
 editor="nvim"
 main="$HOME/.ssh/config"
-configs=("$main" $(awk '/^Include / {print $2}' "$main"))
+#configs=("$main" $(awk '/^Include / {print $2}' "$main"))
+while IFS= read -r inc; do
+  for f in $inc; do configs+=("$f"); done
+done < <(awk '/^Include / {print $2}' "$main")
 
 # Find the first config file that matches the target host
 for cfg in "${configs[@]}"; do
@@ -37,7 +40,7 @@ get_val() {
 }
 
 if [[ $action == "edit" ]]; then
-  eval "$editor $config +$line"
+  "$editor" "+$line" "$config"
 elif [[ $action == "yank" ]]; then
   ssh_cmd="ssh "
   id_file=$(get_val IdentityFile)
@@ -48,7 +51,7 @@ elif [[ $action == "yank" ]]; then
 
   [[ $id_file ]] && ssh_cmd+="-i $id_file "
   [[ $pjump ]]   && ssh_cmd+="-J $pjump "
-  [[ $port ]]    && ssh_cmd+="-P $port "
+  [[ $port ]]    && ssh_cmd+="-p $port "
   [[ $user ]]    && ssh_cmd+="$user@"
   [[ $host ]]    && ssh_cmd+="$host"
 

@@ -112,8 +112,8 @@ function clear_pane() {
 alias clp="clear_pane"
 
 # Define your bot token and chat ID
-REMOVED
-REMOVED
+TG_BOT="$TG_BOT"
+TG_CHAT="$TG_CHAT"
 # Text message alias
 alias tg='xargs -I {} curl -s -X POST "https://api.telegram.org/bot'$TG_BOT'/sendMessage" -H "Content-Type: application/json" -d "{\"chat_id\": \"'$TG_CHAT'\", \"text\": \"{}\"}"'
 # File sending alias
@@ -183,54 +183,73 @@ fzf_general_opts="--border sharp \
 export FZF_DEFAULT_OPTS="$fzf_general_opts"
 
 function __fsel_ssh() {
-  ssh_config="$HOME/.ssh/config"
-  ssh_config_includes="$(awk '/^Include / {print $2}' ORS=' ' $ssh_config)"
-  all_ssh_configs="$ssh_config $ssh_config_includes"
+  local ssh_config="$HOME/.ssh/config"
 
-  fzf_opts=$(cat << END
-            $fzf_general_opts
-            --border sharp
-            --preview-window="right:60%:nowrap:border,sharp"
-            --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
-            --prompt="󰒋 SSH  "
-            --bind "ctrl-e:execute($HOME/.ssh/bin/sshmgmt edit {})+refresh-preview"
-            --bind "ctrl-y:execute-silent($HOME/.ssh/bin/sshmgmt yank {})+abort"
-            --bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
-            --preview='awk -v HOST={} -f ~/.ssh/bin/host2conf.awk $all_ssh_configs'
-END
-)
-  export FZF_DEFAULT_OPTS="$fzf_opts"
+  local -a all_ssh_configs=("$ssh_config")
+  while IFS= read -r inc; do
+    all_ssh_configs+=( ${~inc}(N) )
+  done < <(awk '/^Include / {print $2}' "$ssh_config")
 
-  #host=$(grep -h '^\s*Host\s\+' $(bash -c "echo $all_ssh_configs") | awk '$2 != "*" { print $2 }' | sort -u)
-  host=$(grep -h '^\s*Host\s\+' $(bash -c "echo $all_ssh_configs") | awk '{ print $2 }' | sort -u)
+  local fzf_opts
+  fzf_opts=$(cat <<-END
+	$fzf_general_opts
+	--border sharp
+	--preview-window="right:60%:nowrap:border-sharp"
+  --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
+  --prompt="󰒋 SSH  "
+  --bind "ctrl-e:execute(TERM=xterm-256color $HOME/.ssh/bin/sshmgmt edit {})+refresh-preview"
+	--bind "ctrl-y:execute-silent($HOME/.ssh/bin/sshmgmt yank {})+abort"
+	--bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
+	--preview="awk -v HOST={} -f ~/.ssh/bin/host2conf.awk ${all_ssh_configs[*]}"
+	END
+  )
 
-  setopt localoptions pipefail no_aliases 2> /dev/null
-  echo $host | fzf-tmux -p50%,50% -m "$@" | while read item; do
-    echo -n "${(q)item} "
-  done
+  # List hosts, excluding wildcards and pattern entries
+  local hosts
+  hosts=$(grep -h '^\s*Host\s' "${all_ssh_configs[@]}" \
+    | awk '$2 !~ /^[*?]/ { print $2 }' \
+    | sort -u)
+
+  setopt localoptions pipefail no_aliases 2>/dev/null
+
+  FZF_DEFAULT_OPTS="$fzf_opts" \
+    fzf-tmux -p50%,50% -m "$@" <<< "$hosts" \
+    | while read -r item; do
+        echo -n "${(q)item} "
+      done
+
   local ret=$?
   echo
   return $ret
 }
 
-function fzf-ssh {
+function fzf-ssh() {
+  local selected
   selected=($(__fsel_ssh))
+
   if [[ -z "$selected" ]]; then
     zle redisplay
     return 0
   fi
-  zle push-line # Clear buffer
+
+  zle push-line
+
+  local buffer
   if [[ ${#selected[@]} -gt 1 ]]; then
-    multi_ssh_command="tmux neww ssh ${selected[1]}; "
+    # Open first host in a new window, split for the rest, tile once at the end
+    buffer="tmux neww ssh ${selected[1]}"
     for host in "${selected[@]:1}"; do
-      multi_ssh_command+="tmux splitw ssh $host; tmux select-layout tiled; "
+      buffer+="; tmux splitw ssh $host"
     done
-    BUFFER="$multi_ssh_command"
+    buffer+="; tmux select-layout tiled"
   else
-    BUFFER="ssh ${selected[1]}"
+    buffer="ssh ${selected[1]}"
   fi
+
+  BUFFER="$buffer"
   zle accept-line
 }
+
 zle -N fzf-ssh
 bindkey "^s" fzf-ssh
 
