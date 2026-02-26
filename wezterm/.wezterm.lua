@@ -6,10 +6,9 @@ if wezterm.config_builder then
   config = wezterm.config_builder()
 end
 
-wezterm.on('gui-startup', function(window)
+wezterm.on('gui-startup', function(cmd)
   local tab, pane, window = mux.spawn_window(cmd or {})
-  local gui_window = window:gui_window();
-  gui_window:perform_action(wezterm.action.ToggleFullScreen, pane)
+  window:gui_window():perform_action(wezterm.action.ToggleFullScreen, pane)
 end)
 
 config.native_macos_fullscreen_mode = true
