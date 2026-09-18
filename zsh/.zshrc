@@ -219,6 +219,7 @@ function __fsel_ssh() {
   fzf_opts=$(cat <<-END
 	$fzf_general_opts
 	--border none
+	--padding 1,2
 	--preview-window="right:60%:nowrap:border-sharp"
   --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
   --prompt="󰒋 SSH  "
