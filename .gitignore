@@ -3,3 +3,10 @@
 vim/plugged
 vim/autoload
 nvim/plugin/packer_compiled.lua
+
+# vifm runtime state and its shipped help text
+vifm/vifminfo.json
+vifm/vifm-help.txt
+
+# nvim: plugins are managed by lazy.nvim (see nvim/lua/config/lazy.lua);
+# the legacy nvim/pack/ native packpath has been removed.

@@ -4,32 +4,53 @@
 
 [tmux.files]
 "tmux/.tmux.conf" = "~/.tmux.conf"
-
-[alacritty.files]
-"alacritty/.alacritty.yml" = "~/.alacritty.yml"
+# Load-bearing: every LocalCommand in ~/.ssh/config invokes this, and
+# ~/.ssh/bin/ssh-styled reads the colours back out of those entries.
+"tmux/ssh_style" = "~/.tmux/ssh_style"
 
 [nvim.files]
+# A whole-directory symlink is safe here: lazy.nvim keeps plugins and state
+# under stdpath("data") (~/.local/share/nvim/lazy), not in ~/.config/nvim.
 "nvim" = "~/.config/nvim"
 
-[herbstluftwm.files]
-"herbstluftwm/autostart" = "~/.config/herbstluftwm/autostart"
-"herbstluftwm/cycletag" = "~/.config/herbstluftwm/cycletag"
-
-[polybar.files]
-"polybar" = "~/.config/polybar"
-
 [rofi.files]
-"rofi/rofi-pass.conf" = "~/.config/rofi-pass/config"
+# rofi-pass.conf is kept in the repo for reference but not mapped: rofi-pass
+# isn't installed here, and its `pass` backend isn't either (gopass is).
 "rofi" = "~/.config/rofi"
 
-[dunst.files]
-"dunst" = "~/.config/dunst"
-
 [vifm.files]
-"vifm" = "~/.config/vifm"
-
-[picom.files]
-"picom/picom.conf" = "~/.config/picom.conf"
+# Individual files, not the directory: ~/.config/vifm also holds colors/,
+# scripts/, vifminfo.json and vifm's shipped vifm-help.txt, which a
+# directory symlink would hide.
+"vifm/vifmrc" = "~/.config/vifm/vifmrc"
+"vifm/vifmimg" = "~/.config/vifm/vifmimg"
+"vifm/vimfm" = "~/.config/vifm/vimfm"
 
 [firefox.files]
-"firefox" = "firefox"
+# NOT enabled in local.toml - deliberately not deployed.
+# Firefox here is the Ubuntu snap, so userChrome.css belongs under
+# ~/snap/firefox/common/.mozilla/firefox/<profile>/chrome/ and needs
+# toolkit.legacyUserProfileCustomizations.stylesheets=true in about:config.
+# The old mapping target was a bare relative path and deposited these files
+# in ~/firefox, where Firefox never reads them.
+"firefox/userChrome.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/userChrome.css"
+"firefox/treestyletab.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/treestyletab.css"
+
+[wezterm.files]
+"wezterm/.wezterm.lua" = "~/.wezterm.lua"
+
+[ssh.files]
+# Individual files, not the directory: ~/.ssh/bin also holds .old/.save
+# copies that aren't tracked here, and a dir symlink would hide them.
+"ssh/bin/sshmgmt" = "~/.ssh/bin/sshmgmt"
+"ssh/bin/host2conf.awk" = "~/.ssh/bin/host2conf.awk"
+"ssh/bin/ssh-styled" = "~/.ssh/bin/ssh-styled"
+
+[lazygit.files]
+# type = "symbolic" is required: this file is full of lazygit's own
+# {{filename}} / {{selectedRef}} placeholders, which dotter would otherwise
+# try to render as handlebars templates and blank out.
+"lazygit/config.yml" = { target = "~/.config/lazygit/config.yml", type = "symbolic" }
+
+[fzf.files]
+"fzf/.fzf.zsh" = "~/.fzf.zsh"

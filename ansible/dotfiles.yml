@@ -66,13 +66,6 @@
     dest: ~/.zshrc
     state: link
 
-- name: Configure alacritty for root
-  become: true
-  file:
-    src: "{{ dotfiles_dir }}/alacritty/.alacritty.yml"
-    dest: ~/.alacritty.yml
-    state: link
-
 - name: Configure starship for root
   become: true
   file:

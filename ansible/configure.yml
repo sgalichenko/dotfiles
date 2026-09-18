@@ -27,10 +27,6 @@
     tags: packages
 
   - block:
-    - import_tasks: xinit.yml
-      tags: [xinit]
-    - import_tasks: lightdm.yml
-      tags: [lightdm]
     - import_tasks: nerdfonts.yml
       tags: [nerdfonts, fonts]
     - import_tasks: zsh.yml

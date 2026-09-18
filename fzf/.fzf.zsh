@@ -44,7 +44,7 @@ export FZF_CTRL_R_OPTS="
 
 export FZF_CTRL_T_OPTS="
   $fzf_general_opts
-  --preview 'bat -n --color=always {}'
+  --preview 'bat -n  --color=always {}'
   --bind 'ctrl-/:change-preview-window(down|hidden|)'"
 
 export FZF_TMUX_OPTS='-p80%,70%'
