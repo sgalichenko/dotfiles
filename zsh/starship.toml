@@ -5,6 +5,12 @@ format = """
 [$directory$git_branch$git_status $character](bold fg:cyan)
 """
 
+# Right-hand prompt: infra context + how long the last command took.
+# The context modules are here to make "wrong cluster / wrong account"
+# mistakes visible before the command runs, not after.
+right_format = "$kubernetes$aws$cmd_duration"
+command_timeout = 1000
+
 [character]
 success_symbol = "[](bold blue)"
 error_symbol = "[](bold red)"
@@ -31,3 +37,18 @@ behind = " ${count}"
 modified = "[󰓏 $count ](fg:yellow bold)"
 untracked = "[󰋗 $count ](fg:blue bold)"
 stashed = "[ $count ](fg:#e2c7ef bold)"
+
+
+[cmd_duration]
+min_time = 2000
+format = "[ $duration]($style)"
+style = "fg:#4c566a"
+
+[kubernetes]
+disabled = false
+format = '[󱃾 $context(\($namespace\))]($style) '
+style = "fg:#b48ead bold"
+
+[aws]
+format = '[ $profile(\($region\))]($style) '
+style = "fg:#d08770 bold"

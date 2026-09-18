@@ -11,6 +11,8 @@ stty -ixon
 
 # Enable vi mode
 bindkey -v
+export KEYTIMEOUT=1   # don't wait 0.4s after <Esc>
+
 bindkey "^A"   beginning-of-line                    # ctrl-a
 bindkey "^B"   backward-char                        # ctrl-b
 bindkey "^E"   end-of-line                          # ctrl-e
@@ -21,6 +23,12 @@ bindkey "^P"   up-line-or-search                    # ctrl-p
 bindkey "^R"   history-incremental-search-backward  # ctrl-r
 bindkey "^[[B" history-search-forward               # down arrow
 bindkey "^[[A" history-search-backward              # up arrow
+
+source ~/.env
+
+autoload -U edit-command-line
+zle -N edit-command-line
+bindkey '^X^E' edit-command-line
 
 ### Plugins ###
 
@@ -52,15 +60,24 @@ source <(gopass completion zsh)
 
 # History
 export HISTFILE=~/.zsh_history
-export HISTFILESIZE=10000000000
 export HISTSIZE=10000000000
-export HISTTIMEFORMAT='%F %T  '
 export SAVEHIST=10000000000
-setopt EXTENDED_HISTORY
+setopt EXTENDED_HISTORY      # timestamps (the zsh equivalent of HISTTIMEFORMAT)
 setopt SHARE_HISTORY
+setopt HIST_IGNORE_SPACE     # a leading space keeps it out of history
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY           # expand !! into the buffer instead of running it
+
+# Directory navigation
+setopt AUTO_CD
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_SILENT
 
 # Diff pager
 export GF_PREFERRED_PAGER="delta --theme=gruvbox --highlight-removed -w __WIDTH__"
+export PAGER="/home/linuxbrew/.linuxbrew/bin/hunk pager"
 
 # Man pages
 export MANPAGER='less -s -M +Gg'
@@ -82,15 +99,15 @@ export VISUAL='nvim'
 ### Aliases ###
 
 alias sudo='sudo -v; sudo '
+alias please='gum input --password --prompt=" " --placeholder="   Semyon" | sudo -nS'
 alias vi='nvim'
 alias vim='nvim'
-alias tmux='TERM=xterm-256color tmux -2 -u'
+alias tmux='tmux -u'   # TERM no longer forced; see terminal-features in .tmux.conf
 alias hlc='herbstclient'
 alias glog='git log --oneline --decorate --graph --remotes'
 alias ip='ip -color=auto'
 alias pping='prettyping'
 alias e='emacs'
-alias icat='kitty +kitten icat'
 alias copy='xsel -ib'
 alias history='fc -il 1'
 alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
@@ -101,21 +118,32 @@ alias pbcopy='xsel --clipboard --input'
 alias pbpaste='xsel --clipboard --output'
 alias cal='cal -m'
 alias sup='sudo apt update && sudo apt upgrade && snap refresh && brew upgrade'
-alias tx='tmuxinator'
 #alias sadd='pkill ssh-agent && eval "$(ssh-agent -s)" && ssh-add -s /usr/lib/libeToken.so'
 alias sadd='ssh-add -s /usr/lib/libeToken.so'
 alias docker='podman'
+
+# Route ssh through the pane-styling wrapper (see ~/.ssh/bin/ssh-styled).
+# ControlMaster means LocalCommand only fires on the master connection, so
+# the pane colour is applied here instead. `command ssh` bypasses it.
+ssh() { "$HOME/.ssh/bin/ssh-styled" "$@" }
+
+'#'() { cat; }
 
 function clear_pane() {
   clear && printf '\e[3J' && tmux clear-history
 }
 alias clp="clear_pane"
 
-# Define your bot token and chat ID
-TG_BOT="$TG_BOT"
-TG_CHAT="$TG_CHAT"
-# Text message alias
-alias tg='xargs -I {} curl -s -X POST "https://api.telegram.org/bot'$TG_BOT'/sendMessage" -H "Content-Type: application/json" -d "{\"chat_id\": \"'$TG_CHAT'\", \"text\": \"{}\"}"'
+# TG_BOT / TG_CHAT come from ~/.env; read at call time so the token never
+# ends up baked into an alias definition (visible in `alias` and history).
+function tg {
+    local msg
+    if [ -t 0 ]; then msg="$*"; else msg=$(cat); fi
+    curl -s -X POST "https://api.telegram.org/bot${TG_BOT}/sendMessage" \
+        -H "Content-Type: application/json" \
+        --data-urlencode "chat_id=${TG_CHAT}" \
+        --data-urlencode "text=${msg}" >/dev/null
+}
 # File sending alias
 function tgf {
     if [ -t 0 ]; then
@@ -138,9 +166,6 @@ function tgf {
         return $result
     fi
 }
-
-REMOVED
-REMOVED
 
 if [ "$(command -v eza)" ]; then
     unalias -m 'll'
@@ -193,7 +218,7 @@ function __fsel_ssh() {
   local fzf_opts
   fzf_opts=$(cat <<-END
 	$fzf_general_opts
-	--border sharp
+	--border none
 	--preview-window="right:60%:nowrap:border-sharp"
   --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
   --prompt="󰒋 SSH  "
@@ -207,18 +232,62 @@ function __fsel_ssh() {
   # List hosts, excluding wildcards and pattern entries
   local hosts
   hosts=$(grep -h '^\s*Host\s' "${all_ssh_configs[@]}" \
-    | awk '$2 !~ /^[*?]/ { print $2 }' \
+    | awk '{ for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) print $i }' \
     | sort -u)
 
   setopt localoptions pipefail no_aliases 2>/dev/null
 
-  FZF_DEFAULT_OPTS="$fzf_opts" \
-    fzf-tmux -p50%,50% -m "$@" <<< "$hosts" \
-    | while read -r item; do
-        echo -n "${(q)item} "
-      done
+  # Outside tmux there is no popup, so let fzf draw its own border again.
+  if [[ -z ${TMUX:-} ]]; then
+    FZF_DEFAULT_OPTS="${fzf_opts/--border none/--border sharp}" \
+      fzf -m "$@" <<< "$hosts" \
+      | while read -r item; do
+          echo -n "${(q)item} "
+        done
+    local ret=$?
+    echo
+    return $ret
+  fi
 
-  local ret=$?
+  # Run fzf in a popup created here rather than via `fzf-tmux -p`.
+  #
+  # fzf-tmux always passes `display-popup -B`, which tells tmux to draw no
+  # border and leaves fzf to draw its own. That border is gone the instant
+  # Ctrl+E's execute() hands the terminal to the editor, so the editor
+  # appeared unframed. Nested popups are not possible (one per client), so
+  # instead tmux owns the border here and it stays put while the editor runs.
+  #
+  # Three things a popup does not get for free:
+  #  * It runs with the tmux *server's* environment, not this shell's, so fzf
+  #    is invoked by absolute path (the server's PATH lacks linuxbrew).
+  #  * Options are passed via a file, because they are multi-line and quoted.
+  #  * FZF_DEFAULT_OPTS is blanked: it is present in the server environment
+  #    and takes precedence over FZF_DEFAULT_OPTS_FILE, which would put
+  #    fzf's own `--border sharp` back and double the frame.
+  local dir
+  dir=$(mktemp -d) || return 1
+
+  print -r -- "$hosts"    > "$dir/hosts"
+  print -r -- "$fzf_opts" > "$dir/opts"
+
+  # `command` so the `tmux` alias (which zsh bakes in at parse time) can't
+  # inject flags into the popup invocation.
+  command tmux display-popup -E -w 50% -h 50% \
+    -b single -S "fg=$nord1" \
+    -e "FZF_DEFAULT_OPTS_FILE=$dir/opts" \
+    -e "FZF_DEFAULT_OPTS=" \
+    "${commands[fzf]} -m < $dir/hosts > $dir/out"
+
+  local ret=0
+  if [[ -s $dir/out ]]; then
+    while IFS= read -r item; do
+      echo -n "${(q)item} "
+    done < "$dir/out"
+  else
+    ret=130   # cancelled
+  fi
+
+  rm -rf -- "$dir"
   echo
   return $ret
 }
@@ -237,9 +306,10 @@ function fzf-ssh() {
   local buffer
   if [[ ${#selected[@]} -gt 1 ]]; then
     # Open first host in a new window, split for the rest, tile once at the end
-    buffer="tmux neww ssh ${selected[1]}"
+    local sshw="$HOME/.ssh/bin/ssh-styled"
+    buffer="tmux neww $sshw ${selected[1]}"
     for host in "${selected[@]:1}"; do
-      buffer+="; tmux splitw ssh $host"
+      buffer+="; tmux splitw $sshw $host"
     done
     buffer+="; tmux select-layout tiled"
   else
@@ -263,10 +333,10 @@ function __fsel_files() {
             --preview='COLORTERM=truecolor bat --style=numbers --color=always {}'
 END
 )
-  export FZF_DEFAULT_OPTS="$fzf_opts"
 
   setopt localoptions pipefail no_aliases 2> /dev/null
-  rg . --files --hidden --no-ignore-vcs | fzf-tmux -p70%,70% -m "$@" | while read item; do
+  rg . --files --hidden --no-ignore-vcs \
+    | FZF_DEFAULT_OPTS="$fzf_opts" fzf-tmux -p70%,70% -m "$@" | while read item; do
     echo -n "${(q)item} "
   done
   local ret=$?
@@ -306,13 +376,13 @@ function __fsel_files_content() {
             --prompt=" CONTENT  "
             --bind "f12:execute-silent:(subl -b {})"
             --bind "change:reload:$RG_DEFAULT_COMMAND {q} || true"
-            --preview "timeout 3s rg -i --pretty --context 2 {q} {}" | cut -d":" -f1,2
+            --preview "timeout 3s rg -i --pretty --context 2 {q} {}"
 END
 )
-  export FZF_DEFAULT_OPTS="$fzf_opts"
 
   setopt localoptions pipefail no_aliases 2> /dev/null
-  rg --files --hidden | fzf-tmux -p70%,70% -m "$@" | while read item; do
+  rg --files --hidden \
+    | FZF_DEFAULT_OPTS="$fzf_opts" fzf-tmux -p70%,70% -m "$@" | while read item; do
     echo -n "${(q)item} "
   done
   local ret=$?
@@ -342,8 +412,12 @@ ZSH_HIGHLIGHT_STYLES[cursor]=underline
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 export NVM_DIR="$HOME/.nvm"
-nvm() {
-  unset -f nvm node npm npx
-  [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-  nvm "$@"
-}
+# Stubs for all four, so running `node` (not just `nvm`) loads nvm on demand
+for _nvm_cmd in nvm node npm npx; do
+  eval "${_nvm_cmd}() {
+    unset -f nvm node npm npx
+    [ -s \"\$NVM_DIR/nvm.sh\" ] && source \"\$NVM_DIR/nvm.sh\"
+    ${_nvm_cmd} \"\$@\"
+  }"
+done
+unset _nvm_cmd
