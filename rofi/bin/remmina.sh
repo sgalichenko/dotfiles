@@ -1,24 +1,34 @@
 #!/usr/bin/env bash
+#
+# Pick a Remmina connection profile with rofi and open it.
 
-kb_start="Control-Return"
+set -uo pipefail
 
-args=(
-    -dmenu
-)
+profile_dir="$HOME/.local/share/remmina"
 
-while true; do
-    server=$(grep '^name=' ~/.local/share/remmina/* | awk -F= '{print $2}' | rofi "${args[@]}" 'Select machine:')
-    file=$(grep -l $server ~/.local/share/remmina/*)
-    rofi_exit=$?
-    if [[ $rofi_exit -eq 1 ]]; then
-        exit
-    fi
+# name=<label> lines map a display name back to the .remmina file holding it.
+mapfile -t names < <(grep -h '^name=' "$profile_dir"/*.remmina 2>/dev/null | cut -d= -f2- | sort -u)
 
-    case "${rofi_exit}" in
-    0) # default
-        remmina -c "$file"
-        exit;
-        ;;
-    esac
+if [[ ${#names[@]} -eq 0 ]]; then
+    rofi -e "No Remmina profiles found in $profile_dir"
+    exit 1
+fi
 
-done
+server=$(printf '%s\n' "${names[@]}" | rofi -dmenu -i -p 'Select machine')
+
+# rofi exits non-zero when cancelled. Check it immediately: the original
+# script read $? after a later grep, so it was testing the wrong command and
+# cancelling the menu re-looped instead of exiting.
+rofi_exit=$?
+[[ $rofi_exit -ne 0 || -z $server ]] && exit 0
+
+# -F matches the name literally and -x requires the whole line, so profile
+# names containing regex characters or being a prefix of another still work.
+file=$(grep -lFx "name=$server" "$profile_dir"/*.remmina 2>/dev/null | head -1)
+
+if [[ -z $file ]]; then
+    rofi -e "No profile file found for '$server'"
+    exit 1
+fi
+
+exec remmina -c "$file"

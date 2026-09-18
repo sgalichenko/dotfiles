@@ -1,9 +1,10 @@
 configuration {
   show-icons: false;
-  font: "RobotoMono Nerd Font 16";
+  font: "RobotoMono Nerd Font 12";
   drun-display-format: "{icon} {name}";
   display-drun: "  ";
   display-combi: "  ";
+  display-gopass: "  ";
   display-window: "  ";
   display-ssh: "  ";
   display-file-browser-extended: "  ";
@@ -13,7 +14,9 @@ configuration {
   scroll-method: 0;
   matching: "fuzzy";
   window-thumbnail: true;
-  /* dpi: 110; */
+  modi: "combi";
+  combi-modi: "window,drun";
+  /* modi: "combi,ssh,gopass:/home/semyon/bin/rofi-gopass-modi"; */
 }
 
 * {
@@ -21,13 +24,10 @@ configuration {
     lines: 10;
     padding: 0;
     margin: 0;
-    spacing: 0;
 
     text-color:                  #ECEFF4;
     foreground:                  #ECEFF4;
     background:                  #2E3440;
-    bordercolor:                 #2E3440;
-    separatorcolor:              #2E3440;
     background-alt:              #3B4252;
     lightbg:                     #534c48;
     nord-blue-light:             #88C0D0;
@@ -44,7 +44,7 @@ configuration {
     selected-active-foreground:  @nord-blue-light;
     alternate-normal-foreground: @foreground;
     alternate-active-background: @background;
-    bordercolor:                 @foreground;
+    bordercolor:                 @foreground;   /* was also set to #2E3440 above; this one won */
     normal-background:           @background;
     selected-normal-background:  @background-alt;
     separatorcolor:              @background;
@@ -59,13 +59,14 @@ configuration {
 window {
     width:      45%;
     height:      45%;
-    transparency: "real";
-    border:     4;
-    text-color: @foreground;
-    background-color: rgba ( 0, 0, 0, 0 % );
-    padding:    5;
+    border:     1;
+    padding:    5px;
     text-color: @bordercolor;
     background-color: @background;
+    /* transparency: "real" removed - it was paired with an
+       rgba(0,0,0,0%) background that a later opaque @background
+       declaration overrode, so it never had any effect. To actually get a
+       translucent window, drop the @background line and restore both. */
 }
 mainbox {
     border:  0;
@@ -167,14 +168,17 @@ scrollbar {
     padding:      0;
 }
 mode-switcher {
-  orientation: horizontal;
-  border-radius: 0px;
-  background-color:	inherit;
-  text-color:	inherit;
-  margin:	10px 5px 5px 5px;
+    /* Hidden outright. With -sidebar-mode this bar renders the current
+       mode's display-* label at the bottom of the window - for combi that
+       is display-combi, U+F061, an arrow. `height: 0px` did not suppress
+       it; `enabled: false` removes the widget from the layout. */
+    enabled: false;
+    border-radius: 0px;
+    background-color: inherit;
+    text-color: inherit;
+    margin: 0px 0px 0px 0px;
+    padding: 0px;
 }
 button {
-  width: 10px;
-  padding:	5px 5px 5px 5px;
-  margin:	0px 0px 0px 0px;
+  width: 15px;
 }
