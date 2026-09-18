@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# ssh wrapper that colours the tmux pane for the duration of the session.
+#
+# The colours still live in ~/.ssh/config as LocalCommand entries (read here
+# via `ssh -G`), but they are applied from this wrapper rather than by ssh
+# itself: with ControlMaster enabled, LocalCommand only fires on the master
+# connection, so multiplexed sessions would otherwise come up unstyled.
+
+set -uo pipefail
+
+# Outside tmux, or with no style for this host, just hand off to ssh.
+if [[ -z ${TMUX_PANE:-} ]]; then
+  exec ssh "$@"
+fi
+
+style=$(ssh -G "$@" 2>/dev/null \
+  | sed -n "s/^localcommand .*'\(bg=[^']*\)'.*/\1/p" | head -1)
+
+if [[ -z $style ]]; then
+  exec ssh "$@"
+fi
+
+old=$(tmux select-pane -g -t "$TMUX_PANE" 2>/dev/null)
+tmux select-pane -P "$style" -t "$TMUX_PANE" 2>/dev/null
+
+# PermitLocalCommand=no so the master connection doesn't style it a second time
+ssh -o PermitLocalCommand=no "$@"
+ret=$?
+
+tmux select-pane -P "${old:-default}" -t "$TMUX_PANE" 2>/dev/null
+exit $ret

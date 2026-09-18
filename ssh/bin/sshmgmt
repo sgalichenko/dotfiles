@@ -17,14 +17,23 @@ action="$1"
 target="$2"
 editor="nvim"
 main="$HOME/.ssh/config"
-#configs=("$main" $(awk '/^Include / {print $2}' "$main"))
+configs=("$main")
 while IFS= read -r inc; do
   for f in $inc; do configs+=("$f"); done
 done < <(awk '/^Include / {print $2}' "$main")
 
-# Find the first config file that matches the target host
+# Find the first config file declaring this exact host name, and the line it's on
+host_line() {
+  awk -v target="$2" '
+    $1 == "Host" {
+      for (i = 2; i <= NF; i++) if ($i == target) { print NR; exit }
+    }' "$1"
+}
+
 for cfg in "${configs[@]}"; do
-  if grep -qE "^Host.*\b$target\b" "$cfg"; then
+  [[ -r $cfg ]] || continue
+  line=$(host_line "$cfg" "$target")
+  if [[ -n $line ]]; then
     config="$cfg"
     break
   fi
@@ -32,11 +41,13 @@ done
 
 [[ -z ${config:-} ]] && { echo "Host '$target' not found."; exit 1; }
 
-line=$(awk -v target="$target" '$1 == "Host" && index($0, target) { print NR; exit }' "$config")
-
+# Read a key from the target Host block only, stopping at the next Host/Match.
 get_val() {
-  local key="$1"
-  sed -n "$line,$ {/$key/{p;q}}" "$config" | awk '{print $2}' | tr -d ' |\n'
+  awk -v start="$line" -v key="$1" '
+    NR < start                                   { next }
+    NR > start && ($1 == "Host" || $1 == "Match") { exit }
+    $1 == key                                    { print $2; exit }
+  ' "$config"
 }
 
 if [[ $action == "edit" ]]; then
@@ -48,6 +59,8 @@ elif [[ $action == "yank" ]]; then
   port=$(get_val Port)
   user=$(get_val User)
   host=$(get_val Hostname)
+  # No explicit Hostname means the Host name itself is the address
+  [[ $host ]] || host="$target"
 
   [[ $id_file ]] && ssh_cmd+="-i $id_file "
   [[ $pjump ]]   && ssh_cmd+="-J $pjump "
