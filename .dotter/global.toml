@@ -1,5 +1,6 @@
 [zsh.files]
 "zsh/.zshrc" = "~/.zshrc"
+"zsh/.zprofile" = "~/.zprofile"
 "zsh/starship.toml" = "~/.config/starship.toml"
 
 [tmux.files]

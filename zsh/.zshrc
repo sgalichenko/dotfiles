@@ -4,9 +4,6 @@ export LC_ALL="en_US.UTF-8"
 export LANG="en_US.UTF-8"
 export LC_TYPE="en_US.UTF-8"
 
-export PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$HOME/go/bin:$HOME/.cargo/bin:$PATH:$HOME/bin/node/bin"
-export GOBIN=~/go/bin/
-
 stty -ixon
 
 # Enable vi mode
