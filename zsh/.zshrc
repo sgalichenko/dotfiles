@@ -232,6 +232,7 @@ function __fsel_ssh() {
     "Ctrl+O"     "new host, copying the current one's settings"
     "Ctrl+R"     "check the host and its jumps respond"
     "Ctrl+X"     "close its shared connection (drops its sessions)"
+    "Alt+I"      "manage Includes: add, remove, edit"
     "Ctrl+G"     "resolved config (ssh -G) / raw block"
     "Ctrl+F"     "cycle preview layout"
     "Ctrl+H"     "hide / show preview"
@@ -260,12 +261,15 @@ function __fsel_ssh() {
     print -r -- " ${d}prefix C-s toggles pane sync in a multi-host window.${r}"
   } > "$dir/help"
 
-  # Only shown when something is off, so the list starts right under it
-  local warn_opts=""
-  if (( ${#missing} )); then
-    warn_opts="--header=\"󰀦 ${#missing} Include path(s) match no file, see ?\" --color=header:$nord3"
-  fi
+  # Spacing under the count, plus a warning when an Include matches nothing.
+  # sshmgmt writes it, so the refresh after Alt+I/Ctrl+O comes out the same.
+  local header_opt
+  header_opt="--header=\"$("$sshmgmt" missing --header)\""
 
+  # The pointer fills both columns fzf allows it, so the gaps around the
+  # checkbox come from the marker's leading space and each row's (see
+  # sshmgmt list).
+  #
   # Ctrl+T/Ctrl+V open a host while the picker stays up. The new window
   # becomes current, so Ctrl+T then Ctrl+V builds a window of several hosts.
   # Ctrl+Y copies a command for every marked host (or the current one).
@@ -278,14 +282,17 @@ function __fsel_ssh() {
 	--ansi
 	--scheme=history
 	--accept-nth=1
-	$warn_opts
+	--marker=" 󰄲"
+	$header_opt
+	--color="header:$nord3"
 	--preview-label="$label_raw"
   --prompt="󰒋 SSH  "
   --bind "ctrl-e:execute(TERM=xterm-256color $sshmgmt edit {1})+reload($sshmgmt list)+refresh-preview"
 	--bind "ctrl-y:execute-silent($sshmgmt yank {+1})+abort"
 	--bind "ctrl-g:transform-preview-label([[ \$FZF_PREVIEW_LABEL == *resolved* ]] && echo '$label_raw' || echo '$label_resolved')+refresh-preview"
 	--bind "?:transform-preview-label([[ \$FZF_PREVIEW_LABEL == *keys* ]] && echo '$label_raw' || echo '$label_help')+show-preview+refresh-preview"
-	--bind "ctrl-o:execute(TERM=xterm-256color $sshmgmt new {1})+reload($sshmgmt list)+refresh-preview"
+	--bind "ctrl-o:execute(TERM=xterm-256color $sshmgmt new {1})+reload($sshmgmt list)+transform-header($sshmgmt missing --header)+refresh-preview"
+	--bind "alt-i:execute(TERM=xterm-256color $sshmgmt includes)+reload($sshmgmt list)+transform-header($sshmgmt missing --header)+refresh-preview"
 	--bind "ctrl-r:show-preview+preview($sshmgmt reach {1})"
 	--bind "ctrl-x:execute(TERM=xterm-256color $sshmgmt close {1})+refresh-preview"
 	--bind "ctrl-t:execute-silent(tmux neww $sshw {1})"
@@ -303,6 +310,7 @@ function __fsel_ssh() {
   # Outside tmux there is no popup, so let fzf draw its own border again.
   if [[ -z ${TMUX:-} ]]; then
     FZF_DEFAULT_OPTS="${fzf_opts/--border none/--border sharp}" \
+    SSHMGMT_FZF_OPTS="$fzf_general_opts" \
       fzf -m "$@" <<< "$hosts" \
       | while read -r item; do
           echo -n "${(q)item} "
@@ -321,13 +329,15 @@ function __fsel_ssh() {
   # appeared unframed. Nested popups are not possible (one per client), so
   # instead tmux owns the border here and it stays put while the editor runs.
   #
-  # Three things a popup does not get for free:
+  # What a popup does not get for free:
   #  * It runs with the tmux *server's* environment, not this shell's, so fzf
   #    is invoked by absolute path (the server's PATH lacks linuxbrew).
   #  * Options are passed via a file, because they are multi-line and quoted.
   #  * FZF_DEFAULT_OPTS is blanked: it is present in the server environment
   #    and takes precedence over FZF_DEFAULT_OPTS_FILE, which would put
   #    fzf's own `--border sharp` back and double the frame.
+  #  * sshmgmt's own pickers (Alt+I, Ctrl+O) get fzf's path and look via
+  #    SSHMGMT_FZF*, as they must not read this picker's options file.
   print -r -- "$hosts"    > "$dir/hosts"
   print -r -- "$fzf_opts" > "$dir/opts"
 
@@ -337,6 +347,8 @@ function __fsel_ssh() {
     -b single -S "fg=$nord1" \
     -e "FZF_DEFAULT_OPTS_FILE=$dir/opts" \
     -e "FZF_DEFAULT_OPTS=" \
+    -e "SSHMGMT_FZF=${commands[fzf]}" \
+    -e "SSHMGMT_FZF_OPTS=$fzf_general_opts --border none --padding 1,2" \
     "${commands[fzf]} -m < $dir/hosts > $dir/out"
 
   local ret=0

@@ -21,7 +21,8 @@ usage() {
   echo -e "${PURPLE}$0 new <host>${NC}         – add a host, copying this one's block"
   echo -e "${PURPLE}$0 reach <host>${NC}       – check the host and its jumps respond"
   echo -e "${PURPLE}$0 close <host>${NC}       – close the host's shared (ControlMaster) connection"
-  echo -e "${PURPLE}$0 missing${NC}            – Include paths that match no file\n"
+  echo -e "${PURPLE}$0 missing [--header]${NC} – Include paths that match no file (--header: as the picker shows it)"
+  echo -e "${PURPLE}$0 includes${NC}           – add, remove and edit the Includes in ~/.ssh/config\n"
   exit 1
 }
 
@@ -136,7 +137,9 @@ list_hosts() {
     | sort -t$'\t' -k1,1gr -k2,2 \
     | awk -F'\t' -v dim='\033[38;5;244m' -v nc="$NC" '
         { name[NR] = $2; addr[NR] = $3; if (length($2) > w) w = length($2) }
-        END { for (i = 1; i <= NR; i++) printf "%-" w "s  %s%s%s\n", name[i], dim, addr[i], nc }'
+        # Leading space: a gap after the picker'\''s pointer and marker, which
+        # fzf caps at two columns each. fzf fields skip it, so {1} is intact.
+        END { for (i = 1; i <= NR; i++) printf " %-" w "s  %s%s%s\n", name[i], dim, addr[i], nc }'
 }
 
 # Aligned, colored rows from "key<TAB>value" lines
@@ -284,12 +287,11 @@ yank_hosts() {
   return 0
 }
 
-# Add a host next to $target, copying its block (jump, user, pane colour…)
-# with the name and address swapped, then open it in the editor. It goes
-# right after that block rather than at the end of the file: in
-# ~/.ssh/config the end is past Host *, whose values would win.
+# Add a host modelled on $target: its block (jump, user, pane colour…) with
+# the name and address swapped, in a file picked from all config files (or a
+# new one, Included on the fly). Then open it in the editor.
 new_host() {
-  local name addr end
+  local name addr dest block pos
   read -rp "New host name (copying $target): " name
   [[ -n $name ]] || return 0
   if [[ ! $name =~ ^[^[:space:]*?!]+$ ]]; then
@@ -300,39 +302,264 @@ new_host() {
   fi
   read -rp "Hostname / IP: " addr
   [[ -n $addr ]] || return 0
+  # Read the template before choosing: a new file adds an Include to
+  # ~/.ssh/config, which shifts its line numbers
+  block=$(awk -v start="$line" -v name="$name" -v addr="$addr" '
+    NR < start { next }
+    NR == start {
+      match($0, /^[[:space:]]*[^[:space:]=]+/)
+      print substr($0, 1, RLENGTH) " " name
+      next
+    }
+    tolower($1) == "host" || tolower($1) == "match" { exit }
+    /^[[:space:]]*(#|$)/ { next }
+    {
+      if (indent == "") { indent = $0; sub(/[^[:space:]].*/, "", indent) }
+      if (tolower($1) == "hostname") {
+        match($0, /^[[:space:]]*[^[:space:]=]+/)
+        body = body substr($0, 1, RLENGTH) " " addr "\n"; has_addr = 1
+      } else body = body $0 "\n"
+    }
+    END {
+      if (!has_addr) printf "%sHostname %s\n", (indent == "" ? "  " : indent), addr
+      printf "%s", body
+    }' "$config")
 
-  # Last setting line of the block; comments after it belong to the next one
-  end=$(awk -v start="$line" '
+  dest=$(choose_file "$name") || return 0
+  [[ -n $dest ]] || return 0
+  # The template's line moved if its own file just gained an Include
+  [[ $dest == "$config" ]] && line=$(locate "$target") && line=${line##*:}
+
+  # Beside the template in its own file; elsewhere, ahead of the first
+  # all-wildcard block (Host *), whose values would otherwise win
+  if [[ $dest == "$config" ]]; then
+    pos=$(block_end "$config" "$line")
+  else
+    pos=$(awk '
+      tolower($1) == "host" {
+        wild = 1
+        for (i = 2; i <= NF; i++) if ($i !~ /[*?]/) wild = 0
+        if (wild) { print last + 0; found = 1; exit }
+      }
+      !/^[[:space:]]*(#|$)/ { last = NR }
+      END { if (!found) print NR + 0 }' "$dest")
+  fi
+  insert_after "$dest" "$pos" "$block"
+  "${EDITOR:-nvim}" "+$(( pos == 0 ? 1 : pos + 2 ))" "$dest"
+}
+
+# Last setting line of the block starting at $2; comments after it belong
+# to the next block
+block_end() {
+  awk -v start="$2" '
     NR <= start { next }
     tolower($1) == "host" || tolower($1) == "match" { exit }
     !/^[[:space:]]*(#|$)/ { last = NR }
-    END { print last + 0 }' "$config")
-  (( end )) || end=$line
+    END { print (last ? last : start) }' "$1"
+}
 
+# Every edit goes through here. The previous version is kept under the
+# state dir rather than beside the file: an Include glob like ssh_config*
+# would read a .bak next to it as live config (and it would clutter repos).
+# Written in place, so a symlinked or group-owned file stays as it is.
+backups="${history%/*}/backups"
+write_file() {
+  local name keep=10
+  if [[ -s $1 ]]; then
+    mkdir -p "$backups" && chmod 700 "$backups"
+    name=$(tilde "$1"); name=${name//\//%}
+    cp -p "$1" "$backups/$name.$(printf '%(%Y%m%d-%H%M%S)T' -1)"
+    # Newest $keep per file
+    ls -1t "$backups/$name".* 2>/dev/null | tail -n +$((keep + 1)) | xargs -r rm -f --
+  fi
+  printf '%s\n' "$2" > "$1"
+}
+
+# Insert text after line $2 of file $1 (0: at the top), blank-line separated.
+insert_after() {
   local updated
-  updated=$(awk -v start="$line" -v end="$end" -v name="$name" -v addr="$addr" '
-    # Keep a blank line between the new block and whatever followed
-    NR == end + 1 && !/^[[:space:]]*$/ { print "" }
+  updated=$(TEXT="$3" awk -v pos="$2" '
+    function put() { if (NR > 1 || pos > 0) print ""; print ENVIRON["TEXT"]; done = 1 }
+    pos == 0 && NR == 1 { put(); if (!/^[[:space:]]*$/) print "" }
+    NR == pos + 1 && pos > 0 && !/^[[:space:]]*$/ { print "" }
     { print }
-    NR == start {
-      match($0, /^[[:space:]]*[^[:space:]=]+/)
-      host_line = substr($0, 1, RLENGTH) " " name
-    }
-    NR > start && NR <= end && !/^[[:space:]]*(#|$)/ {
-      match($0, /^[[:space:]]*[^[:space:]=]+/)
-      if (indent == "") { indent = $0; sub(/[^[:space:]].*/, "", indent) }
-      if (tolower($1) == "hostname") { body = body substr($0, 1, RLENGTH) " " addr "\n"; has_addr = 1 }
-      else body = body $0 "\n"
-    }
-    NR == end {
-      if (indent == "") indent = "  "
-      printf "\n%s\n", host_line
-      if (!has_addr) printf "%sHostname %s\n", indent, addr
-      printf "%s", body
-    }' "$config")
-  # Written in place, so a symlinked or group-owned file stays as it is
-  printf '%s\n' "$updated" > "$config"
-  "${EDITOR:-nvim}" "+$((end + 2))" "$config"
+    NR == pos && pos > 0 { put() }
+    END { if (!done) { if (NR > 0) print ""; print ENVIRON["TEXT"] } }' "$1")
+  write_file "$1" "$updated"
+}
+
+tilde() { printf '%s' "${1/#$HOME/\~}"; }
+host_count() {
+  awk 'tolower($1) == "host" { for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) n++ } END { print n + 0 }' "$1"
+}
+
+# Nested pickers run inside the ssh picker's popup, whose fzf options file
+# must not leak into them; SSHMGMT_FZF_OPTS carries the shared look instead
+fzf_run() {
+  FZF_DEFAULT_OPTS_FILE= FZF_DEFAULT_OPTS="${SSHMGMT_FZF_OPTS-${FZF_DEFAULT_OPTS:-}}" \
+    "${SSHMGMT_FZF:-fzf}" --reverse --ansi "$@"
+}
+
+# Pick the file a new host goes into: the template's first, then the rest,
+# then "+ new file", which is created and Included
+choose_file() {
+  local f n w=0 picked path
+  local -a files=("$config")
+  for f in "${configs[@]}"; do [[ $f == "$config" ]] || files+=("$f"); done
+  for f in "${files[@]}"; do f=$(tilde "$f"); (( ${#f} > w )) && w=${#f}; done
+
+  picked=$(
+    {
+      for f in "${files[@]}"; do
+        n=$(host_count "$f")
+        printf '%s\t%-*s  \033[38;5;244m%s host%s%s\033[0m\n' "$f" "$w" "$(tilde "$f")" \
+          "$n" "$( (( n == 1 )) || echo s)" "$([[ $f == "$config" ]] && echo ", like $target")"
+      done
+      printf '+new\t\033[1;38;5;151m+ new file\033[0m  \033[38;5;244mcreated and Included\033[0m\n'
+    } | fzf_run --delimiter '\t' --with-nth 2 --accept-nth 1 --no-sort \
+          --prompt "File for $1  " --preview-window hidden
+  ) || return 1
+
+  if [[ $picked == +new ]]; then
+    read -erp "New file: " -i "~/.ssh/" path
+    [[ -n $path && $path != "~/.ssh/" ]] || return 1
+    f=${path/#\~/$HOME}; [[ $f == /* ]] || f="$HOME/.ssh/$f"
+    mkdir -p "${f%/*}" && touch "$f" && chmod 600 "$f"
+    include_present "$path" || add_include_line "$path"
+    picked=$f
+  fi
+  printf '%s\n' "$picked"
+}
+
+# --- Includes in ~/.ssh/config: only the top-level ones, before the first
+# Host/Match; an Include inside a block applies to that block alone.
+
+# "<line>\t<patterns>" per top-level Include line
+top_includes() {
+  awk 'tolower($1) == "host" || tolower($1) == "match" { exit }
+       tolower($1) == "include" { sub(/^[[:space:]]*[^[:space:]]+[[:space:]]+/, ""); print NR "\t" $0 }' "$main"
+}
+
+include_present() { top_includes | cut -f2 | grep -qxF -- "$1"; }
+
+# Files a pattern as written (~, relative) matches
+include_files() {
+  local pattern inc
+  local -a patterns
+  read -ra patterns <<< "$1"   # split without globbing
+  for pattern in "${patterns[@]}"; do
+    [[ $pattern == "~/"* ]] && pattern="$HOME/${pattern:2}"
+    [[ $pattern == /* ]]    || pattern="$HOME/.ssh/$pattern"
+    for inc in $pattern; do [[ -r $inc ]] && printf '%s\n' "$inc"; done
+  done
+  return 0
+}
+
+# After the last top-level Include (or at the top): ahead of every Host
+add_include_line() {
+  local last
+  last=$(top_includes | tail -1 | cut -f1)
+  if [[ -n $last ]]; then
+    local updated
+    updated=$(LINE="Include $1" awk -v at="$last" '{ print } NR == at { print ENVIRON["LINE"] }' "$main")
+    write_file "$main" "$updated"
+  else
+    insert_after "$main" 0 "Include $1"
+  fi
+}
+
+include_list() {
+  local n pats w=0 files hosts f
+  local -a rows=()
+  # Shown with ~ so the counts fit; actions go by line number ($n), so the
+  # Include text itself is never rewritten
+  local shown
+  while IFS=$'\t' read -r n pats; do
+    shown=${pats//$HOME\//\~/}
+    (( ${#shown} > w )) && w=${#shown}
+    rows+=("$n"$'\t'"$pats")
+  done < <(top_includes)
+  for row in "${rows[@]}"; do
+    n=${row%%$'\t'*}; pats=${row#*$'\t'}; shown=${pats//$HOME\//\~/}
+    mapfile -t files < <(include_files "$pats")
+    if (( ${#files[@]} == 0 )); then
+      printf '%s\t %-*s  \033[1;38;5;179m%s\033[0m\n' "$n" "$w" "$shown" "matches nothing"
+    else
+      hosts=0; for f in "${files[@]}"; do hosts=$(( hosts + $(host_count "$f") )); done
+      printf '%s\t %-*s  \033[38;5;244m%s file%s, %s host%s\033[0m\n' "$n" "$w" "$shown" \
+        "${#files[@]}" "$( (( ${#files[@]} == 1 )) || echo s)" "$hosts" "$( (( hosts == 1 )) || echo s)"
+    fi
+  done
+}
+
+include_preview() {
+  local pats f
+  pats=$(top_includes | awk -F'\t' -v n="$1" '$1 == n { print $2 }')
+  printf " \n${C_KEY} Include ${NC}${C_META}%s${NC}\n \n" "$pats"
+  local -a files; mapfile -t files < <(include_files "$pats")
+  (( ${#files[@]} )) || { printf "${C_VAL} matches no file yet${NC}\n"; return 0; }
+  for f in "${files[@]}"; do
+    printf "${C_KEY} %s${NC}\n" "$(tilde "$f")"
+    awk 'tolower($1) == "host" { for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) printf "%s ", $i }' "$f" \
+      | fold -s -w 70 | sed "s/^/   /; s/^/$(printf "${C_VAL}")/; s/$/$(printf "${NC}")/"
+    echo
+  done
+}
+
+include_add() {
+  local path files ans
+  read -erp "Include path (globs ok): " -i "~/.ssh/" path
+  [[ -n $path && $path != "~/.ssh/" ]] || return 0
+  if include_present "$path"; then echo "Already included."; sleep 1; return 0; fi
+  files=$(include_files "$path")
+  if [[ -n $files ]] && ! grep -qvxFf <(printf '%s\n' "${configs[@]}") <<< "$files"; then
+    read -rn1 -p "Already read via another Include. Add anyway? [y/N] " ans; echo
+    [[ $ans == [yY] ]] || return 0
+  elif [[ -z $files ]]; then
+    if [[ $path == *[*?]* ]]; then
+      read -rn1 -p "Matches no file yet. Add anyway? [y/N] " ans; echo
+      [[ $ans == [yY] ]] || return 0
+    else
+      read -rn1 -p "No such file. Create it empty? [Y/n] " ans; echo
+      [[ $ans == [nN] ]] && return 0
+      local f=${path/#\~/$HOME}; [[ $f == /* ]] || f="$HOME/.ssh/$f"
+      mkdir -p "${f%/*}" && touch "$f" && chmod 600 "$f"
+    fi
+  fi
+  add_include_line "$path"
+}
+
+include_rm() {
+  local pats ans updated
+  pats=$(top_includes | awk -F'\t' -v n="$1" '$1 == n { print $2 }')
+  [[ -n $pats ]] || return 0
+  read -rn1 -p "Remove 'Include $pats'? Its hosts leave the list, the files stay. [y/N] " ans; echo
+  [[ $ans == [yY] ]] || return 0
+  updated=$(awk -v n="$1" 'NR != n' "$main")
+  write_file "$main" "$updated"
+}
+
+include_edit() {
+  local pats; local -a files
+  pats=$(top_includes | awk -F'\t' -v n="$1" '$1 == n { print $2 }')
+  mapfile -t files < <(include_files "$pats")
+  if (( ${#files[@]} == 0 )); then echo "'$pats' matches no file."; sleep 1; return 0; fi
+  "${EDITOR:-nvim}" "${files[@]}"
+}
+
+includes_ui() {
+  local self; self=$(readlink -f "$0")
+  # Same spacing as the host picker: a blank header line under the count,
+  # and each row indented (include_list)
+  include_list | fzf_run --delimiter '\t' --with-nth 2 --no-sort \
+    --prompt $'\U000f0214 Includes  ' --header ' ' \
+    --preview-label " 󱇨 Enter files  󰜄 Ctrl+O add  󰩺 Ctrl+X remove  󰲶 Ctrl+E line " \
+    --preview "$self include-preview {1}" --preview-window "right:50%:nowrap:border-sharp" \
+    --bind "enter:execute($self include-edit {1})+reload($self include-list)" \
+    --bind "ctrl-o:execute($self include-add)+reload($self include-list)" \
+    --bind "ctrl-x:execute($self include-rm {1})+reload($self include-list)" \
+    --bind "ctrl-e:execute(${EDITOR:-nvim} +{1} $main)+reload($self include-list)" \
+    >/dev/null || true
 }
 
 # One probe: can we reach it, and does login work without prompting? Never
@@ -399,7 +626,25 @@ close_host() {
 
 action=${1:-}
 (( $# )) && shift
-[[ $action == missing ]] && { missing_includes; exit; }
+case $action in
+  missing)
+    # The picker's header: a blank line to set the list off from the count,
+    # then the warning (and another blank line) if anything is missing
+    if [[ ${1:-} == --header ]]; then
+      n=$(missing_includes | wc -l)
+      printf ' \n'
+      (( n == 0 )) || printf '\U000f0026 %s Include path(s) match no file, see ? or Alt+I\n \n' "$n"
+    else
+      missing_includes
+    fi
+    exit ;;
+  includes)        includes_ui; exit ;;
+  include-list)    include_list; exit ;;
+  include-preview) include_preview "$1"; exit ;;
+  include-add)     include_add; exit ;;
+  include-rm)      include_rm "$1"; exit ;;
+  include-edit)    include_edit "$1"; exit ;;
+esac
 [[ $action == list ]] && { list_hosts; exit; }
 view=raw
 [[ $action == show && ${1:-} == -r ]] && { view=resolved; shift; }
