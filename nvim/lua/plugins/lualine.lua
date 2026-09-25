@@ -4,7 +4,8 @@ return {
     opts = {
       options = {
         icons_enabled = true,
-        theme = 'nord',
+        -- follows the colorscheme (nightfox ships a nordfox theme)
+        theme = 'auto',
         component_separators = { left = ' ⏽ ', right = ' ⏽ '},
         section_separators = { left = '', right = ''},
         disabled_filetypes = {},

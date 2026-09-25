@@ -1,6 +1,9 @@
 return {
   "coder/claudecode.nvim",
   dependencies = { "folke/snacks.nvim" },
+  -- Loaded shortly after startup rather than on its keys, so auto_start opens
+  -- the IDE server and a claude in another pane can find this nvim via /ide
+  event = "VeryLazy",
   config = true,
   opts = {
     -- Server Configuration
@@ -38,7 +41,6 @@ return {
     },
   },
   keys = {
-    { "<leader>a", nil, desc = "AI/Claude Code" },
     { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
     { "<leader>af", "<cmd>ClaudeCodeFocus<cr>", desc = "Focus Claude" },
     { "<leader>ar", "<cmd>ClaudeCode --resume<cr>", desc = "Resume Claude" },

@@ -29,8 +29,10 @@ require("lazy").setup({
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
   install = { colorscheme = { "nightfox" } },
-  -- automatically check for plugin updates
-  checker = { enabled = true },
+  -- No plugin here is a luarocks package, so skip lazy's rocks support
+  rocks = { enabled = false },
+  -- Check for plugin updates and say so, but never apply them unasked:
+  -- update with :Lazy update, then commit lazy-lock.json, so a plugin can
+  -- only change when you chose it to
+  checker = { enabled = true, notify = true },
 })
-
-vim.api.nvim_create_autocmd("VimEnter",{callback=function()require"lazy".update({show = false})end})

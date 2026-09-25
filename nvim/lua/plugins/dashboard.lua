@@ -6,9 +6,9 @@ return {
     require('dashboard').setup {
       theme = 'hyper',
       hide = {
-        statusline,       -- hide statusline default is true
-        tabline,          -- hide the tabline
-        winbar           -- hide winbar
+        statusline = true,
+        tabline = true,
+        winbar = true,
       },
       config = {
         packages = { enable = true },
@@ -20,7 +20,7 @@ return {
         shortcut = {
           { desc = '󰊳 Lazy', group = '@property', action = 'Lazy', key = 'l' },
           { desc = '󰭷 Mason', group = '@property', action = 'Mason', key = 'm' },
-          { desc = ' Files', group = '@property', action = 'Telescope find_files', key = 'f' },
+          { desc = ' Files', group = '@property', action = function() Snacks.picker.files() end, key = 'f' },
         },
       },
     }
