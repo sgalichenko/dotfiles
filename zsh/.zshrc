@@ -123,6 +123,7 @@ alias docker='podman'
 # ControlMaster means LocalCommand only fires on the master connection, so
 # the pane colour is applied here instead. `command ssh` bypasses it.
 ssh() { "$HOME/.ssh/bin/ssh-styled" "$@" }
+sshmgmt() { "$HOME/.ssh/bin/sshmgmt" "$@" }
 
 '#'() { cat; }
 
@@ -197,41 +198,105 @@ fzf_general_opts="--border sharp \
                   --no-scrollbar \
                   --reverse \
                   --bind 'ctrl-a:select-all' \
+                  --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up' \
                   --pointer='' \
                   --marker='󰄲 ' \
-                  --bind='?:toggle-preview' \
+                  --bind='ctrl-h:toggle-preview' \
                   --color='bg+:$nord0,border:$nord1,fg:$nord1,info:$nord1,pointer:$nord1,fg+:$nord1,preview-bg:$bgdefault,prompt:$nord2,hl:$nord3,hl+:$nord3,marker:$nord3,label:$nord1,selected-fg:$nord3:bold,selected-bg:$nord0'"
 
 export FZF_DEFAULT_OPTS="$fzf_general_opts"
 
 function __fsel_ssh() {
-  local ssh_config="$HOME/.ssh/config"
+  local sshmgmt="$HOME/.ssh/bin/sshmgmt"
+  local sshw="$HOME/.ssh/bin/ssh-styled"
 
-  local -a all_ssh_configs=("$ssh_config")
-  while IFS= read -r inc; do
-    all_ssh_configs+=( ${~inc}(N) )
-  done < <(awk '/^Include / {print $2}' "$ssh_config")
+  # The preview label doubles as the view state: while it says "resolved"
+  # (Ctrl+G) the preview shows the resolved config, while it says "keys" (?)
+  # the help below, and otherwise the host's raw block.
+  local label_raw="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F  󰢻 Ctrl+G  󰛑 Ctrl+H  󰘥 ? "
+  local label_resolved=" 󰢻 resolved by ssh -G  Ctrl+G raw "
+  local label_help=" 󰘥 keys  ? back "
 
+  local dir
+  dir=$(mktemp -d) || return 1
+
+  local k=$'\e[1;38;5;151m' v=$'\e[1;38;5;73m' d=$'\e[38;5;244m' w=$'\e[1;38;5;179m' r=$'\e[0m'
+  local -a missing=(${(f)"$("$sshmgmt" missing)"})
+  local -a help_keys=(
+    "Enter"      "connect; several marked open one tiled, synced window"
+    "Tab"        "mark host (Ctrl+A marks all)"
+    "Ctrl+T"     "open in a new window, picker stays open"
+    "Ctrl+V"     "open in a split of the current window"
+    "Ctrl+Y"     "copy ssh command (one per marked host)"
+    "Ctrl+E"     "edit the host's config"
+    "Ctrl+O"     "new host, copying the current one's settings"
+    "Ctrl+R"     "check the host and its jumps respond"
+    "Ctrl+X"     "close its shared connection (drops its sessions)"
+    "Ctrl+G"     "resolved config (ssh -G) / raw block"
+    "Ctrl+F"     "cycle preview layout"
+    "Ctrl+H"     "hide / show preview"
+    "Ctrl+D/U"   "scroll half a page"
+    "?"          "this help"
+  )
+  {
+    # First, so it is not cut off below the fold of a short preview
+    if (( ${#missing} )); then
+      print -r -- " "
+      print -r -- " ${w}Include paths matching no file${r} ${d}(their hosts are not listed)${r}"
+      print -r -- " "
+      print -rl -- " ${v}"${^missing}"${r}"
+    fi
+    print -r -- " "
+    print -r -- " ${k}Keys${r}"
+    print -r -- " "
+    printf " ${k}%-9s${r}  ${v}%s${r}\n" "${help_keys[@]}"
+    print -r -- " "
+    print -r -- " ${k}Tips${r}"
+    print -r -- " "
+    print -r -- " ${d}Search matches addresses and instance IDs too.${r}"
+    print -r -- " ${d}Type a group (sp-tsa), Ctrl+A, Enter: all of it, tiled and synced.${r}"
+    print -r -- " ${d}Hosts you use most, recently, are listed first.${r}"
+    print -r -- " ${d}󰌘 connected: a live ControlMaster, connects instantly.${r}"
+    print -r -- " ${d}prefix C-s toggles pane sync in a multi-host window.${r}"
+  } > "$dir/help"
+
+  # Only shown when something is off, so the list starts right under it
+  local warn_opts=""
+  if (( ${#missing} )); then
+    warn_opts="--header=\"󰀦 ${#missing} Include path(s) match no file, see ?\" --color=header:$nord3"
+  fi
+
+  # Ctrl+T/Ctrl+V open a host while the picker stays up. The new window
+  # becomes current, so Ctrl+T then Ctrl+V builds a window of several hosts.
+  # Ctrl+Y copies a command for every marked host (or the current one).
   local fzf_opts
   fzf_opts=$(cat <<-END
 	$fzf_general_opts
 	--border none
 	--padding 1,2
-	--preview-window="right:60%:nowrap:border-sharp"
-  --preview-label="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F "
+	--preview-window="right:50%:nowrap:border-sharp"
+	--ansi
+	--scheme=history
+	--accept-nth=1
+	$warn_opts
+	--preview-label="$label_raw"
   --prompt="󰒋 SSH  "
-  --bind "ctrl-e:execute(TERM=xterm-256color $HOME/.ssh/bin/sshmgmt edit {})+refresh-preview"
-	--bind "ctrl-y:execute-silent($HOME/.ssh/bin/sshmgmt yank {})+abort"
+  --bind "ctrl-e:execute(TERM=xterm-256color $sshmgmt edit {1})+reload($sshmgmt list)+refresh-preview"
+	--bind "ctrl-y:execute-silent($sshmgmt yank {+1})+abort"
+	--bind "ctrl-g:transform-preview-label([[ \$FZF_PREVIEW_LABEL == *resolved* ]] && echo '$label_raw' || echo '$label_resolved')+refresh-preview"
+	--bind "?:transform-preview-label([[ \$FZF_PREVIEW_LABEL == *keys* ]] && echo '$label_raw' || echo '$label_help')+show-preview+refresh-preview"
+	--bind "ctrl-o:execute(TERM=xterm-256color $sshmgmt new {1})+reload($sshmgmt list)+refresh-preview"
+	--bind "ctrl-r:show-preview+preview($sshmgmt reach {1})"
+	--bind "ctrl-x:execute(TERM=xterm-256color $sshmgmt close {1})+refresh-preview"
+	--bind "ctrl-t:execute-silent(tmux neww $sshw {1})"
+	--bind "ctrl-v:execute-silent(tmux splitw $sshw {1} && tmux select-layout tiled)"
 	--bind "ctrl-f:change-preview-window(wrap|down,40%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
-	--preview="awk -v HOST={} -f ~/.ssh/bin/host2conf.awk ${all_ssh_configs[*]}"
+	--preview="if [[ \$FZF_PREVIEW_LABEL == *keys* ]]; then cat $dir/help; elif [[ \$FZF_PREVIEW_LABEL == *resolved* ]]; then $sshmgmt show -r {1}; else $sshmgmt show {1}; fi"
 	END
   )
 
-  # List hosts, excluding wildcards and pattern entries
   local hosts
-  hosts=$(grep -h '^\s*Host\s' "${all_ssh_configs[@]}" \
-    | awk '{ for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) print $i }' \
-    | sort -u)
+  hosts=$("$sshmgmt" list)
 
   setopt localoptions pipefail no_aliases 2>/dev/null
 
@@ -243,6 +308,7 @@ function __fsel_ssh() {
           echo -n "${(q)item} "
         done
     local ret=$?
+    rm -rf -- "$dir"
     echo
     return $ret
   fi
@@ -262,15 +328,12 @@ function __fsel_ssh() {
   #  * FZF_DEFAULT_OPTS is blanked: it is present in the server environment
   #    and takes precedence over FZF_DEFAULT_OPTS_FILE, which would put
   #    fzf's own `--border sharp` back and double the frame.
-  local dir
-  dir=$(mktemp -d) || return 1
-
   print -r -- "$hosts"    > "$dir/hosts"
   print -r -- "$fzf_opts" > "$dir/opts"
 
   # `command` so the `tmux` alias (which zsh bakes in at parse time) can't
   # inject flags into the popup invocation.
-  command tmux display-popup -E -w 50% -h 50% \
+  command tmux display-popup -E -w 60% -h 50% \
     -b single -S "fg=$nord1" \
     -e "FZF_DEFAULT_OPTS_FILE=$dir/opts" \
     -e "FZF_DEFAULT_OPTS=" \
@@ -301,20 +364,13 @@ function fzf-ssh() {
 
   zle push-line
 
-  local buffer
+  # Several hosts: one tiled, synced window (see sshmgmt open), recorded in
+  # history as a short command that can be rerun
   if [[ ${#selected[@]} -gt 1 ]]; then
-    # Open first host in a new window, split for the rest, tile once at the end
-    local sshw="$HOME/.ssh/bin/ssh-styled"
-    buffer="tmux neww $sshw ${selected[1]}"
-    for host in "${selected[@]:1}"; do
-      buffer+="; tmux splitw $sshw $host"
-    done
-    buffer+="; tmux select-layout tiled"
+    BUFFER="sshmgmt open ${selected[*]}"
   else
-    buffer="ssh ${selected[1]}"
+    BUFFER="ssh ${selected[1]}"
   fi
-
-  BUFFER="$buffer"
   zle accept-line
 }
 

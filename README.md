@@ -24,7 +24,7 @@ than a symlink.
 | `zsh`     | `~/.zshrc`, `~/.config/starship.toml`             |
 | `tmux`    | `~/.tmux.conf`, `~/.tmux/ssh_style`               |
 | `wezterm` | `~/.wezterm.lua`                                  |
-| `ssh`     | `~/.ssh/bin/{sshmgmt,host2conf.awk,ssh-styled}`   |
+| `ssh`     | `~/.ssh/bin/{sshmgmt,ssh-styled}`                 |
 | `nvim`    | `~/.config/nvim`                                  |
 | `rofi`    | `~/.config/rofi`, `~/.config/rofi-pass/config`    |
 | `vifm`    | `~/.config/vifm/{vifmrc,vifmimg,vimfm}`           |

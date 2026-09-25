@@ -44,7 +44,6 @@
 # Individual files, not the directory: ~/.ssh/bin also holds .old/.save
 # copies that aren't tracked here, and a dir symlink would hide them.
 "ssh/bin/sshmgmt" = "~/.ssh/bin/sshmgmt"
-"ssh/bin/host2conf.awk" = "~/.ssh/bin/host2conf.awk"
 "ssh/bin/ssh-styled" = "~/.ssh/bin/ssh-styled"
 
 [lazygit.files]

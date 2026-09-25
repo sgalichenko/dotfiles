@@ -1,72 +1,433 @@
 #!/usr/bin/env bash
+# Host lookup for the ssh picker (Ctrl+S in zsh); the one place that knows how
+# ~/.ssh/config and its Includes are laid out.
 set -euo pipefail
 
 # Colors
 BLUE='\033[1;34m'; YELLOW='\033[1;33m'; PURPLE='\033[1;35m'; NC="\033[0m"
+# Nord-flavored, for the preview
+C_KEY='\033[1;38;5;151m'; C_VAL='\033[1;38;5;73m'; C_META='\033[1;38;5;143m'
+C_LIVE='\033[1;38;5;108m'
 
-# Help
-if [[ $# -ne 2 ]]; then
-  echo -e "\n${YELLOW}Please specify an action and a host.${NC}\n"
+usage() {
+  echo -e "\n${YELLOW}Please specify an action.${NC}\n"
   echo -e "${BLUE}Available options:${NC}"
-  echo -e "${PURPLE}$0 yank <host>${NC}  – copy ssh command to clipboard"
-  echo -e "${PURPLE}$0 edit <host>${NC}  – edit host config\n"
+  echo -e "${PURPLE}$0 list${NC}               – list concrete hosts, most used first"
+  echo -e "${PURPLE}$0 record <host>${NC}      – note a connection, for list's ordering"
+  echo -e "${PURPLE}$0 open <host>...${NC}     – open hosts tiled in a new tmux window, panes synced"
+  echo -e "${PURPLE}$0 show [-r] <host>${NC}   – print the host's config block (-r: as resolved by ssh)"
+  echo -e "${PURPLE}$0 yank <host>...${NC}     – copy self-contained ssh commands to clipboard"
+  echo -e "${PURPLE}$0 edit <host>${NC}        – edit host config"
+  echo -e "${PURPLE}$0 new <host>${NC}         – add a host, copying this one's block"
+  echo -e "${PURPLE}$0 reach <host>${NC}       – check the host and its jumps respond"
+  echo -e "${PURPLE}$0 close <host>${NC}       – close the host's shared (ControlMaster) connection"
+  echo -e "${PURPLE}$0 missing${NC}            – Include paths that match no file\n"
+  exit 1
+}
+
+main="$HOME/.ssh/config"
+history="${XDG_STATE_HOME:-$HOME/.local/state}/sshmgmt/history"
+
+# Called by ssh-styled on every connection, so it runs before (and without)
+# the config walk below. One "<epoch> <host>" line per connection.
+if [[ ${1:-} == record && $# -eq 2 ]]; then
+  mkdir -p "${history%/*}"
+  printf '%(%s)T %s\n' -1 "$2" >> "$history"
+  # Keep it bounded; old visits barely count towards the ordering anyway
+  if (( $(wc -l < "$history") > 5000 )); then
+    tail -n 2000 "$history" > "$history.tmp" && mv -f "$history.tmp" "$history"
+  fi
   exit 0
 fi
 
-action="$1"
-target="$2"
-editor="nvim"
-main="$HOME/.ssh/config"
-configs=("$main")
-while IFS= read -r inc; do
-  for f in $inc; do configs+=("$f"); done
-done < <(awk '/^Include / {print $2}' "$main")
+# Several hosts tiled in one new window, with typing mirrored to all of them
+# (prefix C-s toggles that). Also needs no config walk.
+if [[ ${1:-} == open && $# -ge 2 ]]; then
+  shift
+  sshw="$HOME/.ssh/bin/ssh-styled"
+  if [[ -z ${TMUX:-} ]]; then
+    (( $# == 1 )) && exec "$sshw" "$1"
+    echo "Opening several hosts needs tmux." >&2
+    exit 1
+  fi
+  win=$(tmux neww -P -F '#{window_id}' "$sshw $(printf %q "$1")")
+  shift
+  for h; do
+    tmux splitw -t "$win" "$sshw $(printf %q "$h")"
+    # Re-tile after every split, or later splits run out of room
+    tmux select-layout -t "$win" tiled
+  done
+  (( $# )) && tmux setw -t "$win" synchronize-panes on
+  exit 0
+fi
 
-# Find the first config file declaring this exact host name, and the line it's on
-host_line() {
-  awk -v target="$2" '
-    $1 == "Host" {
-      for (i = 2; i <= NF; i++) if ($i == target) { print NR; exit }
-    }' "$1"
+# Print a config file followed by everything it Includes, recursively. ssh
+# resolves relative Include paths against ~/.ssh and expands globs; a glob
+# that matches nothing is left literal here and dropped by the -r test.
+include_patterns() {
+  local pattern
+  while IFS= read -r pattern; do
+    [[ $pattern == "~/"* ]] && pattern="$HOME/${pattern:2}"
+    [[ $pattern == /* ]]    || pattern="$HOME/.ssh/$pattern"
+    printf '%s\n' "$pattern"
+  done < <(awk 'tolower($1) == "include" { for (i = 2; i <= NF; i++) print $i }' "$1")
 }
 
-for cfg in "${configs[@]}"; do
-  [[ -r $cfg ]] || continue
-  line=$(host_line "$cfg" "$target")
-  if [[ -n $line ]]; then
-    config="$cfg"
-    break
+config_files() {
+  local file=$1 depth=${2:-0} pattern inc
+  [[ -r $file ]] && (( depth < 16 )) || return 0
+  printf '%s\n' "$file"
+  while IFS= read -r pattern; do
+    for inc in $pattern; do config_files "$inc" $((depth + 1)); done
+  done < <(include_patterns "$file")
+}
+
+mapfile -t configs < <(config_files "$main" | awk '!seen[$0]++')
+
+# Include patterns matching no readable file: hosts from an uncloned repo or
+# a moved file drop out of the list silently otherwise
+missing_includes() {
+  local file pattern inc found
+  for file in "${configs[@]}"; do
+    while IFS= read -r pattern; do
+      found=0
+      for inc in $pattern; do [[ -r $inc ]] && found=1; done
+      (( found )) || printf '%s\n' "$pattern"
+    done < <(include_patterns "$file")
+  done
+}
+
+# "<file>:<line>" of the first Host line naming exactly this host
+locate() {
+  awk -v target="$1" '
+    tolower($1) == "host" {
+      for (i = 2; i <= NF; i++) if ($i == target) { print FILENAME ":" FNR; exit }
+    }' "${configs[@]}"
+}
+
+# Hosts that can be picked directly (wildcard and negated patterns skipped),
+# as "alias  hostname" so the picker can match on addresses too. Ordered by
+# frecency: every recorded visit counts, recent ones for more; hosts never
+# visited follow alphabetically.
+list_hosts() {
+  local -a files=("${configs[@]}")
+  [[ -r $history ]] && files=("$history" "${files[@]}")
+
+  awk -v hist="$history" -v now="$(printf '%(%s)T' -1)" '
+    FILENAME == hist {
+      age = now - $1
+      score[$2] += age < 3600 ? 4 : age < 86400 ? 2 : age < 604800 ? 1 : 0.25
+      next
+    }
+    FNR == 1 { cur = "" }
+    tolower($1) == "host" || tolower($1) == "match" {
+      cur = ""
+      if (tolower($1) == "host")
+        for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) { cur = cur " " $i; seen[$i] = 1 }
+      next
+    }
+    # First Hostname wins, as in ssh itself
+    tolower($1) == "hostname" && cur != "" {
+      m = split(cur, names, " ")
+      for (j = 1; j <= m; j++) if (!(names[j] in addr)) addr[names[j]] = $2
+    }
+    END { for (h in seen) printf "%s\t%s\t%s\n", score[h] + 0, h, addr[h] }
+  ' "${files[@]}" \
+    | sort -t$'\t' -k1,1gr -k2,2 \
+    | awk -F'\t' -v dim='\033[38;5;244m' -v nc="$NC" '
+        { name[NR] = $2; addr[NR] = $3; if (length($2) > w) w = length($2) }
+        END { for (i = 1; i <= NR; i++) printf "%-" w "s  %s%s%s\n", name[i], dim, addr[i], nc }'
+}
+
+# Aligned, colored rows from "key<TAB>value" lines
+align() {
+  awk -F'\t' -v ck="$C_KEY" -v cv="$C_VAL" -v nc="$NC" '
+    BEGIN { n = w = 0 }
+    { keys[n] = $1; vals[n] = $2; n++; if (length($1) > w) w = length($1) }
+    END { for (i = 0; i < n; i++) printf "%s %-" w "s %s %s%s%s\n", ck, keys[i], nc, cv, vals[i], nc }'
+}
+
+# Heading for the preview, plus whether a ControlMaster connection is up
+# (those connect instantly, for as long as ControlPersist keeps them)
+preview_header() {
+  printf " \n${C_KEY} %s ${NC}${C_META}%s${NC}\n" "$1" "$2"
+  if ssh -O check "$target" 2>/dev/null; then
+    printf "${C_LIVE} 󰌘 connected${NC}\n"
   fi
+  printf " \n"
+}
+
+# The host's own block, without blank lines and comments
+show_host() {
+  preview_header "Defined in" "$config"
+  awk -v start="$line" '
+    FNR <= start || /^[[:space:]]*(#|$)/ { next }
+    tolower($1) == "host" || tolower($1) == "match" { exit }
+    {
+      key = $1
+      val = substr($0, index($0, key) + length(key))
+      sub(/^[ \t=]+/, "", val)
+      print key "\t" val
+    }
+  ' "$config" | align
+}
+
+# What ssh will actually use: where to connect, then everything this config
+# changes from a system-config-only run (so Host * and Match show up too),
+# with the jump chain spelled out. Long values (algorithm lists) are cut.
+show_resolved() {
+  local jump chain=""
+  preview_header "Resolved by" "ssh -G"
+  jump=$(resolved "$target" | field proxyjump)
+  if [[ -n $jump && $jump != none ]]; then
+    chain=$(resolve_jumps "$jump" 0 | awk '!seen[$0]++' | paste -sd' ' | sed 's/ / → /g')
+  fi
+  awk -v chain="$chain" '
+    function row(k, v) {
+      if (length(v) > 60) v = substr(v, 1, 59) "…"
+      print k "\t" v
+      if (k == "proxyjump" && chain != "") print "\t↳ " chain
+    }
+    NR == FNR { base[$0] = 1; next }
+    { key = $1; val = $0; sub(/^[^ ]+ /, "", val) }
+    key == "user" || key == "hostname" || key == "port" { row(key, val); next }
+    !($0 in base) && key != "host" { rest[n++] = key "\t" val }
+    END { for (i = 0; i < n; i++) { split(rest[i], kv, "\t"); row(kv[1], kv[2]) } }
+  ' <(ssh -G -F /etc/ssh/ssh_config "$target" 2>/dev/null) <(resolved "$target") | align
+}
+
+# Fully resolved settings, Host * and Match included, as "key value" lines
+resolved() { ssh -G "$@" 2>/dev/null; }
+field() { awk -v k="$1" '$1 == k { sub(/^[^ ]+ /, ""); print }'; }
+
+# A ProxyJump hop as user@address[:port]. Hops that are themselves behind a
+# jump come out with their own chain first, since -J takes the whole path.
+resolve_hop() {
+  local hop=$1 depth=$2 user="" port="" cfg addr p j
+  (( depth < 8 )) || return 0
+  [[ $hop == *@* ]] && { user=${hop%%@*}; hop=${hop#*@}; }
+  [[ $hop == *:* ]] && { port=${hop##*:}; hop=${hop%:*}; }
+  cfg=$(resolved ${user:+-l "$user"} ${port:+-p "$port"} "$hop")
+
+  j=$(field proxyjump <<< "$cfg")
+  [[ -n $j && $j != none ]] && resolve_jumps "$j" $((depth + 1))
+
+  addr="$(field user <<< "$cfg")@$(field hostname <<< "$cfg")"
+  p=$(field port <<< "$cfg")
+  [[ $p == 22 ]] || addr+=":$p"
+  printf '%s\n' "$addr"
+}
+
+resolve_jumps() {
+  local hop
+  IFS=, read -ra hops <<< "$1"
+  for hop in "${hops[@]}"; do resolve_hop "$hop" "$2"; done
+}
+
+# Single-quote for pasting into a shell
+squote() { local s=${1//\'/\'\\\'\'}; printf "'%s'" "$s"; }
+
+# ssh's built-in identity list, which -G reports when none is configured
+DEFAULT_IDS="~/.ssh/id_rsa ~/.ssh/id_ecdsa ~/.ssh/id_ecdsa_sk ~/.ssh/id_ed25519 ~/.ssh/id_ed25519_sk ~/.ssh/id_xmss ~/.ssh/id_dsa"
+
+# An ssh command that works without this config: every value is taken from
+# the resolved config, and jump hosts are spelled out as addresses.
+yank_cmd() {
+  local cfg ids id pkcs proxy jump port cmd="ssh"
+  cfg=$(resolved "$1")
+
+  pkcs=$(field pkcs11provider <<< "$cfg")
+  [[ -n $pkcs && $pkcs != none ]] && cmd+=" -I $pkcs"
+
+  ids=$(field identityfile <<< "$cfg" | paste -sd' ')
+  if [[ -n $ids && $ids != "$DEFAULT_IDS" ]]; then
+    for id in $ids; do cmd+=" -i $id"; done
+  fi
+
+  # Tunnels (e.g. EC2 Instance Connect) can't be spelled as flags; pass as-is
+  proxy=$(field proxycommand <<< "$cfg")
+  [[ -n $proxy && $proxy != none ]] && cmd+=" -o $(squote "ProxyCommand=$proxy")"
+
+  jump=$(field proxyjump <<< "$cfg")
+  if [[ -n $jump && $jump != none ]]; then
+    cmd+=" -J $(resolve_jumps "$jump" 0 | awk '!seen[$0]++' | paste -sd,)"
+  fi
+
+  port=$(field port <<< "$cfg")
+  [[ $port == 22 ]] || cmd+=" -p $port"
+
+  printf '%s\n' "$cmd $(field user <<< "$cfg")@$(field hostname <<< "$cfg")"
+}
+
+# Inside tmux the buffer goes out as OSC 52 (set-clipboard is on), which
+# also reaches the local clipboard over ssh and needs no X11 tool.
+copy() {
+  if [[ -n ${TMUX:-} ]]; then
+    tmux load-buffer -w -
+  elif [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v wl-copy >/dev/null; then
+    wl-copy
+  else
+    xsel -ib
+  fi
+}
+
+# One command per line for several hosts
+yank_hosts() {
+  local out="" h
+  for h; do out+=$(yank_cmd "$h")$'\n'; done
+  out=${out%$'\n'}
+  printf '%s' "$out" | copy
+  if [[ -n ${TMUX:-} ]]; then
+    if (( $# == 1 )); then tmux display-message "Copied: $out"
+    else tmux display-message "Copied $# ssh commands"; fi
+  fi
+  return 0
+}
+
+# Add a host next to $target, copying its block (jump, user, pane colour…)
+# with the name and address swapped, then open it in the editor. It goes
+# right after that block rather than at the end of the file: in
+# ~/.ssh/config the end is past Host *, whose values would win.
+new_host() {
+  local name addr end
+  read -rp "New host name (copying $target): " name
+  [[ -n $name ]] || return 0
+  if [[ ! $name =~ ^[^[:space:]*?!]+$ ]]; then
+    echo "'$name' is not a plain host name."; sleep 1.5; return 1
+  fi
+  if [[ -n $(locate "$name") ]]; then
+    echo "'$name' already exists."; sleep 1.5; return 1
+  fi
+  read -rp "Hostname / IP: " addr
+  [[ -n $addr ]] || return 0
+
+  # Last setting line of the block; comments after it belong to the next one
+  end=$(awk -v start="$line" '
+    NR <= start { next }
+    tolower($1) == "host" || tolower($1) == "match" { exit }
+    !/^[[:space:]]*(#|$)/ { last = NR }
+    END { print last + 0 }' "$config")
+  (( end )) || end=$line
+
+  local updated
+  updated=$(awk -v start="$line" -v end="$end" -v name="$name" -v addr="$addr" '
+    # Keep a blank line between the new block and whatever followed
+    NR == end + 1 && !/^[[:space:]]*$/ { print "" }
+    { print }
+    NR == start {
+      match($0, /^[[:space:]]*[^[:space:]=]+/)
+      host_line = substr($0, 1, RLENGTH) " " name
+    }
+    NR > start && NR <= end && !/^[[:space:]]*(#|$)/ {
+      match($0, /^[[:space:]]*[^[:space:]=]+/)
+      if (indent == "") { indent = $0; sub(/[^[:space:]].*/, "", indent) }
+      if (tolower($1) == "hostname") { body = body substr($0, 1, RLENGTH) " " addr "\n"; has_addr = 1 }
+      else body = body $0 "\n"
+    }
+    NR == end {
+      if (indent == "") indent = "  "
+      printf "\n%s\n", host_line
+      if (!has_addr) printf "%sHostname %s\n", indent, addr
+      printf "%s", body
+    }' "$config")
+  # Written in place, so a symlinked or group-owned file stays as it is
+  printf '%s\n' "$updated" > "$config"
+  "${EDITOR:-nvim}" "+$((end + 2))" "$config"
+}
+
+# One probe: can we reach it, and does login work without prompting? Never
+# prompts (so no token PIN), reuses a live master but starts none, and skips
+# the LocalCommand pane colouring.
+probe() {
+  local err rc=0
+  err=$(timeout 10 ssh -n -o BatchMode=yes -o ConnectTimeout=5 \
+    -o ControlMaster=no -o PermitLocalCommand=no "$@" true 2>&1 >/dev/null) || rc=$?
+  case $rc:$err in
+    0:*)                       echo "ok reachable, login works" ;;
+    *"Permission denied"*)     echo "ok reachable, login needs the token/PIN" ;;
+    *"Host key verification"*) echo "ok reachable, host key not trusted yet" ;;
+    124:*|*"timed out"*)       echo "fail timed out" ;;
+    *"Could not resolve"*)     echo "fail name does not resolve" ;;
+    *"Connection refused"*)    echo "fail connection refused" ;;
+    *"No route to host"*)      echo "fail no route to host" ;;
+    *)                         echo "fail ${err##*$'\n'}" ;;
+  esac
+}
+
+# Each jump in turn, then the host, so a dead jump is told from a dead host
+reach_host() {
+  local jump hop user port verdict failed=0 w
+  printf " \n${C_KEY} Reachability ${NC}\n \n"
+  jump=$(resolved "$target" | field proxyjump)
+  local -a hops=()
+  [[ -n $jump && $jump != none ]] && IFS=, read -ra hops <<< "$jump"
+  w=${#target}; for hop in "${hops[@]}"; do (( ${#hop} + 7 > w )) && w=$(( ${#hop} + 7 )); done
+
+  row() {
+    local mark=$'\033[1;38;5;108m\u2713' text=${2#* }
+    [[ $2 == fail* ]] && mark=$'\033[1;38;5;174m\u2717'
+    [[ $2 == skip* ]] && mark=$'\033[38;5;244m\u2013'
+    printf "${C_KEY} %-${w}s ${NC} %s ${C_VAL}%s${NC}\n" "$1" "$mark" "$text"
+  }
+
+  for hop in "${hops[@]}"; do
+    user=""; port=""
+    [[ $hop == *@* ]] && { user=${hop%%@*}; hop=${hop#*@}; }
+    [[ $hop == *:* ]] && { port=${hop##*:}; hop=${hop%:*}; }
+    verdict=$(probe ${user:+-l "$user"} ${port:+-p "$port"} "$hop")
+    row "$hop (jump)" "$verdict"
+    [[ $verdict == fail* ]] && failed=1
+  done
+  if (( failed )); then row "$target" "skip not tried, a jump failed"
+  else row "$target" "$(probe "$target")"; fi
+}
+
+# Tear down the shared connection, e.g. a stale one after the VPN dropped.
+# Every session multiplexed over it goes too, hence the question.
+close_host() {
+  if ! ssh -O check "$target" 2>/dev/null; then
+    echo "No open connection to $target."; sleep 1; return 0
+  fi
+  local ans
+  read -rn1 -p "Close the shared connection to $target? Sessions using it drop too. [y/N] " ans
+  echo
+  [[ $ans == [yY] ]] || return 0
+  ssh -O exit "$target" 2>/dev/null
+  [[ -n ${TMUX:-} ]] && tmux display-message "Closed the connection to $target"
+  return 0
+}
+
+action=${1:-}
+(( $# )) && shift
+[[ $action == missing ]] && { missing_includes; exit; }
+[[ $action == list ]] && { list_hosts; exit; }
+view=raw
+[[ $action == show && ${1:-} == -r ]] && { view=resolved; shift; }
+(( $# )) || usage
+
+# Trimmed, since fzf field placeholders can carry the column padding
+hosts=()
+for h; do
+  h=${h%%[[:space:]]*}
+  [[ -n $(locate "$h") ]] || { echo "Host '$h' not found."; exit 1; }
+  hosts+=("$h")
 done
 
-[[ -z ${config:-} ]] && { echo "Host '$target' not found."; exit 1; }
-
-# Read a key from the target Host block only, stopping at the next Host/Match.
-get_val() {
-  awk -v start="$line" -v key="$1" '
-    NR < start                                   { next }
-    NR > start && ($1 == "Host" || $1 == "Match") { exit }
-    $1 == key                                    { print $2; exit }
-  ' "$config"
-}
-
-if [[ $action == "edit" ]]; then
-  "$editor" "+$line" "$config"
-elif [[ $action == "yank" ]]; then
-  ssh_cmd="ssh "
-  id_file=$(get_val IdentityFile)
-  pjump=$(get_val ProxyJump)
-  port=$(get_val Port)
-  user=$(get_val User)
-  host=$(get_val Hostname)
-  # No explicit Hostname means the Host name itself is the address
-  [[ $host ]] || host="$target"
-
-  [[ $id_file ]] && ssh_cmd+="-i $id_file "
-  [[ $pjump ]]   && ssh_cmd+="-J $pjump "
-  [[ $port ]]    && ssh_cmd+="-p $port "
-  [[ $user ]]    && ssh_cmd+="$user@"
-  [[ $host ]]    && ssh_cmd+="$host"
-
-  echo -n "$ssh_cmd" | xsel -ib
-fi
+case $action in
+  show|edit|new|reach|close)
+    (( ${#hosts[@]} == 1 )) || usage
+    target=${hosts[0]}
+    loc=$(locate "$target")
+    config=${loc%:*}
+    line=${loc##*:}
+    case $action in
+      edit)  "${EDITOR:-nvim}" "+$line" "$config" ;;
+      new)   new_host ;;
+      reach) reach_host ;;
+      close) close_host ;;
+      show)  if [[ $view == resolved ]]; then show_resolved; else show_host; fi ;;
+    esac
+    ;;
+  yank) yank_hosts "${hosts[@]}" ;;
+  *)    usage ;;
+esac

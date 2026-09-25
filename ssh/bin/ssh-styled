@@ -8,13 +8,18 @@
 
 set -uo pipefail
 
+resolved=$(ssh -G "$@" 2>/dev/null)
+
+# Feed the picker's recent-first ordering (see sshmgmt list)
+host=$(awk '$1 == "host" { print $2; exit }' <<< "$resolved")
+[[ -n $host ]] && "$HOME/.ssh/bin/sshmgmt" record "$host" 2>/dev/null
+
 # Outside tmux, or with no style for this host, just hand off to ssh.
 if [[ -z ${TMUX_PANE:-} ]]; then
   exec ssh "$@"
 fi
 
-style=$(ssh -G "$@" 2>/dev/null \
-  | sed -n "s/^localcommand .*'\(bg=[^']*\)'.*/\1/p" | head -1)
+style=$(sed -n "s/^localcommand .*'\(bg=[^']*\)'.*/\1/p" <<< "$resolved" | head -1)
 
 if [[ -z $style ]]; then
   exec ssh "$@"
