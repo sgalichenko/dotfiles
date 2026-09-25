@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+#
+# This is a wrapper script for managing passwords with gopass via rofi
+#
+# Semyon Galichenko 18.12.2024
+
+set -uo pipefail
+
+export PATH="$PATH:/usr/bin:$HOME/go/bin"
+export EDITOR="nvim"
+bin="/usr/bin"
+
+rofirun() {
+  local opts="-dmenu -i -async-pre-read -matching fuzzy -sidebar-mode \
+              -no-levenshtein-sort -normal-window"
+  local extra_opts="${*:1}"
+  eval "$bin/rofi $keys $opts $extra_opts"
+}
+
+wezrun() {
+  local wezconf="$HOME/.wezterm.minimal.lua"
+  "$bin/wezterm" --config-file "$wezconf" start -- "${@:1}"
+}
+
+compile_kb_list() {
+  keybindings=""
+  for key in "${!kb_custom[@]}"; do
+    keybindings+="$(echo -ne "$key  ${kb_custom[$key]}|\n" | \
+                    cut -d ' ' -f2-)"
+  done
+  for key in "${!kb_defined[@]}"; do
+    if [[ "${kb_defined[$key]}" != "None" ]]; then
+      keybindings+="$(echo -ne "$key  ${kb_defined[$key]}|\n" | \
+                      cut -d ' ' -f2-)"
+    fi
+  done
+  echo "${keybindings::-1}"
+}
+
+declare -A kb_custom
+kb_custom["1 Alt+c"]="Copy password"
+kb_custom["2 Alt+e"]="Edit password"
+kb_custom["3 Alt+s"]="Show password"
+kb_custom["4 Alt+q"]="Generate QR code"
+kb_custom["5 Alt+n"]="Create a new password"
+kb_custom["6 Alt+x"]="Remove password"
+kb_custom["7 Alt+g"]="Generate a new password"
+kb_custom["8 Alt+i"]="Insert a new password (multiline)"
+kb_custom["9 Alt+h"]="Show keybindings"
+
+declare -A kb_defined
+kb_defined["element-next \"\""]="None"
+kb_defined["row-select Tab"]="Completion"
+kb_defined["clear-line Alt+w"]="Clear line"
+kb_defined["remove-word-back Control+w"]="Remove word back"
+
+keys=""
+for key in "${!kb_custom[@]}"; do
+  keys+=$(echo -ne "-kb-custom-$key " | tr -d "\n")
+done
+for key in "${!kb_defined[@]}"; do
+  keys+=$(echo -ne "-kb-$key " | tr -d "\n")
+done
+
+selection=$(gopass ls --flat | sed -r 's/\//  /g' | rofirun)
+retv="$?"
+set -e
+
+selection=$(echo "$selection" | sed -r 's/  /\//g')
+case "$retv" in
+  # -kb-custom-2 (exit code: 11) Alt+e
+  11) wezrun gopass edit -c "$selection" && "$0" ;;
+  # -kb-custom-3 (exit code: 12) Alt+s
+  12) wezrun sh -c "gopass show \"$selection\" && sleep infinity" ;;
+  # -kb-custom-4 (exit code: 13) Alt+q
+  13) gopass show -o "$selection" | \
+      qrencode -d 200 -k -v 1 --size=10 -l H --foreground=2e3440 -o - | \
+      feh -x --class qrcode - ;;
+  # -kb-custom-5 (exit code: 14) Alt+n
+  14) wezrun gopass generate && "$0" ;;
+  # -kb-custom-6 (exit code: 15) Alt+x
+  15) wezrun gopass -y rm "$selection" && "$0" ;;
+  # -kb-custom-7 (exit code: 16) Alt+g
+  16) wezrun sh -c "pwgen -N 1 16 | gopass insert \"$selection\" && \"$0\"" ;;
+  # -kb-custom-8 (exit code: 17) Alt+i
+  17) wezrun gopass insert -m "$selection" && "$0" ;;
+  # -kb-custom-9 (exit code: 18) Alt+h
+  18) compile_kb_list | rofirun "-sep '|' -eh 1" ;;
+  # -kb-custom-1 (exit code: 10) Alt+c / Enter
+  10|*) gopass show -o "$selection" | head -1 | xsel -ib ;;
+esac

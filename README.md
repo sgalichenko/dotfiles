@@ -23,13 +23,14 @@ than a symlink.
 |-----------|---------------------------------------------------|
 | `zsh`     | `~/.zshrc`, `~/.config/starship.toml`             |
 | `tmux`    | `~/.tmux.conf`, `~/.tmux/ssh_style`               |
-| `wezterm` | `~/.wezterm.lua`                                  |
+| `wezterm` | `~/.wezterm.lua`, `~/.wezterm.minimal.lua`        |
 | `ssh`     | `~/.ssh/bin/{sshmgmt,ssh-styled}`                 |
 | `nvim`    | `~/.config/nvim`                                  |
 | `rofi`    | `~/.config/rofi`, `~/.config/rofi-pass/config`    |
 | `vifm`    | `~/.config/vifm/{vifmrc,vifmimg,vimfm}`           |
 | `lazygit` | `~/.config/lazygit/config.yml`                    |
 | `fzf`     | `~/.fzf.zsh`                                      |
+| `bin`     | `~/bin/{rofi-gopass,rofi-gopass-modi,ddcswitch}`  |
 | `firefox` | *not deployed* — see below                        |
 
 `.dotter/local.toml` is gitignored: it selects which of the above apply to the

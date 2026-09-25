@@ -39,6 +39,16 @@
 
 [wezterm.files]
 "wezterm/.wezterm.lua" = "~/.wezterm.lua"
+# The small terminal bin/rofi-gopass opens for editing and showing entries
+"wezterm/.wezterm.minimal.lua" = "~/.wezterm.minimal.lua"
+
+[bin.files]
+# Individual files, not the directory: ~/bin also holds tools that aren't
+# tracked here. GNOME's custom shortcuts call these by their ~/bin paths
+# (Alt+p rofi-gopass, Super+m ddcswitch).
+"bin/rofi-gopass" = "~/bin/rofi-gopass"
+"bin/rofi-gopass-modi" = "~/bin/rofi-gopass-modi"
+"bin/ddcswitch" = "~/bin/ddcswitch"
 
 [ssh.files]
 # Individual files, not the directory: ~/.ssh/bin also holds .old/.save
