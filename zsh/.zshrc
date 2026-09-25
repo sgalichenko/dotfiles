@@ -333,8 +333,8 @@ function __fsel_ssh() {
   #  * It runs with the tmux *server's* environment, not this shell's, so fzf
   #    is invoked by absolute path (the server's PATH lacks linuxbrew).
   #  * Options are passed via a file, because they are multi-line and quoted.
-  #  * FZF_DEFAULT_OPTS is blanked: it is present in the server environment
-  #    and takes precedence over FZF_DEFAULT_OPTS_FILE, which would put
+  #  * FZF_DEFAULT_OPTS is blanked: a server started from a shell inherits it,
+  #    and it takes precedence over FZF_DEFAULT_OPTS_FILE, which would put
   #    fzf's own `--border sharp` back and double the frame.
   #  * sshmgmt's own pickers (Alt+I, Ctrl+O) get fzf's path and look via
   #    SSHMGMT_FZF*, as they must not read this picker's options file.
