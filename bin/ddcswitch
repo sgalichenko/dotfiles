@@ -1,27 +1,41 @@
 #!/usr/bin/env bash
-# Hands the Dell U2723QX over to the other computer (Super+m in GNOME).
-#
-# Only switches one way: this laptop is on HDMI-1 (0x11), the other machine
-# on USB-C (0x1b; ddcutil lists it as "Unrecognized value"). The monitor's
-# KVM takes the keyboard along with the input, so switching back is done
-# from the other machine or the monitor's buttons, never from here.
+# Toggles the Dell U2723QX between its HDMI-1 (0x11) and USB-C (0x1b; ddcutil
+# lists it as "Unrecognized value") inputs (Super+m in GNOME). Used from both
+# laptops, one on each input.
 
 set -o nounset
 
 # Talk to the monitor's I2C bus directly: without --bus ddcutil probes every
 # display first, the laptop panel included, which adds about a second.
-# The bus number changes with replugging, so look it up from the connector.
+# The connector differs per laptop (HDMI-A-1 here, a DP one over USB-C) and
+# the bus number changes with replugging, so find the Dell by its EDID.
 bus_args=()
-for ddc in /sys/class/drm/card*-HDMI-A-1/ddc; do
-  [[ -e $ddc ]] || continue
-  bus=$(basename "$(readlink "$ddc")")
+for conn in /sys/class/drm/card*-*; do
+  [[ -e $conn/ddc ]] && grep -qa U2723QX "$conn/edid" 2>/dev/null || continue
+  bus=$(basename "$(readlink "$conn/ddc")")
   bus_args=(--bus "${bus#i2c-}")
 done
 
-# --noverify: no read-back after the switch, when the monitor may already be
-# busy changing input. GNOME runs this without a terminal, so report failures
-# as a notification.
-if ! err=$(ddcutil "${bus_args[@]}" --noverify setvcp 60 0x1b 2>&1); then
-  notify-send -i video-display "ddcswitch failed" "$err"
+# The i2c buses get renumbered when i915 re-creates them (resume, replug),
+# and the connector's link can briefly name a bus with no monitor on it
+# ("No monitor detected on bus /dev/i2c-5"). Fall back to letting ddcutil
+# find the monitor itself, slower but not tied to a bus number.
+ddc() { ddcutil "${bus_args[@]}" "$@" 2>&1 || ddcutil "$@" 2>&1; }
+
+# GNOME runs this without a terminal, so report failures as a notification.
+fail() {
+  notify-send -i video-display "ddcswitch failed" "$1"
   exit 1
-fi
+}
+
+# Switch to whichever input isn't showing.
+current=$(ddc --terse getvcp 60) || fail "$current"
+case $current in
+  *x11) target=0x1b ;;
+  *x1b) target=0x11 ;;
+  *) fail "Unexpected input: $current" ;;
+esac
+
+# --noverify: no read-back after the switch, when the monitor may already be
+# busy changing input.
+err=$(ddc --noverify setvcp 60 "$target") || fail "$err"
