@@ -1,0 +1,31 @@
+#:schema https://yazi-rs.github.io/schemas/yazi.json
+# Only the settings that differ from yazi's preset; everything else is default.
+
+[mgr]
+ratio          = [ 1, 3, 4 ]   # a wider preview than the preset's 1:4:3
+sort_by        = "natural"     # file2 before file10
+sort_dir_first = true
+linemode       = "size"
+show_symlink   = true
+scrolloff      = 8
+
+[preview]
+wrap       = "no"
+tab_size   = 4
+max_width  = 1200              # sharper images when the preview is maximized (T)
+max_height = 1800
+
+[opener]
+# The preset's `edit` opener already runs $EDITOR (nvim); this only adds a
+# way to hand a directory or file to the GUI file manager.
+reveal = [
+	{ run = "xdg-open %d1", desc = "Reveal in file manager", for = "linux", orphan = true },
+	{ run = "clear; exiftool %s1; echo 'Press enter to exit'; read _", desc = "Show EXIF", for = "unix", block = true },
+]
+
+[plugin]
+# git.yazi: status signs next to each file inside a repository
+prepend_fetchers = [
+	{ url = "*",  run = "git", group = "git" },
+	{ url = "*/", run = "git", group = "git" },
+]

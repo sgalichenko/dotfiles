@@ -132,6 +132,16 @@ function clear_pane() {
 }
 alias clp="clear_pane"
 
+# yazi, then cd to wherever it was left on quit (Q quits without the cd)
+function y() {
+  local tmp cwd
+  tmp=$(mktemp -t yazi-cwd.XXXXXX)
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [[ -n $cwd && $cwd != "$PWD" && -d $cwd ]] && builtin cd -- "$cwd"
+  command rm -f -- "$tmp"
+}
+
 # TG_BOT / TG_CHAT come from ~/.env; read at call time so the token never
 # ends up baked into an alias definition (visible in `alias` and history).
 function tg {

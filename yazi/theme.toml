@@ -1,0 +1,154 @@
+#:schema https://yazi-rs.github.io/schemas/theme.json
+# Nord (https://www.nordtheme.com), on top of yazi's dark preset
+#
+#   Polar Night  nord0 #2E3440  nord1 #3B4252  nord2 #434C5E  nord3 #4C566A
+#   Snow Storm   nord4 #D8DEE9  nord5 #E5E9F0  nord6 #ECEFF4
+#   Frost        nord7 #8FBCBB  nord8 #88C0D0  nord9 #81A1C1  nord10 #5E81AC
+#   Aurora       nord11 #BF616A (red)   nord12 #D08770 (orange)
+#                nord13 #EBCB8B (yellow) nord14 #A3BE8C (green) nord15 #B48EAD (purple)
+
+[mgr]
+cwd = { fg = "#88C0D0", bold = true }
+
+find_keyword  = { fg = "#EBCB8B", bold = true, italic = true, underline = true }
+find_position = { fg = "#B48EAD", bg = "reset", bold = true, italic = true }
+
+symlink_target = { fg = "#8FBCBB", italic = true }
+
+marker_copied   = { fg = "#A3BE8C", bg = "#A3BE8C" }
+marker_cut      = { fg = "#BF616A", bg = "#BF616A" }
+marker_marked   = { fg = "#8FBCBB", bg = "#8FBCBB" }
+marker_selected = { fg = "#EBCB8B", bg = "#EBCB8B" }
+marker_symbol   = "▎"
+
+count_copied   = { fg = "#2E3440", bg = "#A3BE8C" }
+count_cut      = { fg = "#2E3440", bg = "#BF616A" }
+count_selected = { fg = "#2E3440", bg = "#EBCB8B" }
+
+border_symbol = "│"
+border_style  = { fg = "#4C566A" }
+
+# The same Nord scheme bat uses (BAT_THEME=Nord), for code previews
+syntect_theme = "~/.config/yazi/Nord.tmTheme"
+
+[tabs]
+active    = { fg = "#2E3440", bg = "#88C0D0", bold = true }
+inactive  = { fg = "#D8DEE9", bg = "#3B4252" }
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
+
+[mode]
+normal_main = { fg = "#2E3440", bg = "#88C0D0", bold = true }
+normal_alt  = { fg = "#88C0D0", bg = "#3B4252" }
+select_main = { fg = "#2E3440", bg = "#B48EAD", bold = true }
+select_alt  = { fg = "#B48EAD", bg = "#3B4252" }
+unset_main  = { fg = "#2E3440", bg = "#BF616A", bold = true }
+unset_alt   = { fg = "#BF616A", bg = "#3B4252" }
+
+[indicator]
+parent  = { bg = "#3B4252" }
+current = { bg = "#434C5E", bold = true }
+preview = { bg = "#3B4252" }
+padding = { open = "", close = "" }
+
+[status]
+sep_left  = { open = "", close = "" }
+sep_right = { open = "", close = "" }
+
+perm_sep   = { fg = "#4C566A" }
+perm_type  = { fg = "#81A1C1" }
+perm_read  = { fg = "#EBCB8B" }
+perm_write = { fg = "#BF616A" }
+perm_exec  = { fg = "#A3BE8C" }
+
+progress_label  = { fg = "#ECEFF4", bold = true }
+progress_normal = { fg = "#88C0D0", bg = "#3B4252" }
+progress_error  = { fg = "#BF616A", bg = "#3B4252" }
+
+[which]
+border          = { fg = "#81A1C1" }
+cols            = 3
+mask            = { bg = "#2E3440" }
+cand            = { fg = "#88C0D0" }
+rest            = { fg = "#4C566A" }
+desc            = { fg = "#B48EAD" }
+separator       = "  "
+separator_style = { fg = "#4C566A" }
+
+[confirm]
+border     = { fg = "#81A1C1" }
+title      = { fg = "#88C0D0", bold = true }
+body       = { fg = "#D8DEE9" }
+list       = { fg = "#D8DEE9" }
+btn_yes    = { fg = "#2E3440", bg = "#88C0D0", bold = true }
+btn_no     = { fg = "#D8DEE9" }
+btn_labels = [ "  [Y]es  ", "  (N)o  " ]
+
+[spot]
+border   = { fg = "#81A1C1" }
+title    = { fg = "#88C0D0" }
+tbl_col  = { fg = "#81A1C1" }
+tbl_cell = { fg = "#2E3440", bg = "#EBCB8B" }
+
+[notify]
+title_info  = { fg = "#A3BE8C" }
+title_warn  = { fg = "#EBCB8B" }
+title_error = { fg = "#BF616A" }
+
+[pick]
+border   = { fg = "#81A1C1" }
+active   = { fg = "#B48EAD", bold = true }
+inactive = { fg = "#D8DEE9" }
+
+[input]
+border   = { fg = "#81A1C1" }
+title    = { fg = "#88C0D0" }
+value    = { fg = "#ECEFF4" }
+selected = { bg = "#434C5E" }
+
+[cmp]
+border   = { fg = "#81A1C1" }
+active   = { fg = "#2E3440", bg = "#88C0D0" }
+inactive = { fg = "#D8DEE9" }
+
+[tasks]
+border  = { fg = "#81A1C1" }
+title   = { fg = "#88C0D0" }
+hovered = { fg = "#B48EAD", bold = true }
+
+[help]
+border  = { fg = "#81A1C1" }
+chord   = { fg = "#88C0D0" }
+action  = { fg = "#D8DEE9" }
+hovered = { bg = "#434C5E", bold = true }
+
+[filetype]
+rules = [
+	# Image
+	{ mime = "**/image/*", fg = "#EBCB8B" },
+	# Media
+	{ mime = "**/{audio,video}/*", fg = "#B48EAD" },
+	# Archive
+	{ mime = "**/application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "#D08770" },
+	# Document
+	{ mime = "**/application/{pdf,doc,rtf}", fg = "#8FBCBB" },
+	# Virtual file system
+	{ mime = "vfs/{absent,stale}", fg = "#4C566A" },
+	# Special files
+	{ url = "*", is = "orphan", fg = "#BF616A", italic = true },
+	{ url = "*", is = "exec",   fg = "#A3BE8C" },
+	{ url = "*", is = "dummy",  fg = "#BF616A", italic = true },
+	{ url = "*/", is = "dummy", fg = "#BF616A", italic = true },
+	# Fallback
+	{ url = "*/", fg = "#81A1C1", bold = true },
+	{ url = "*",  fg = "#D8DEE9" },
+]
+
+[git]
+unstaged  = { fg = "#EBCB8B" }
+staged    = { fg = "#A3BE8C" }
+added     = { fg = "#A3BE8C" }
+untracked = { fg = "#B48EAD" }
+ignored   = { fg = "#4C566A" }
+deleted   = { fg = "#BF616A", bold = true }
+updated   = { fg = "#88C0D0" }

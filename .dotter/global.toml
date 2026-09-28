@@ -64,3 +64,17 @@
 
 [fzf.files]
 "fzf/.fzf.zsh" = "~/.fzf.zsh"
+
+[yazi.files]
+# Individual files, not the directory: `ya pkg` installs plugins into
+# ~/.config/yazi/plugins, which stays out of the repo like lazy.nvim's
+# plugin dir. package.toml pins them; `ya pkg install` restores them.
+"yazi/yazi.toml" = "~/.config/yazi/yazi.toml"
+"yazi/keymap.toml" = "~/.config/yazi/keymap.toml"
+"yazi/theme.toml" = "~/.config/yazi/theme.toml"
+"yazi/init.lua" = "~/.config/yazi/init.lua"
+"yazi/Nord.tmTheme" = "~/.config/yazi/Nord.tmTheme"
+"yazi/package.toml" = "~/.config/yazi/package.toml"
+
+[ghostty.files]
+"ghostty/config.ghostty" = "~/.config/ghostty/config.ghostty"

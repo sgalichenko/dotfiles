@@ -24,10 +24,12 @@ than a symlink.
 | `zsh`     | `~/.zshrc`, `~/.config/starship.toml`             |
 | `tmux`    | `~/.tmux.conf`, `~/.tmux/ssh_style`               |
 | `wezterm` | `~/.wezterm.lua`, `~/.wezterm.minimal.lua`        |
+| `ghostty` | `~/.config/ghostty/config.ghostty`                |
 | `ssh`     | `~/.ssh/bin/{sshmgmt,ssh-styled}`                 |
 | `nvim`    | `~/.config/nvim`                                  |
 | `rofi`    | `~/.config/rofi`, `~/.config/rofi-pass/config`    |
 | `vifm`    | `~/.config/vifm/{vifmrc,vifmimg,vimfm}`           |
+| `yazi`    | `~/.config/yazi/{yazi,keymap,theme,package}.toml`, `init.lua`, `Nord.tmTheme` |
 | `lazygit` | `~/.config/lazygit/config.yml`                    |
 | `fzf`     | `~/.fzf.zsh`                                      |
 | `bin`     | `~/bin/{rofi-gopass,rofi-gopass-modi,ddcswitch}`  |
@@ -35,3 +37,15 @@ than a symlink.
 
 `.dotter/local.toml` is gitignored: it selects which of the above apply to the
 machine you're on.
+
+## yazi plugins
+
+The plugins live in `~/.config/yazi/plugins`, outside the repo; the tracked
+`yazi/package.toml` pins them. After the first deploy, fetch them with
+
+```sh
+ya pkg install
+```
+
+`ya pkg add` and `ya pkg upgrade` write through the symlink, so the pins they
+change show up in `git diff`.

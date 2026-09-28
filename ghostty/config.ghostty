@@ -1,0 +1,61 @@
+# Ghostty, set up like ~/.wezterm.lua (which stays the main terminal).
+# Reload with ctrl+shift+, ; `ghostty +show-config --default --docs` lists
+# every option.
+
+theme = Nord
+font-family = RobotoMono Nerd Font
+font-size = 11
+
+# Ignored at startup on Linux/Wayland (1.3.1): Ghostty presents the window
+# before the compositor handles the fullscreen request, and the request is
+# lost (ghostty-org/ghostty#11252, closed unfixed). Kept for when that's
+# fixed; until then toggle with F11 or Ghostty's default Ctrl+Enter.
+fullscreen = true
+keybind = f11=toggle_fullscreen
+window-show-tab-bar = never
+
+# No titlebar or borders. Move the window with Super+drag, resize with
+# Super+middle-drag (GNOME); ctrl+shift+d brings the decorations back.
+window-decoration = none
+keybind = ctrl+shift+d=toggle_window_decorations
+
+# A margin, since nothing frames the text any more: split evenly around the
+# grid, and painted with the colour of the nearest cell rather than a band
+# of plain background next to tmux's status bar
+window-padding-x = 6
+window-padding-y = 6
+window-padding-balance = true
+window-padding-color = extend
+
+# No rows x columns box on every resize, F11 included
+resize-overlay = never
+
+# tmux copies through the terminal (set-clipboard on), so every copy and
+# every quick-select pick would pop a toast; keep the config-reload one
+app-notifications = no-clipboard-copy
+# Let programs read the clipboard (nvim, tmux) without a prompt each time.
+# Anything running in Ghostty can then read it, remote hosts over ssh too.
+clipboard-read = allow
+
+# Same as wezterm's default_prog: attach to tmux's `main` session, or fall
+# back to a plain zsh if tmux fails. -l for the login PATH (Homebrew).
+command = /usr/bin/zsh -lc 'tmux new-session -A -s main || exec zsh'
+# Every shell runs inside tmux, where Ghostty's zsh integration never
+# reaches; without this it would only wrap the zsh -lc launcher above
+shell-integration = none
+# tmux is always running, so Ghostty would ask on every close; closing only
+# detaches the client and the session carries on
+confirm-close-surface = false
+
+# Quick-select lives in tmux (tmux-fingers, see .tmux.conf), not here.
+# Ghostty sends these private sequences, which tmux names User0/User1:
+# Ctrl+Shift+C picks any match to copy, Ctrl+Shift+O picks a URL to open.
+# They replace Ghostty's default Ctrl+Shift+C copy; select with the mouse
+# (copy-on-select) or use tmux copy-mode instead.
+keybind = ctrl+shift+c=csi:9101~
+keybind = ctrl+shift+o=csi:9102~
+
+# Ctrl+Shift+Y runs `y` (yazi, cd on quit; see .zshrc) in the current pane.
+# Same route as above: tmux names this User2 and only types `y` at a shell
+# prompt, so the key does nothing while nvim or anything else has the pane.
+keybind = ctrl+shift+y=csi:9103~

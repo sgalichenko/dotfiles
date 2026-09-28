@@ -1,0 +1,33 @@
+#:schema https://yazi-rs.github.io/schemas/keymap.json
+# Additions on top of yazi's preset, which is already vim-like: hjkl, gg/G,
+# C-d/C-u, v/V visual mode, / ? n N, y x p, and so on. `~` lists every key.
+
+[mgr]
+prepend_keymap = [
+	# l opens files too, not only directories
+	{ on = "l",       run = "plugin smart-enter", desc = "Enter the directory, or open the file" },
+	{ on = "<Right>", run = "plugin smart-enter", desc = "Enter the directory, or open the file" },
+
+	# :q like vim. This makes : a prefix, so the preset's blocking shell
+	# prompt (plain :) moves to :! ; ; still runs a non-blocking one.
+	{ on = [ ":", "q" ], run = "quit",                        desc = "Quit" },
+	{ on = [ ":", "!" ], run = "shell --block --interactive", desc = "Run a shell command (block until finishes)" },
+
+	# Editing and shells
+	{ on = "e", run = 'shell --block -- $EDITOR %s', desc = "Edit selected files in $EDITOR" },
+	{ on = "!", run = 'shell --block -- "$SHELL"',     desc = "Open a shell here" },
+
+	# Panes
+	{ on = "T",     run = "plugin toggle-pane max-preview", desc = "Maximize or restore the preview" },
+	{ on = "<A-p>", run = "plugin toggle-pane min-preview", desc = "Hide or show the preview" },
+
+	# Permissions
+	{ on = [ "c", "m" ], run = "plugin chmod", desc = "Chmod selected files" },
+
+	# Goto (the preset has gh ~, gc ~/.config, gd ~/Downloads, gt trash)
+	{ on = [ "g", "r" ], run = 'shell -- ya emit cd "$(git rev-parse --show-toplevel)"', desc = "Go to the git root" },
+	{ on = [ "g", "." ], run = "cd ~/dotfiles",  desc = "Go to ~/dotfiles" },
+	{ on = [ "g", "D" ], run = "cd ~/Documents", desc = "Go to ~/Documents" },
+	{ on = [ "g", "n" ], run = "cd ~/notes",     desc = "Go to ~/notes" },
+	{ on = [ "g", "b" ], run = "cd ~/bin",       desc = "Go to ~/bin" },
+]
