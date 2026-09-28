@@ -1,29 +1,27 @@
 #!/usr/bin/env bash
+# Hands the Dell U2723QX over to the other computer (Super+m in GNOME).
+#
+# Only switches one way: this laptop is on HDMI-1 (0x11), the other machine
+# on USB-C (0x1b; ddcutil lists it as "Unrecognized value"). The monitor's
+# KVM takes the keyboard along with the input, so switching back is done
+# from the other machine or the monitor's buttons, never from here.
 
 set -o nounset
-set -o errexit
 
-# Get current input
-#current=$(ddcutil getvcp 60 | sed -n "s/.*(sl=\(.*\))/\1/p")
+# Talk to the monitor's I2C bus directly: without --bus ddcutil probes every
+# display first, the laptop panel included, which adds about a second.
+# The bus number changes with replugging, so look it up from the connector.
+bus_args=()
+for ddc in /sys/class/drm/card*-HDMI-A-1/ddc; do
+  [[ -e $ddc ]] || continue
+  bus=$(basename "$(readlink "$ddc")")
+  bus_args=(--bus "${bus#i2c-}")
+done
 
-# Get the other input
-#case $current in
-#
-#    # USB-C
-#    0x1b)
-#        output=0x11
-#        ;;
-#
-#    # HDMI
-#    0x11)
-#        output=0x1b
-#        ;;
-#
-#    *)
-#        echo "Unknown input"
-#        exit 1
-#        ;;
-#esac
-
-# Set new input
-ddcutil setvcp 60 0x1b
+# --noverify: no read-back after the switch, when the monitor may already be
+# busy changing input. GNOME runs this without a terminal, so report failures
+# as a notification.
+if ! err=$(ddcutil "${bus_args[@]}" --noverify setvcp 60 0x1b 2>&1); then
+  notify-send -i video-display "ddcswitch failed" "$err"
+  exit 1
+fi
