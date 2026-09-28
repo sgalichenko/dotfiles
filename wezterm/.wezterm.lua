@@ -22,6 +22,10 @@ config.enable_tab_bar = false
 config.warn_about_missing_glyphs = false
 config.window_background_opacity = 1
 config.hide_mouse_cursor_when_typing = false
+-- Leave SSH_AUTH_SOCK pointing at GNOME's agent. wezterm's own agent proxy
+-- socket goes away when wezterm exits, but the tmux server it started keeps
+-- running and hands the dead path to every pane in it.
+config.mux_enable_ssh_agent = false
 
 config.colors = {
   quick_select_label_bg = { Color = '#bf616a' },
