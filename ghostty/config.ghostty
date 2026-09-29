@@ -14,6 +14,17 @@ fullscreen = true
 keybind = f11=toggle_fullscreen
 window-show-tab-bar = never
 
+# Shift+arrows switch tmux windows and Ctrl+Shift+Left/Right resize panes.
+# Ghostty binds them to adjust_selection (only while it holds a selection,
+# e.g. after a Shift+drag, hence "sometimes") and to tab switching; unbind
+# so they always reach tmux.
+keybind = shift+arrow_left=unbind
+keybind = shift+arrow_right=unbind
+keybind = shift+arrow_up=unbind
+keybind = shift+arrow_down=unbind
+keybind = ctrl+shift+arrow_left=unbind
+keybind = ctrl+shift+arrow_right=unbind
+
 # No titlebar or borders. Move the window with Super+drag, resize with
 # Super+middle-drag (GNOME); ctrl+shift+d brings the decorations back.
 window-decoration = none
