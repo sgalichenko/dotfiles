@@ -80,3 +80,6 @@
 
 [ghostty.files]
 "ghostty/config.ghostty" = "~/.config/ghostty/config.ghostty"
+
+[gnome]
+# No files: gnome/settings.sh applies gsettings, run by .dotter/post_deploy.sh

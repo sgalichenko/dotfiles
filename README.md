@@ -33,6 +33,7 @@ than a symlink.
 | `lazygit` | `~/.config/lazygit/config.yml`                    |
 | `fzf`     | `~/.fzf.zsh`                                      |
 | `bin`     | `~/bin/{rofi-gopass,rofi-gopass-modi,ddcswitch}`  |
+| `gnome`   | *no files* — `gnome/settings.sh` applies gsettings on each deploy |
 | `firefox` | *not deployed* — see below                        |
 
 `.dotter/local.toml` is gitignored: it selects which of the above apply to the
