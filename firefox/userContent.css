@@ -1,0 +1,15 @@
+/* Sidebery's sidebar is an extension page, so userChrome.css can't reach it.
+   The UUID is per-profile: it's Sidebery's entry in the
+   extensions.webextensions.uuids pref, and changes if Sidebery is reinstalled.
+   !important because user sheets lose to the extension's own styles. */
+@-moz-document url-prefix("moz-extension://a47c5c02-358b-4349-8529-1e6ea6ff33f1/sidebar/") {
+  #root {
+    --tabs-activated-bg: #434C5E !important;  /* nord2 */
+    --tabs-activated-fg: #ECEFF4 !important;  /* nord6 */
+  }
+
+  /* Frost accent bar down the left edge of the active tab */
+  .Tab[data-active=true] .body {
+    box-shadow: inset 3px 0 0 #88C0D0 !important;  /* nord8 */
+  }
+}

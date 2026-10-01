@@ -1,93 +1,107 @@
+/* Nord-ish dark chrome for a sidebar-tabs (Sidebery) setup.
+   Sidebery's own tab list is styled in userContent.css. */
+
+/* ---------- Palette ---------- */
+
+/* !important: the active theme sets these inline on :root, which beats a
+   plain :root rule. Names are the ones Firefox 155 reads; older names like
+   --toolbar-bgcolor and --arrowpanel-background no longer do anything. */
+:root {
+  --c-bg: #2F343F;
+  --c-hover: #3B4252;           /* nord1 */
+  --c-selected: #434C5E;        /* nord2 */
+  --c-strong: #4C566A;          /* nord3 */
+  --c-fg: #ECEFF4;              /* nord6 */
+  --c-accent: #88C0D0;          /* nord8 */
+  --c-field-highlight: #5E758D;
+
+  /* Toolbars */
+  --toolbox-background-color: var(--c-bg) !important;
+  --toolbox-background-color-inactive: var(--c-bg) !important;
+  --toolbar-background-color: var(--c-bg) !important;
+  --toolbarbutton-hover-background: var(--c-hover) !important;
+  --toolbarbutton-background-color-hover: var(--c-hover) !important;
+  --chrome-content-separator-color: var(--c-bg) !important;
+  --focus-outline-color: var(--c-accent) !important;
+
+  /* URL bar: blends into the toolbar, lifts to nord1 with a frost border
+     when focused */
+  --toolbar-field-background-color: var(--c-bg) !important;
+  --toolbar-field-border-color: transparent !important;
+  --toolbar-field-background-color-focus: var(--c-hover) !important;
+  --toolbar-field-border-color-focus: var(--c-accent) !important;
+  --toolbar-field-text-color-focus: var(--c-fg) !important;
+  --lwt-toolbar-field-highlight: var(--c-field-highlight) !important;
+
+  /* Pills inside the URL bar (search engine switcher, site identity) */
+  --urlbar-box-background-color: var(--c-selected) !important;
+  --urlbar-box-background-color-focus: var(--c-selected) !important;
+  --urlbar-box-background-color-hover: var(--c-strong) !important;
+  --urlbar-box-background-color-active: var(--c-strong) !important;
+
+  /* URL bar suggestions and other popups */
+  --urlbarview-background-color-hover: var(--c-hover) !important;
+  --urlbarview-background-color-selected: var(--c-selected) !important;
+  --urlbarview-text-color-selected: var(--c-fg) !important;
+  --panel-background-color: var(--c-bg) !important;
+  --panel-border-color: var(--c-hover) !important;
+  --panel-separator-color: var(--c-hover) !important;
+}
+
+/* Chrome elements set their own fonts, so inheriting from :root isn't enough */
 * {
   font-family: "RobotoMono Nerd Font";
   font-size: 14px;
-  --animation-speed: 0.2s;
-  --autocomplete-popup-highlight-background: #3B4252;
-  --autocomplete-popup-highlight-color: #88C0D0;
-  --urlbar-popup-action-color: #88C0D0;
-  --lwt-toolbar-field-highlight: #5E758D;
-  --lwt-toolbar-vertical-separator: #2F343F;
-  --toolbar-vertical-separator: #2F343F;
-  --lwt-toolbar-field-background-color: #2F343F;
-  --toolbar-field-background-color: #2F343F;
-  --lwt-toolbar-field-focus: #2F343F;
-  --toolbar-field-focus: #2F343F;
-  --toolbar-field-focus-background-color: #2F343F;
-  --toolbar-field-background-color: #2F343F;
-  --toolbar-bgcolor: #2F343F;
-  --toolbarbutton-hover-background: #3B4252;
-  --tabs-border-color: #2F343F;
-  --tabs-navbar-shadow-size: 0px;
-  --chrome-content-separator-color: #2F343F;
-  --arrowpanel-background: #2F343F;
-  --arrowpanel-dimmed: #2F343F;
-}
-:root[lwt-toolbar-field-brighttext] #urlbar-search-mode-indicator {
-  background-color: #88C0D0;
 }
 
-#urlbar-background, #searchbar {
-    border: 0px;
-    border-radius: 0px;
-    box-shadow: 0 0 0px 0px rgba(0,0,0,.05);
+/* ---------- Toolbar ---------- */
+
+/* No border/shadow: that's the line between the toolbar and the page */
+#navigator-toolbox,
+#nav-bar {
+  background: var(--c-bg) !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
+
+/* ---------- URL bar ---------- */
+
+/* Square corners; the border colours come from the palette above */
+.urlbar-background,
+#searchbar {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[lwt-toolbar-field-brighttext] #urlbar-search-mode-indicator {
+  background-color: var(--c-accent);
+}
+
+/* ---------- Tabs: the horizontal strip is replaced by the sidebar ---------- */
 
 #TabsToolbar {
-    visibility: collapse !important;
+  visibility: collapse !important;
 }
 
-#tabbrowser-tabs .tabbrowser-tab .tab-close-button { display:none!important; }
-
-/* Compact tab layout */
-:root { --tab-height: 20px !important; }
-.tab { height: 20px !important; }
-/* Shrink space between pinned tabs and tab bar, only when pins are present */
-#tabbar[style*="margin"] { margin-top: 20px !important; }
-
-/* Show title of unread tabs with red font */
-.tab.unread .label {
-  color: red !important;
-}
-
-/* Add private browsing indicator per tab */
-.tab.private-browsing .label:before {
-  content: " ";
-}
-
-#tabbar .after-tabs {
-  display: none !important;
-}
-
-/* #sidebar-header is hidden by default, change "none" to "inherit" to restore it. */
-#sidebar-header {
-  display: none !important;
-}
-
-/* #sidebar-splitter styles the divider between the sidebar and the rest of the browser. */
-#sidebar-splitter {
-  display: none;
-}
-
-#main-window[inFullscreen] #sidebar-box,
-#main-window[inFullscreen] #sidebar-splitter {
-  display: none !important;
-  width: 0px !important;
-}
-
-#urlbar-background {
-  border: none !important
-}
-
-#webrtcIndicator {
-  display: none;
-}
+/* ---------- Sidebar ---------- */
 
 #sidebar-box {
-  max-width: 40% !important;
   min-width: 300px !important;
+  max-width: 40% !important;
 }
 
-.tab-icon-image {
-  height: 30px !important;
-  width: 30px !important;
+#sidebar-header,
+#sidebar-splitter {
+  display: none !important;
+}
+
+:root[inFullscreen] #sidebar-box {
+  display: none !important;
+}
+
+/* ---------- Misc ---------- */
+
+/* The floating "sharing camera/mic" window */
+#webrtcIndicator {
+  display: none;
 }
