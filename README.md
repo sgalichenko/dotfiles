@@ -29,7 +29,7 @@ than a symlink.
 | `nvim`    | `~/.config/nvim`                                  |
 | `rofi`    | `~/.config/rofi`, `~/.config/rofi-pass/config`    |
 | `vifm`    | `~/.config/vifm/{vifmrc,vifmimg,vimfm}`           |
-| `yazi`    | `~/.config/yazi/{yazi,keymap,theme,package}.toml`, `init.lua`, `Nord.tmTheme` |
+| `yazi`    | `~/.config/yazi/{yazi,keymap,theme,package}.toml`, `init.lua`, `Nord.tmTheme`, `plugins/other-pane.yazi` |
 | `lazygit` | `~/.config/lazygit/config.yml`                    |
 | `fzf`     | `~/.fzf.zsh`                                      |
 | `bin`     | `~/bin/{rofi-gopass,rofi-gopass-modi,ddcswitch}`  |

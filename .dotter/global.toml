@@ -75,6 +75,8 @@
 "yazi/init.lua" = "~/.config/yazi/init.lua"
 "yazi/Nord.tmTheme" = "~/.config/yazi/Nord.tmTheme"
 "yazi/package.toml" = "~/.config/yazi/package.toml"
+# Local plugin, not from `ya pkg`
+"yazi/plugins/other-pane.yazi/main.lua" = "~/.config/yazi/plugins/other-pane.yazi/main.lua"
 
 [ghostty.files]
 "ghostty/config.ghostty" = "~/.config/ghostty/config.ghostty"
