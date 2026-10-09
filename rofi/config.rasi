@@ -8,7 +8,7 @@ configuration {
   display-window: "  ";
   display-ssh: "  ";
   display-file-browser-extended: "  ";
-  terminal: "/usr/bin/wezterm";
+  terminal: "/usr/bin/ghostty";
   sidebar-mode: true;
   disable-history: false;
   scroll-method: 0;
@@ -16,7 +16,6 @@ configuration {
   window-thumbnail: true;
   modi: "combi";
   combi-modi: "window,drun";
-  /* modi: "combi,ssh,gopass:/home/semyon/bin/rofi-gopass-modi"; */
 }
 
 * {

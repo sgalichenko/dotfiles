@@ -1,0 +1,7 @@
+#!/bin/sh
+# Ghostty with the small popup config instead of the main one, which starts
+# tmux fullscreen. Used for the waybar popups and gopass-menu's edit windows.
+# Usage: ghostty-popup [--class=app.id] -e command [args...]
+# A --class must be a valid GTK application ID, so it needs a dot in it.
+exec ghostty --config-default-files=false \
+	--config-file="$HOME/.config/ghostty/popup.ghostty" "$@"

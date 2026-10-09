@@ -1,0 +1,23 @@
+# Small terminal for popups (bluetui, nmtui, vpn, gopass), launched with
+# ~/bin/ghostty-popup. It replaces the default config rather than adding to
+# it, so the theme and font are repeated from config.ghostty.
+
+theme = Nord
+font-family = RobotoMono Nerd Font
+font-size = 11
+
+window-width = 70
+window-height = 15
+window-show-tab-bar = never
+window-decoration = none
+window-padding-x = 6
+window-padding-y = 6
+window-padding-balance = true
+
+# Closing a popup, e.g. a second click on its bar icon, should not ask first
+confirm-close-surface = false
+
+# nmtui (the network popup) in flat Nord like bluetui: newt's default palette
+# turns into pink and red blocks under the Nord theme. Names are the
+# terminal's ANSI colours; default is the window background.
+env = NEWT_COLORS=root=white,default;window=white,default;border=cyan,default;shadow=default,default;title=cyan,default;textbox=white,default;label=white,default;helpline=gray,default;roottext=gray,default;listbox=white,default;actlistbox=white,default;sellistbox=cyan,default;actsellistbox=black,cyan;button=white,black;actbutton=black,cyan;compactbutton=white,default;checkbox=white,default;actcheckbox=black,cyan;entry=white,black;disentry=gray,default;emptyscale=,black;fullscale=,cyan

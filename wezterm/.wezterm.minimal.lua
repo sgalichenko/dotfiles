@@ -9,11 +9,30 @@ end
 -- config.default_prog = { '/usr/bin/zsh', '-c', '$(pkill ssh-agent && eval ssh-agent && ssh-add -s /usr/lib/libeToken.so)' }
 config.color_scheme = 'nord'
 config.font = wezterm.font 'RobotoMono Nerd Font'
-config.font_size = 12.0
+config.font_size = 11.0
 config.enable_tab_bar = false
 config.initial_rows = 15
 config.initial_cols = 70
 config.hide_mouse_cursor_when_typing = false
+-- Only popups use this config (bluetui, nmtui, gopass), so closing one,
+-- e.g. a second click on its bar icon, should not stop to ask first
+config.window_close_confirmation = 'NeverPrompt'
+-- nmtui (the network popup) in flat Nord like bluetui: newt's default palette
+-- turns into pink and red blocks under the nord scheme. Names are the
+-- terminal's ANSI colours; default is the window background.
+config.set_environment_variables = {
+  NEWT_COLORS = table.concat({
+    'root=white,default', 'window=white,default', 'border=cyan,default',
+    'shadow=default,default', 'title=cyan,default', 'textbox=white,default',
+    'label=white,default', 'helpline=gray,default', 'roottext=gray,default',
+    'listbox=white,default', 'actlistbox=white,default',
+    'sellistbox=cyan,default', 'actsellistbox=black,cyan',
+    'button=white,black', 'actbutton=black,cyan', 'compactbutton=white,default',
+    'checkbox=white,default', 'actcheckbox=black,cyan',
+    'entry=white,black', 'disentry=gray,default',
+    'emptyscale=,black', 'fullscale=,cyan',
+  }, ';'),
+}
 -- config.exit_behavior = 'Hold'
 
 config.window_frame = {

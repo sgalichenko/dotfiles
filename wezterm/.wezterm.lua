@@ -1,15 +1,9 @@
 local wezterm = require 'wezterm'
-local mux = wezterm.mux
 local config = { }
 
 if wezterm.config_builder then
   config = wezterm.config_builder()
 end
-
-wezterm.on('gui-startup', function(cmd)
-  local tab, pane, window = mux.spawn_window(cmd or {})
-  window:gui_window():perform_action(wezterm.action.ToggleFullScreen, pane)
-end)
 
 config.native_macos_fullscreen_mode = true
 -- -A attaches to `main` if it exists instead of creating a new session per
@@ -17,7 +11,7 @@ config.native_macos_fullscreen_mode = true
 config.default_prog = { '/usr/bin/zsh', '-lc', 'tmux new-session -A -s main || exec zsh' }
 config.color_scheme = 'nord'
 config.font = wezterm.font 'RobotoMono Nerd Font'
-config.font_size = 14.0
+config.font_size = 11.0
 config.enable_tab_bar = false
 config.warn_about_missing_glyphs = false
 config.window_background_opacity = 1

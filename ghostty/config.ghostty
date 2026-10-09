@@ -1,4 +1,4 @@
-# Ghostty, set up like ~/.wezterm.lua (which stays the main terminal).
+# Ghostty, the main terminal (popups use popup.ghostty instead).
 # Reload with ctrl+shift+, ; `ghostty +show-config --default --docs` lists
 # every option.
 
@@ -48,7 +48,7 @@ app-notifications = no-clipboard-copy
 # Anything running in Ghostty can then read it, remote hosts over ssh too.
 clipboard-read = allow
 
-# Same as wezterm's default_prog: attach to tmux's `main` session, or fall
+# Attach to tmux's `main` session, or fall
 # back to a plain zsh if tmux fails. -l for the login PATH (Homebrew).
 command = /usr/bin/zsh -lc 'tmux new-session -A -s main || exec zsh'
 # Every shell runs inside tmux, where Ghostty's zsh integration never

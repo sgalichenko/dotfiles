@@ -28,7 +28,7 @@
 
 [wezterm.files]
 "wezterm/.wezterm.lua" = "~/.wezterm.lua"
-# The small terminal bin/rofi-gopass opens for editing and showing entries
+# Kept for now; nothing launches wezterm any more (Ghostty replaced it)
 "wezterm/.wezterm.minimal.lua" = "~/.wezterm.minimal.lua"
 
 [bin.files]
@@ -37,6 +37,7 @@
 # (Alt+p rofi-gopass, Super+m ddcswitch).
 "bin/rofi-gopass" = "~/bin/rofi-gopass"
 "bin/rofi-gopass-modi" = "~/bin/rofi-gopass-modi"
+"bin/ghostty-popup" = "~/bin/ghostty-popup"
 "bin/ddcswitch" = "~/bin/ddcswitch"
 
 [ssh.files]
@@ -66,6 +67,7 @@
 
 [ghostty.files]
 "ghostty/config.ghostty" = "~/.config/ghostty/config.ghostty"
+"ghostty/popup.ghostty" = "~/.config/ghostty/popup.ghostty"
 
 [gnome]
 # No files: gnome/settings.sh applies gsettings, run by .dotter/post_deploy.sh
