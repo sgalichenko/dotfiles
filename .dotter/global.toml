@@ -154,3 +154,10 @@ depends = ["wayland"]
 #   command hook running ~/.claude/hooks/tmux-bell
 "claude/themes/dark-ansi-tmux.json" = "~/.claude/themes/dark-ansi-tmux.json"
 "claude/hooks/tmux-bell" = "~/.claude/hooks/tmux-bell"
+
+[libreoffice.files]
+# Needs libreoffice-gtk3; without it LibreOffice falls back to the X11 "gen"
+# backend and ignores GTK themes. post_deploy.sh fetches the Nordic theme
+# and installs libreoffice/nord as an extension (Nord application colors and
+# dark icons), since registrymodifications.xcu is rewritten by LibreOffice.
+"libreoffice/libreoffice" = "~/bin/libreoffice"

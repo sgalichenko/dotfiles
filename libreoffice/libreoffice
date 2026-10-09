@@ -1,0 +1,5 @@
+#!/bin/sh
+# Shadows /usr/bin/libreoffice (~/bin is ahead of it on the session PATH, and
+# every LibreOffice .desktop file runs plain `libreoffice`) to give it the
+# Nordic GTK3 theme without touching any other GTK app.
+GTK_THEME=Nordic exec /usr/bin/libreoffice "$@"

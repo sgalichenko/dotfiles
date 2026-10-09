@@ -21,3 +21,15 @@ cp wayland/mozc/config1.db ~/.config/mozc/
 gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus \
   --method org.freedesktop.DBus.ReloadConfig >/dev/null 2>&1 || true
 {{/if}}
+{{#if dotter.packages.libreoffice}}
+if [ ! -d ~/.themes/Nordic ]; then
+  mkdir -p ~/.themes
+  curl -sL https://github.com/EliverLara/Nordic/releases/download/v2.2.0/Nordic.tar.xz | tar -xJ -C ~/.themes
+fi
+# Rebuilt and reinstalled every deploy so edits to the .xcu files take effect
+# on LibreOffice's next start; unopkg refuses while LibreOffice is running
+oxt=$(mktemp -d)/nord.oxt
+(cd libreoffice/nord && zip -qr "$oxt" .)
+unopkg add -f "$oxt" >/dev/null 2>&1 || echo "libreoffice: close LibreOffice and redeploy to update the Nord extension"
+rm -rf "$(dirname "$oxt")"
+{{/if}}

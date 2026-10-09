@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Nord palette for Tools > Options > LibreOffice > Application Colors.
+     Nord only around the page: the page itself stays white with black text, so
+     documents look as authored. Unlisted entries stay automatic. -->
+<oor:component-data xmlns:oor="http://openoffice.org/2001/registry"
+                    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                    oor:name="UI" oor:package="org.openoffice.Office">
+  <node oor:name="ColorScheme">
+    <prop oor:name="CurrentColorScheme"><value>Nord</value></prop>
+    <node oor:name="ColorSchemes">
+      <node oor:name="Nord" oor:op="replace">
+        <node oor:name="DocColor">
+          <prop oor:name="Color"><value>16777215</value></prop><!-- #FFFFFF -->
+        </node>
+        <node oor:name="AppBackground">
+          <prop oor:name="Color"><value>2369843</value></prop><!-- #242933 -->
+        </node>
+        <node oor:name="FontColor">
+          <prop oor:name="Color"><value>0</value></prop><!-- #000000 -->
+        </node>
+        <node oor:name="DocBoundaries">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="ObjectBoundaries">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="TableBoundaries">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="Links">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="LinksVisited">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>11833005</value></prop><!-- #B48EAD -->
+        </node>
+        <node oor:name="Spell">
+          <prop oor:name="Color"><value>12542314</value></prop><!-- #BF616A -->
+        </node>
+        <node oor:name="Grammar">
+          <prop oor:name="Color"><value>8495553</value></prop><!-- #81A1C1 -->
+        </node>
+        <node oor:name="SmartTags">
+          <prop oor:name="Color"><value>11833005</value></prop><!-- #B48EAD -->
+        </node>
+        <node oor:name="Shadow">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>2369843</value></prop><!-- #242933 -->
+        </node>
+        <node oor:name="WriterTextGrid">
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="WriterFieldShadings">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>14212841</value></prop><!-- #D8DEE9 -->
+        </node>
+        <node oor:name="WriterIdxShadings">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>14212841</value></prop><!-- #D8DEE9 -->
+        </node>
+        <node oor:name="WriterDirectCursor">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>3028032</value></prop><!-- #2E3440 -->
+        </node>
+        <node oor:name="WriterScriptIndicator">
+          <prop oor:name="Color"><value>10731148</value></prop><!-- #A3BE8C -->
+        </node>
+        <node oor:name="WriterSectionBoundaries">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="WriterHeaderFooterMark">
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="WriterPageBreaks">
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="CalcGrid">
+          <prop oor:name="Color"><value>14212841</value></prop><!-- #D8DEE9 -->
+        </node>
+        <node oor:name="CalcPageBreak">
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="CalcPageBreakManual">
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="CalcPageBreakAutomatic">
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="CalcHiddenColRow">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+        <node oor:name="CalcTextOverflow">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>12542314</value></prop><!-- #BF616A -->
+        </node>
+        <node oor:name="CalcComments">
+          <prop oor:name="Color"><value>15453067</value></prop><!-- #EBCB8B -->
+        </node>
+        <node oor:name="CalcDetective">
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="CalcDetectiveError">
+          <prop oor:name="Color"><value>12542314</value></prop><!-- #BF616A -->
+        </node>
+        <node oor:name="CalcReference">
+          <prop oor:name="Color"><value>8962256</value></prop><!-- #88C0D0 -->
+        </node>
+        <node oor:name="CalcNotesBackground">
+          <prop oor:name="Color"><value>15453067</value></prop><!-- #EBCB8B -->
+        </node>
+        <node oor:name="CalcValue">
+          <prop oor:name="Color"><value>6193580</value></prop><!-- #5E81AC -->
+        </node>
+        <node oor:name="CalcFormula">
+          <prop oor:name="Color"><value>10731148</value></prop><!-- #A3BE8C -->
+        </node>
+        <node oor:name="CalcText">
+          <prop oor:name="Color"><value>3028032</value></prop><!-- #2E3440 -->
+        </node>
+        <node oor:name="CalcProtectedBackground">
+          <prop oor:name="Color"><value>15067632</value></prop><!-- #E5E9F0 -->
+        </node>
+        <node oor:name="DrawGrid">
+          <prop oor:name="IsVisible"><value>true</value></prop>
+          <prop oor:name="Color"><value>5002858</value></prop><!-- #4C566A -->
+        </node>
+      </node>
+    </node>
+  </node>
+</oor:component-data>
