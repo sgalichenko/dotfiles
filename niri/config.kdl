@@ -1,6 +1,6 @@
 // Minimal Nord niri, ported from hyprland/hyprland.lua: same keys, bar, launcher
-// and notifications. GNOME stays the default session; niri/install.sh builds
-// niri and adds it to GDM's session list. niri reloads this file on save and
+// and notifications. niri is the default session; niri/install.sh builds
+// niri, adds it to GDM's session list and makes GDM preselect it. niri reloads this file on save and
 // shows a notice if it doesn't parse; `niri validate` checks it.
 //
 // Where niri differs from Hyprland, it's on purpose, not a missing port:

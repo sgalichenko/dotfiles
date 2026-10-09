@@ -1,4 +1,4 @@
--- Minimal Nord Hyprland. GNOME stays the default session: see Autostart below.
+-- Minimal Nord Hyprland. niri is the default session (niri/install.sh sets it).
 -- niri/config.kdl is the same setup for niri; scripts both use live in wayland/scripts/.
 -- Installed by hyprland/install.sh; `hyprctl reload` picks up edits (it also
 -- reloads on save). `Hyprland --verify-config` checks this file.

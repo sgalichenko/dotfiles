@@ -119,7 +119,7 @@
 "wayland/gtk-4.0/gtk.css" = "~/.config/gtk-4.0/gtk.css"
 
 [hyprland]
-# Hyprland next to GNOME, which stays the default session; hyprland/install.sh
+# Hyprland next to GNOME and niri, the default session; hyprland/install.sh
 # installs the packages (needs sudo)
 depends = ["wayland"]
 
@@ -132,8 +132,9 @@ depends = ["wayland"]
 "hyprland/xdg-desktop-portal-wlr/config" = "~/.config/xdg-desktop-portal-wlr/config"
 
 [niri]
-# niri next to GNOME (and Hyprland, if enabled); niri/install.sh builds it
-# and the packages it adds on top of hyprland/install.sh's
+# niri next to GNOME (and Hyprland, if enabled), as the default session;
+# niri/install.sh builds it, makes GDM preselect it and installs the packages
+# it adds on top of hyprland/install.sh's
 depends = ["wayland"]
 
 [niri.files]

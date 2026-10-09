@@ -1,7 +1,8 @@
 #!/bin/sh
 # Builds niri and xwayland-satellite and installs them next to GNOME and
-# Hyprland, so niri shows up in GDM's session list. Run as yourself, not root:
-# it builds with your cargo and asks sudo for the apt and install steps.
+# Hyprland, and makes niri the session GDM preselects for you. Run as
+# yourself, not root: it builds with your cargo and asks sudo for the apt and
+# install steps.
 #
 # 24.04 packages neither. niri's build dependencies are the ones its wiki lists
 # for 24.04; libinput-dev, libxkbcommon-dev and libdisplay-info-dev come from
@@ -48,6 +49,11 @@ sudo install -Dm644 "$r/niri.service" "$r/niri-shutdown.target" -t /usr/local/li
 sudo install -Dm644 "$r/niri.desktop" -t /usr/share/wayland-sessions
 # Portals come from ~/.config/xdg-desktop-portal/niri-portals.conf (the
 # wayland package), so niri's own copy isn't installed
+
+# GDM preselects the session AccountsService remembers for the user; picking
+# another one at login replaces it until this runs again
+busctl call org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
+	org.freedesktop.Accounts.User SetSession s niri
 
 niri --version
 command -v xwayland-satellite
