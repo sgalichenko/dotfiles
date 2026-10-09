@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+#
+# This is a wrapper script for managing passwords with gopass via rofi, or
+# fuzzel under Hyprland and niri (GNOME has no layer shell for fuzzel, so it
+# keeps rofi). The same Alt keys work in both: each is a custom key, which
+# both exit with as 10, 11, ... in the order of the table below.
+#
+# Semyon Galichenko 18.12.2024
+
+set -uo pipefail
+
+# Homebrew last, for nvim (EDITOR) only: its gpg is newer than the system's
+# gpg-agent, and can't decrypt through it
+export PATH="$PATH:/usr/bin:$HOME/go/bin:/home/linuxbrew/.linuxbrew/bin"
+export EDITOR="nvim"
+bin="/usr/bin"
+
+# By the desktop the shortcut runs in: fuzzel needs a Wayland session with a
+# layer shell, which GNOME's (ubuntu:GNOME) doesn't have
+if [[ -n "${WAYLAND_DISPLAY:-}" && "${XDG_CURRENT_DESKTOP:-}" != *GNOME* ]]; then
+  menu=fuzzel
+  # The same key again closes it, as the other fuzzel menus close
+  "$HOME/.config/wayland/menu" gopass || exit 0
+else
+  menu=rofi
+  pkill -x rofi && exit 0
+fi
+
+# key|description, custom-1 first
+actions=(
+  "c|Copy password"
+  "e|Edit password"
+  "s|Show password"
+  "q|Generate QR code"
+  "n|Create a new password"
+  "x|Remove password"
+  "g|Generate a new password"
+  "i|Insert a new password (multiline)"
+  "h|Show keybindings"
+)
+
+rofirun() {
+  local keys="-kb-element-next '' -kb-row-select Tab -kb-clear-line Alt+w \
+              -kb-remove-word-back Control+w" i
+  for i in "${!actions[@]}"; do
+    keys+=" -kb-custom-$((i + 1)) Alt+${actions[i]%%|*}"
+  done
+  local opts="-dmenu -i -async-pre-read -matching fuzzy -sidebar-mode \
+              -no-levenshtein-sort -normal-window"
+  eval "$bin/rofi $keys $opts ${*:1}"
+}
+
+# fuzzel takes key bindings only from a config file, so this writes one that
+# adds them to the launcher's look, with rofi's Tab completion and Alt+w
+# (Control+w is fuzzel's own)
+fuzzelrun() {
+  local conf="${XDG_RUNTIME_DIR:-/tmp}/gopass-menu-fuzzel.ini" i
+  {
+    echo "include = ~/.config/fuzzel/fuzzel.ini"
+    echo "[key-bindings]"
+    echo "insert-selected = Tab Control+Tab"
+    echo "execute-or-next = none"
+    # fuzzel has no clear-line; everything before the cursor is the nearest
+    echo "delete-line-backward = Control+u Mod1+w"
+    for i in "${!actions[@]}"; do
+      echo "custom-$((i + 1)) = Mod1+${actions[i]%%|*}"
+    done
+  } >"$conf"
+  fuzzel --dmenu --config "$conf" "$@"
+}
+
+# A small floating terminal: the class is what Hyprland's and niri's rules
+# float and centre
+termrun() {
+  "$HOME/bin/ghostty-popup" --class=ghostty.floatingTerminal "$@"
+}
+
+keybindings() {
+  local a
+  for a in "${actions[@]}"; do
+    echo "Alt+${a%%|*}  ${a#*|}"
+  done
+  echo "Tab  Completion"
+  echo "Alt+w  Clear line"
+  echo "Control+w  Remove word back"
+}
+
+if [[ $menu == fuzzel ]]; then
+  selection=$(gopass ls --flat | sed -r 's/\//  /g' |
+    fuzzelrun --prompt '󰌋  ' --placeholder 'Alt+h for keys')
+else
+  selection=$(gopass ls --flat | sed -r 's/\//  /g' | rofirun)
+fi
+retv="$?"
+set -e
+
+selection=$(echo "$selection" | sed -r 's/  /\//g')
+case "$retv" in
+  # Enter, or custom-1 (exit code: 10) Alt+c
+  0|10) gopass show -o "$selection" | head -1 | "$HOME/bin/clip" -s ;;
+  # -kb-custom-2 (exit code: 11) Alt+e
+  11) termrun -e gopass edit -c "$selection" && "$0" ;;
+  # -kb-custom-3 (exit code: 12) Alt+s
+  12) termrun -e sh -c "gopass show \"$selection\" && sleep infinity" ;;
+  # -kb-custom-4 (exit code: 13) Alt+q
+  # As the qr alias in .zshrc, at twice its size (6px modules), in swayimg
+  # rather than feh: a Wayland window, so it doesn't see Alt+q, or keys typed
+  # elsewhere, as pressed when it opens. Shown 1:1, without the file info;
+  # q, Escape or Ctrl+C closes it
+  13) gopass show -o "$selection" | qrencode -d 300 -v 8 -s 6 -l H -o - |
+      swayimg -s real -g image -c info.mode=off -c keys.Ctrl+c=exit - ;;
+  # -kb-custom-5 (exit code: 14) Alt+n
+  14) termrun -e gopass generate && "$0" ;;
+  # -kb-custom-6 (exit code: 15) Alt+x
+  15) termrun -e gopass -y rm "$selection" && "$0" ;;
+  # -kb-custom-7 (exit code: 16) Alt+g
+  # A new entry, or a new password for this one: gopass replaces only the
+  # first line, and asks before overwriting
+  16) termrun -e gopass generate "$selection" 16 && "$0" ;;
+  # -kb-custom-8 (exit code: 17) Alt+i
+  17) termrun -e gopass insert -m "$selection" && "$0" ;;
+  # -kb-custom-9 (exit code: 18) Alt+h
+  18) if [[ $menu == fuzzel ]]; then
+        keybindings | fuzzelrun --prompt '' --lines 12
+      else
+        keybindings | rofirun "-eh 1"
+      fi ;;
+  # Escape, or nothing picked
+  *) exit 0 ;;
+esac
