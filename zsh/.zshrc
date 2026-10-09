@@ -1,8 +1,5 @@
-export LC_CTYPE="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
-export LANG="en_US.UTF-8"
-export LC_TYPE="en_US.UTF-8"
 
 stty -ixon
 
@@ -17,9 +14,9 @@ bindkey "^D"   delete-char                          # ctrl-d
 bindkey "^K"   kill-line                            # ctrl-k
 bindkey "^N"   down-line-or-search                  # ctrl-n
 bindkey "^P"   up-line-or-search                    # ctrl-p
-bindkey "^R"   history-incremental-search-backward  # ctrl-r
 bindkey "^[[B" history-search-forward               # down arrow
 bindkey "^[[A" history-search-backward              # up arrow
+bindkey "^[[3~" delete-char                          # delete
 
 source ~/.env
 
@@ -29,24 +26,10 @@ bindkey '^X^E' edit-command-line
 
 ### Plugins ###
 
-source ~/.zplug/init.zsh
-zplug "plugins/colored-man-pages",   from:oh-my-zsh
-zplug 'zsh-users/zsh-autosuggestions'
-
-if ! zplug check 2>/dev/null; then
-    printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
-fi
-# zplug "jeffreytse/zsh-vi-mode"
-
-zplug load
+# apt install zsh-autosuggestions (zsh-syntax-highlighting is sourced last, below)
+source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # FZF
-# . /etc/profile.d/fzf.zsh
-# [ -f ~/.config/fzf/completion.zsh ] && source ~/.config/fzf/completion.zsh
-# [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 source <(fzf --zsh)
 source <(gopass completion zsh)
 
@@ -78,14 +61,18 @@ export PAGER="/home/linuxbrew/.linuxbrew/bin/hunk pager"
 
 # Man pages
 export MANPAGER='less -s -M +Gg'
-less_termcap[md]="${fg_bold[yellow]}"
-less_termcap[us]="${fg_bold[cyan]}"
-less_termcap[so]="${fg_bold[black]}${bg_bold[cyan]}"
+# Colours for less in man only: yellow headings, cyan underlines, black on
+# cyan for the status line and search hits. GROFF_NO_SGR makes groff emit the
+# old bold/underline codes that less recolours.
+man() {
+  LESS_TERMCAP_md=$'\e[1;33m' LESS_TERMCAP_us=$'\e[1;36m' LESS_TERMCAP_so=$'\e[1;30;46m' \
+  LESS_TERMCAP_mb=$'\e[1;31m' LESS_TERMCAP_me=$'\e[0m' LESS_TERMCAP_ue=$'\e[0m' LESS_TERMCAP_se=$'\e[0m' \
+  GROFF_NO_SGR=1 command man "$@"
+}
 
 # Prompt
 export FULLNAME=$(getent passwd "$USER" | cut -d: -f5 | cut -d, -f1;)
 export SUDO_PROMPT=" $FULLNAME: "
-bindkey "^[[3~" delete-char
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 
@@ -99,25 +86,22 @@ alias sudo='sudo -v; sudo '
 alias please='gum input --password --prompt=" " --placeholder="   Semyon" | sudo -nS'
 alias vi='nvim'
 alias vim='nvim'
-alias tmux='tmux -u'   # TERM no longer forced; see terminal-features in .tmux.conf
-alias hlc='herbstclient'
 alias glog='git log --oneline --decorate --graph --remotes'
 alias ip='ip -color=auto'
-alias pping='prettyping'
-alias e='emacs'
-alias copy='xsel -ib'
 alias history='fc -il 1'
-alias qr='qrencode -d 300 -v 8 -l H -o - | feh --class qrcode -'
+# `echo text | qr`: a QR code in a floating popup, closed by Escape or Ctrl+C
+# in it, or Ctrl+C back here
+alias qr='qrencode -d 300 -v 8 -l H -o - | swayimg -s real -g image -c info.mode=off -c keys.Ctrl+c=exit -'
 alias lg='lazygit'
 alias mic='arecord -vvv -f dat /dev/null'
 alias vd='vidir'
-alias pbcopy='xsel --clipboard --input'
-alias pbpaste='xsel --clipboard --output'
+alias pbcopy='~/bin/clip'
+alias pbpaste='~/bin/clip -o'
 alias cal='cal -m'
 alias sup='sudo apt update && sudo apt upgrade && snap refresh && brew upgrade'
-#alias sadd='pkill ssh-agent && eval "$(ssh-agent -s)" && ssh-add -s /usr/lib/libeToken.so'
 alias sadd='ssh-add -s /usr/lib/libeToken.so'
 alias docker='podman'
+alias c='claude'
 
 # Route ssh through the pane-styling wrapper (see ~/.ssh/bin/ssh-styled).
 # ControlMaster means LocalCommand only fires on the master connection, so
@@ -175,11 +159,7 @@ function tgf {
     fi
 }
 
-if [ "$(command -v eza)" ]; then
-    unalias -m 'll'
-    unalias -m 'l'
-    unalias -m 'la'
-    unalias -m 'ls'
+if (( $+commands[eza] )); then
     alias ls='eza --icons'
     alias l='eza -lbF --git --icons'
     alias ll='eza -lbGF --git --icons'
@@ -187,10 +167,9 @@ if [ "$(command -v eza)" ]; then
     alias lt='eza --tree --icons --level=2'
 fi
 
-if [ "$(command -v bat)" ]; then
+if (( $+commands[bat] )); then
     export BAT_THEME="Nord"
     export BAT_STYLE="changes"
-    #export BAT_STYLE="numbers,changes,header"
     alias cat='bat --no-pager -p'
 fi
 
@@ -241,20 +220,15 @@ function fzf-ssh() {
 zle -N fzf-ssh
 bindkey "^s" fzf-ssh
 
-# FILES
-function __fsel_files() {
-  fzf_opts=$(cat << END
-            $fzf_general_opts
-            --preview-window="right:50%:wrap"
-            --multi
-            --prompt=" FILE  "
-            --preview='COLORTERM=truecolor bat --style=numbers --color=always {}'
-END
-)
+# FILES AND FILE CONTENTS
+# Pick files in a tmux popup; the paths come back shell-quoted. $1 lists the
+# candidates, the remaining arguments are added fzf options.
+function __fsel() {
+  local list=$1; shift
+  local fzf_opts="$fzf_general_opts --preview-window='right:50%:wrap' --multi $*"
 
   setopt localoptions pipefail no_aliases 2> /dev/null
-  rg . --files --hidden --no-ignore-vcs \
-    | FZF_DEFAULT_OPTS="$fzf_opts" fzf-tmux -p70%,70% -m "$@" | while read item; do
+  eval "$list" | FZF_DEFAULT_OPTS="$fzf_opts" fzf-tmux -p70%,70% | while read item; do
     echo -n "${(q)item} "
   done
   local ret=$?
@@ -262,61 +236,35 @@ END
   return $ret
 }
 
+# Run a picker and open what it returns in $EDITOR, as a command in history
+function __fsel_edit() {
+  local selected
+  selected=$("$@")
+  if [[ -z "$selected" ]]; then
+    zle redisplay
+    return 0
+  fi
+  zle push-line # Clear buffer
+  BUFFER="$EDITOR $selected"
+  zle accept-line
+}
+
 function fzf-edit {
-    selected=$(__fsel_files)
-    if [[ -z "$selected" ]]; then
-        zle redisplay
-        return 0
-    fi
-    zle push-line # Clear buffer
-    BUFFER="$EDITOR $selected";
-    zle accept-line
+  __fsel_edit __fsel 'rg . --files --hidden --no-ignore-vcs' \
+    '--prompt=" FILE  "' \
+    "--preview='COLORTERM=truecolor bat --style=numbers --color=always {}'"
 }
 zle -N fzf-edit
 bindkey "^v" fzf-edit
 
-# Moved to tmux config
-# fzf-git() { tmux popup -d "#{pane_current_path}" -E -w 90% -h 90% /usr/bin/zsh -c lazygit }
-# zle -N fzf-git
-# bindkey "^g" fzf-git
-
-# SEARCH FILES CONTENT
-function __fsel_files_content() {
-  export RG_DEFAULT_COMMAND="rg -i -l --hidden --no-ignore-vcs"
-  fzf_opts=$(cat << END
-            $fzf_general_opts
-            --preview-window="right:50%:wrap"
-            --multi
-            --exact
-            --ansi
-            --disabled
-            --reverse
-            --prompt=" CONTENT  "
-            --bind "f12:execute-silent:(subl -b {})"
-            --bind "change:reload:$RG_DEFAULT_COMMAND {q} || true"
-            --preview "timeout 3s rg -i --pretty --context 2 {q} {}"
-END
-)
-
-  setopt localoptions pipefail no_aliases 2> /dev/null
-  rg --files --hidden \
-    | FZF_DEFAULT_OPTS="$fzf_opts" fzf-tmux -p70%,70% -m "$@" | while read item; do
-    echo -n "${(q)item} "
-  done
-  local ret=$?
-  echo
-  return $ret
-}
-
+# Search inside files: the query reruns rg, which lists only matching files
 function fzf-files-content {
-    selected=$(__fsel_files_content)
-    if [[ -z "$selected" ]]; then
-        zle redisplay
-        return 0
-    fi
-    zle push-line # Clear buffer
-    BUFFER="$EDITOR $selected";
-    zle accept-line
+  local rg='rg -i -l --hidden --no-ignore-vcs'
+  __fsel_edit __fsel 'rg --files --hidden' \
+    --exact --ansi --disabled \
+    '--prompt=" CONTENT  "' \
+    "--bind \"change:reload:$rg {q} || true\"" \
+    '--preview "timeout 3s rg -i --pretty --context 2 {q} {}"'
 }
 zle -N fzf-files-content
 bindkey "^f" fzf-files-content
@@ -326,8 +274,6 @@ bindkey "^f" fzf-files-content
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 typeset -A ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[cursor]=underline
-
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
 export NVM_DIR="$HOME/.nvm"
 # Stubs for all four, so running `node` (not just `nvm`) loads nvm on demand
