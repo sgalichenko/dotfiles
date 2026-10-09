@@ -1,8 +1,0 @@
-- name: Get NerdFonts
-  git:
-     repo: 'https://github.com/ryanoasis/nerd-fonts.git'
-     dest: ~/nerdfonts
-     depth: 1
-
-- name: Install NerdFonts
-  shell: chdir=~/nerdfonts ./install.sh
