@@ -1,0 +1,7 @@
+# Screen sharing under Hyprland (see hyprland/xdg-desktop-portal/hyprland-portals.conf).
+# wlroots' portal shares whole monitors, not single windows: on a share
+# request, click the monitor to share (slurp -o picks an output).
+[screencast]
+chooser_type = simple
+chooser_cmd = slurp -f %o -or -b 2e344080 -c 81a1c1
+max_fps = 30

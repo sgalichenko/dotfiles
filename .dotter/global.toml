@@ -116,3 +116,16 @@
 "wayland/fcitx5/themes/nord/theme.conf" = "~/.local/share/fcitx5/themes/nord/theme.conf"
 "wayland/dbus/org.gnome.Settings.service" = "~/.local/share/dbus-1/services/org.gnome.Settings.service"
 "wayland/gtk-4.0/gtk.css" = "~/.config/gtk-4.0/gtk.css"
+
+[hyprland]
+# Hyprland next to GNOME, which stays the default session; hyprland/install.sh
+# installs the packages (needs sudo)
+depends = ["wayland"]
+
+[hyprland.files]
+"hyprland/hyprland.lua" = "~/.config/hypr/hyprland.lua"
+"hyprland/reload.sh" = "~/.config/hypr/reload.sh"
+"hyprland/move.sh" = "~/.config/hypr/move.sh"
+"hyprland/hyprsunset.conf" = "~/.config/hypr/hyprsunset.conf"
+"hyprland/xdg-desktop-portal/hyprland-portals.conf" = "~/.config/xdg-desktop-portal/hyprland-portals.conf"
+"hyprland/xdg-desktop-portal-wlr/config" = "~/.config/xdg-desktop-portal-wlr/config"
