@@ -13,3 +13,15 @@
     box-shadow: inset 3px 0 0 #88C0D0 !important;  /* nord8 */
   }
 }
+
+/* Vimium's HUD (the yy/find bar at the bottom): centred instead of on the
+   right, and about 50 characters wide, enough for yy's "Yanked <url>" that
+   Vimium cuts at 40. 14px RobotoMono is ~8.4px a character; the rest is the
+   HUD page's padding and borders. Its frame sits in a shadow root that
+   Vimium's own custom CSS can't reach, but user sheets apply there too. */
+iframe.vimium-hud-frame {
+  width: 460px !important;
+  left: 50% !important;
+  right: auto !important;
+  margin: 0 0 0 -230px !important;
+}
