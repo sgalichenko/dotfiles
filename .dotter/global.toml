@@ -8,6 +8,8 @@
 # Load-bearing: every LocalCommand in ~/.ssh/config invokes this, and
 # ~/.ssh/bin/ssh-styled reads the colours back out of those entries.
 "tmux/ssh_style" = "~/.tmux/ssh_style"
+"tmux/popup-resize" = "~/.tmux/popup-resize"
+"tmux/quick-select-window" = "~/.tmux/quick-select-window"
 
 [nvim.files]
 # A whole-directory symlink is safe here: lazy.nvim keeps plugins and state

@@ -1,0 +1,137 @@
+#!/bin/sh
+# tmux-fingers over every visible pane of a window, not just the active one.
+# Usage: quick-select-window <pane_id> [fingers start options]
+#
+# fingers only reads one pane, so this builds one: a scratch window the size
+# of this one, with each pane's text drawn where that pane is and the borders
+# between them, so no match runs from one pane into the next. fingers runs on
+# it, and the original window comes back when fingers exits.
+#
+# fingers pads each line it shows to the full width, and gets the width of
+# two things wrong; a line it gets too wide wraps and pushes the rest down.
+# So pane_text below hands it neither as is:
+# - tabs: it expands them its own way, so they're spaces already, at the
+#   pane's own tab stops;
+# - wide characters (CJK, kana): it counts (bytes - chars) / 3 extra columns,
+#   one short for every three. A zero-width space (3 bytes, no column) after
+#   each one makes up for it.
+#
+# A hint's paste (shift) action would paste into the scratch pane, so it
+# targets the original pane instead, through this script again: fingers
+# rejects quotes inside an action.
+
+if [ "$1" = --paste ]; then
+	tmux if -F -t "$2" '#{pane_in_mode}' "send -X -t $2 cancel"
+	exec tmux paste-buffer -t "$2"
+fi
+
+pane=$1
+shift
+fingers=$(tmux show -gv @fingers-cli)
+
+# session, window, zoomed, width, height, cwd (q: quotes for the shell)
+eval "$(tmux display -p -t "$pane" 'session=#{q:session_id} window=#{q:window_id}
+	zoomed=#{window_zoomed_flag} width=#{window_width} height=#{window_height}
+	cwd=#{q:pane_current_path}')" || exit 1
+
+case " $* " in
+*" --shift-action"*) ;;
+*) set -- "$@" --shift-action "$0 --paste $pane" ;;
+esac
+
+# The panes on screen, in the format $1: all of them, or only the zoomed one
+# (the active pane; the hidden ones are still listed, at their old sizes).
+# A single pane goes through all this too, rather than to fingers directly,
+# for the tab and wide-character fixes.
+visible_panes() {
+	if [ "$zoomed" = 1 ]; then filter='#{pane_active}'; else filter=1; fi
+	tmux list-panes -t "$window" -f "$filter" -F "$1"
+}
+
+# Each pane's lines, each at its place on screen. A pane in copy mode is
+# taken at its scroll position, as fingers itself does.
+pane_text() {
+	visible_panes '#{pane_id} #{pane_left} #{pane_top} #{pane_height} #{?pane_in_mode,#{scroll_position},}' |
+		while read -r id left top rows scroll; do
+			if [ -n "$scroll" ]; then
+				tmux capture-pane -p -t "$id" -S "-$scroll" -E "$((rows - 1 - scroll))"
+			else
+				tmux capture-pane -p -t "$id"
+			fi | LC_ALL=C awk -v x="$((left + 1))" -v y="$((top + 1))" '
+				# Byte by byte (LC_ALL=C), counting the columns for the tab stops
+				function wide(c, next1) {   # first byte of a 3-byte wide character
+					return (c >= "\343" && c <= "\355") || (c == "\357" && (next1 == "\274" || next1 == "\275"))
+				}
+				function continuation(c) { return c >= "\200" && c <= "\277" }
+				{
+					out = ""; col = 0
+					for (i = 1; i <= length($0); i++) {
+						c = substr($0, i, 1)
+						if (wide(c, substr($0, i + 1, 1))) {
+							out = out substr($0, i, 3) "\342\200\213"   # + zero-width space
+							i += 2; col += 2
+						} else if (c == "\t") {
+							do { out = out " "; col++ } while (col % 8)
+						} else {
+							out = out c
+							if (!continuation(c)) col++
+						}
+					}
+					printf "\033[%d;%dH%s", y + NR - 1, x, out
+				}'
+		done
+}
+
+# The borders: every cell no pane covers, drawn as the line tmux draws there,
+# picked by which of its neighbours (up, down, left, right) are borders too
+borders() {
+	visible_panes '#{pane_left} #{pane_top} #{pane_width} #{pane_height}' |
+		awk -v w="$width" -v h="$height" '
+			{ for (y = $2; y < $2 + $4; y++) for (x = $1; x < $1 + $3; x++) pane[x, y] }
+			END {
+				n = split("0001 ─ 0010 ─ 0011 ─ 0100 │ 1000 │ 1100 │ 0101 ┌ 0110 ┐ 1001 └ 1010 ┘ " \
+					"1101 ├ 1110 ┤ 0111 ┬ 1011 ┴ 1111 ┼", g, " ")
+				for (i = 1; i < n; i += 2) glyph[g[i]] = g[i + 1]
+				for (y = 0; y < h; y++) for (x = 0; x < w; x++) if (!((x, y) in pane)) border[x, y]
+				for (y = 0; y < h; y++) for (x = 0; x < w; x++) if ((x, y) in border) {
+					k = ((x, y - 1) in border) ((x, y + 1) in border) ((x - 1, y) in border) ((x + 1, y) in border)
+					if (k in glyph) printf "\033[%d;%dH%s", y + 1, x + 1, glyph[k]
+				}
+			}'
+}
+
+# The cursor, parked bottom-right after the drawing, says tmux has drawn it all
+wait_until_drawn() {
+	i=0
+	while [ "$(tmux display -p -t "$scratch_pane" '#{cursor_x} #{cursor_y}')" != "$((width - 1)) $((height - 1))" ]; do
+		i=$((i + 1))
+		[ "$i" -gt 100 ] && exit 1
+		sleep 0.01
+	done
+}
+
+# Selecting the scratch window and killing it would lose the window that
+# prefix+l goes back to, so that one is put back too
+last=$(tmux list-windows -t "$session" -F '#{window_last_flag} #{window_id}' | awk '$1 == 1 { print $2 }')
+
+eval "$(tmux new-window -d -P -t "$session:" -n quick-select -c "$cwd" \
+	-F 'scratch_window=#{q:window_id} scratch_pane=#{q:pane_id} tty=#{q:pane_tty}' cat)"
+restore() {
+	[ -n "$last" ] && tmux select-window -t "$last"
+	tmux select-window -t "$window" \; select-pane -t "$pane"
+	tmux kill-window -t "$scratch_window"
+}
+trap restore EXIT
+trap 'exit 1' HUP INT TERM
+
+tmux resize-window -t "$scratch_window" -x "$width" -y "$height"
+{
+	printf '\033[?25l\033[H\033[2J'
+	pane_text
+	borders
+	printf '\033[%d;%dH' "$height" "$width"
+} >"$tty"
+wait_until_drawn
+
+tmux select-window -t "$scratch_window"
+"$fingers" start "$scratch_pane" "$@"
