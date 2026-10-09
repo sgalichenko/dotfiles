@@ -1,0 +1,10 @@
+# /etc/xdg/autostart/nm-applet.desktop, kept out of niri: the bar's network
+# module and wayland/scripts/network.sh do its job, without a second tray icon
+[Desktop Entry]
+Name=NetworkManager Applet
+Exec=nm-applet
+Icon=nm-device-wireless
+Type=Application
+Terminal=false
+NoDisplay=true
+NotShowIn=KDE;GNOME;niri;

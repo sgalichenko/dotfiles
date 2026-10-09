@@ -1,0 +1,433 @@
+// Minimal Nord niri, ported from hyprland/hyprland.lua: same keys, bar, launcher
+// and notifications. GNOME stays the default session; niri/install.sh builds
+// niri and adds it to GDM's session list. niri reloads this file on save and
+// shows a notice if it doesn't parse; `niri validate` checks it.
+//
+// Where niri differs from Hyprland, it's on purpose, not a missing port:
+// - Scrolling columns, not dwindle: new windows open as a column to the right,
+//   and the view scrolls to them. Super+U/O stack and unstack (see Splitting).
+// - Workspaces belong to a monitor and come and go: each monitor has the ones
+//   holding windows plus one empty one at the bottom, so Super+1-5 are the
+//   focused monitor's first five, and the bar shows that monitor's.
+// - No pinned (all-workspace) windows, so Picture-in-Picture just floats.
+
+// ---------- Monitors ----------
+// The 4K Dell sits left of the laptop at scale 1.5 (2560x1440 logical), so the
+// laptop starts at x=2560 and drops 240 to line up their bottom edges.
+// Anything else is auto-placed at its preferred mode; niri picks its scale.
+output "Dell Inc. DELL U2723QX 9TM1ZN3" {
+    scale 1.5
+    position x=0 y=0
+}
+
+output "eDP-1" {
+    scale 1
+    position x=2560 y=240
+}
+
+// The 1080p Dell sits on top of the laptop; both are 1920 wide, so it's
+// directly above at the laptop's x
+output "Dell Inc. DELL U2417H FFVVR73V167L" {
+    scale 1
+    position x=2560 y=-840
+}
+
+// ---------- Environment ----------
+// For everything niri starts. niri-session already exports WAYLAND_DISPLAY,
+// XDG_CURRENT_DESKTOP=niri and DISPLAY (xwayland-satellite) to systemd and D-Bus.
+environment {
+    // GNOME's SSH agent, which its session normally exports: gcr-ssh-agent,
+    // socket-activated by systemd. A literal path, so this assumes uid 1000.
+    SSH_AUTH_SOCK "/run/user/1000/gcr/ssh"
+    QT_QPA_PLATFORM "wayland;xcb"
+    // fcitx5 for Japanese (Mozc), not GNOME's IBus, as under Hyprland.
+    // The session arrives with im-config's IBus settings, and IBus isn't
+    // running here, so GTK apps loaded its module and got no input method:
+    // GTK_IM_MODULE is unset, so GTK uses Wayland's text-input, which niri
+    // passes to fcitx5
+    GTK_IM_MODULE null
+    CLUTTER_IM_MODULE null
+    QT_IM_MODULE "fcitx"
+    XMODIFIERS "@im=fcitx"
+    SDL_IM_MODULE "fcitx"
+}
+
+cursor {
+    xcursor-theme "Yaru"
+    xcursor-size 24
+}
+
+// ---------- Autostart ----------
+// Portals and other systemd user services need the SSH agent too
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "SSH_AUTH_SOCK"
+// The portal outlives a logout, so one left from a Hyprland session would keep
+// hyprland-portals.conf and share through wlroots' portal, whole monitors only.
+// Restarting it makes it read niri-portals.conf.
+spawn-at-startup "systemctl" "--user" "restart" "xdg-desktop-portal"
+spawn-sh-at-startup "~/.config/wayland/wm bar"
+spawn-sh-at-startup "~/.config/wayland/hotplug.sh"
+spawn-at-startup "mako"
+// Notes which notifications timed out unseen, for Super+N's missed dot
+spawn-sh-at-startup "~/.config/wayland/notify-watch.sh"
+spawn-at-startup "hypridle"
+spawn-at-startup "systemctl" "--user" "start" "hyprpolkitagent"
+// The Ghostty Super+Shift+Enter opens its terminals in (see niri/stack.sh):
+// already running, with no window of its own, so they open in ~60 ms
+spawn-at-startup "ghostty" "--class=ghostty.stacked" "--gtk-single-instance=true" "--initial-window=false" "--quit-after-last-window-closed=false"
+// fcitx5's own XDG autostart is hidden (wayland/fcitx5/org.fcitx.Fcitx5.desktop)
+// to keep it out of GNOME, so it's started here
+spawn-at-startup "fcitx5" "-d" "--replace"
+// Clipboard history for Super+V: text and images as they're copied
+spawn-sh-at-startup "wl-paste --type text --watch ~/.config/wayland/cliphist-store.sh"
+spawn-sh-at-startup "wl-paste --type image --watch ~/.config/wayland/cliphist-store.sh"
+// Night light on GNOME's schedule and warmth (20:00 to 6:00, 2700 K), as
+// hyprsunset.conf does under Hyprland; hyprsunset itself only runs there
+spawn-at-startup "wlsunset" "-S" "06:00" "-s" "20:00" "-t" "2700"
+// USB drives mount on plug-in, with a notification
+spawn-at-startup "udiskie" "--automount" "--notify"
+
+// Super+Shift+/ lists the binds with a hotkey-overlay-title, plus niri's stock
+// actions. Ours are mostly the -or-monitor variants it doesn't look for, so
+// the stock entries would read "not bound"; those are hidden.
+hotkey-overlay {
+    skip-at-startup
+    hide-not-bound
+}
+
+// Minimal: short ease-outs, no bounce, just enough to see where things went.
+// The moves of the view and of windows beside one being resized use critically
+// damped springs instead (damping 1.0, so no bounce either): a held resize key
+// retargets them every repeat, ~30 ms, and a spring carries on at the speed it
+// had, where each ease-out started again from rest, so they stuttered. The
+// resize itself isn't animated.
+animations {
+    workspace-switch         { duration-ms 150; curve "ease-out-cubic"; }
+    horizontal-view-movement { spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001; }
+    window-movement          { spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001; }
+    // Off: niri animates a resize by stretching a snapshot of the window,
+    // which squashes its text (a cropping custom-shader didn't help)
+    window-resize            { off; }
+    window-open              { duration-ms 120; curve "ease-out-cubic"; }
+    window-close             { duration-ms 100; curve "ease-out-cubic"; }
+    overview-open-close      { duration-ms 150; curve "ease-out-cubic"; }
+}
+
+// Ask apps to leave out their own title bars, so the border hugs the window
+// as Hyprland's does. Apps that insist (GNOME's) keep theirs.
+prefer-no-csd
+
+// ---------- Input ----------
+// Matches GNOME here: US layout, natural scrolling and tap-to-click on the
+// touchpad, 500 ms repeat delay at 30 ms intervals (~33/s).
+input {
+    keyboard {
+        xkb {
+            layout "us"
+        }
+        repeat-delay 500
+        repeat-rate 33
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+    }
+
+    // Focus follows the mouse, but only onto windows already fully on screen:
+    // niri always scrolls a focused window into view, so hovering a
+    // half-visible column would scroll it. The mouse follows focus too:
+    // Super+arrows and the other keyboard moves put the cursor on the window.
+    focus-follows-mouse max-scroll-amount="0%"
+    warp-mouse-to-focus
+}
+
+// The top-left hot corner opens the overview, and that's where the
+// workspace dots sit. The overview is on Super+W instead.
+gestures {
+    hot-corners {
+        off
+    }
+}
+
+overview {
+    backdrop-color "#2e3440"
+}
+
+// ---------- Look ----------
+layout {
+    // Hyprland's 3 inner (doubled between windows) and 6 outer
+    gaps 6
+    background-color "#2f343f"
+
+    // Columns start at half the screen; Super+R steps through these
+    default-column-width { proportion 0.5; }
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    focus-ring {
+        off
+    }
+
+    // nord9 (a step dimmer than nord8) on the focused window, nord1 on the
+    // rest. A window that asks for attention (a terminal bell rang in it, see
+    // Ghostty's bell-features) gets nord13 with 40% nord0 mixed in until it's
+    // focused; niri has an urgent colour of its own, so no tag rule is needed.
+    border {
+        width 2
+        active-color "#81a1c1"
+        inactive-color "#3b4252"
+        urgent-color "#9f8f6d"
+    }
+
+    // Tabbed columns (Super+Space): tabs in the border colours
+    tab-indicator {
+        active-color "#81a1c1"
+        inactive-color "#3b4252"
+        urgent-color "#9f8f6d"
+    }
+}
+
+// ---------- Alt+Tab ----------
+// niri's switcher with window previews, across the current workspace like
+// Hyprland's cycle_next (A, W, O inside it widen the scope). Super+Tab
+// switches monitors instead, see Focus.
+recent-windows {
+    highlight {
+        active-color "#81a1c1"
+        urgent-color "#9f8f6d"
+    }
+
+    binds {
+        Alt+Tab       { next-window     scope="workspace"; }
+        Alt+Shift+Tab { previous-window scope="workspace"; }
+    }
+}
+
+// ---------- Keys ----------
+// Follows hyprland.lua, which follows the old herbstluftwm autostart.
+// niri repeats every bind while held unless it says repeat=false.
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    Mod+Shift+Q { quit skip-confirmation=true; }
+    Mod+Shift+R { spawn-sh "~/.config/niri/reload.sh"; }
+    Mod+Shift+C repeat=false { close-window; }
+
+    // Apps
+    // A fresh tmux session per window, killed when its window closes so they don't pile up;
+    // Ghostty's own command still attaches to `main`, which survives
+    Mod+Return repeat=false { spawn "ghostty" "-e" "/usr/bin/zsh" "-lc" r"tmux new-session \; set destroy-unattached on || exec zsh"; }
+    // The same, stacked at the bottom of the focused window's column (see
+    // stack.sh and the ghostty.stacked rule)
+    Mod+Shift+Return repeat=false hotkey-overlay-title="Terminal Stacked Under This Column" { spawn "~/.config/niri/stack.sh" "/usr/bin/zsh" "-lc" r"tmux new-session \; set destroy-unattached on || exec zsh"; }
+    Ctrl+Space repeat=false { spawn-sh "~/.config/wayland/launcher.sh"; }
+    // Yazi in its own tmux session, gone once yazi quits or the window closes
+    Mod+Y repeat=false { spawn "ghostty" "-e" "/usr/bin/zsh" "-lc" r"tmux new-session yazi \; set destroy-unattached on || exec yazi"; }
+    Mod+Escape repeat=false { spawn-sh "~/.config/wayland/sysmenu.sh"; }
+    Mod+N repeat=false { spawn-sh "~/.config/wayland/notifications.sh"; }
+    Mod+L repeat=false { spawn "loginctl" "lock-session"; }
+    Ctrl+Alt+P repeat=false { spawn-sh "~/bin/gopass-menu"; }
+    Mod+M repeat=false { spawn-sh "~/bin/ddcswitch"; }
+    // Copy the primary selection to the clipboard
+    Ctrl+0 { spawn-sh "wl-paste -p -n | wl-copy"; }
+    // Print and Super+Ctrl+P: drag out a region (slurp, which spans both monitors)
+    // and annotate it in Satty; Enter copies it, Ctrl+S saves it to
+    // ~/Pictures/screenshots (see wayland/satty/config.toml). Shift+Print saves the
+    // whole screen and copies it too.
+    Print repeat=false { spawn-sh r#"g=$(slurp -d -b 2e344080 -c 81a1c1) && grim -g "$g" - | ~/.cargo/bin/satty --filename -"#; }
+    Mod+Ctrl+P repeat=false { spawn-sh r#"g=$(slurp -d -b 2e344080 -c 81a1c1) && grim -g "$g" - | ~/.cargo/bin/satty --filename -"#; }
+    Shift+Print repeat=false { spawn-sh r#"mkdir -p ~/Pictures/screenshots && f=~/Pictures/screenshots/$(date +%Y%m%d-%H%M%S).png && grim "$f" && wl-copy < "$f""#; }
+    // Clipboard history: pick an entry and it's copied again
+    Mod+V repeat=false { spawn-sh "~/.config/wayland/clipboard.sh"; }
+
+    // Focus
+    // Arrows step through columns and the windows in a column, and on to the
+    // next monitor at the end: the Dell above the laptop for Up/Down
+    Mod+Left hotkey-overlay-title="Focus Left" { focus-column-or-monitor-left; }
+    Mod+Down hotkey-overlay-title="Focus Down" { focus-window-or-monitor-down; }
+    Mod+Up hotkey-overlay-title="Focus Up" { focus-window-or-monitor-up; }
+    Mod+Right hotkey-overlay-title="Focus Right" { focus-column-or-monitor-right; }
+    // Super+Tab jumps between monitors, i.e. between the workspaces on screen
+    Mod+Tab       { focus-monitor-next; }
+    Mod+Shift+Tab { focus-monitor-previous; }
+    Mod+C         { focus-column-right-or-first; }
+    Mod+BackSpace { focus-monitor-next; }
+    Mod+I         { focus-window-previous; }
+    Mod+W repeat=false { toggle-overview; }
+
+    // Move windows
+    // Columns carry on to the next monitor at the end, maximized or not;
+    // Up/Down reorder within a column and carry on to the monitor above or
+    // below (the Dell over the laptop) from its top or bottom, see move.sh
+    Mod+Shift+Left hotkey-overlay-title="Move Column Left" { move-column-left-or-to-monitor-left; }
+    Mod+Shift+Down hotkey-overlay-title="Move Window Down" { spawn-sh "~/.config/niri/move.sh down"; }
+    Mod+Shift+Up hotkey-overlay-title="Move Window Up" { spawn-sh "~/.config/niri/move.sh up"; }
+    Mod+Shift+Right hotkey-overlay-title="Move Column Right" { move-column-right-or-to-monitor-right; }
+    Mod+Shift+H     { move-column-left-or-to-monitor-left; }
+    Mod+Shift+J     { spawn-sh "~/.config/niri/move.sh down"; }
+    Mod+Shift+K     { spawn-sh "~/.config/niri/move.sh up"; }
+    Mod+Shift+L     { move-column-right-or-to-monitor-right; }
+
+    // Splitting: herbstluftwm's split bottom and split right. U stacks this
+    // window under the column on its left (from a stack, it takes it back out
+    // to the left); O puts a stacked window back in a column of its own.
+    // Super+Space cycled herbstluftwm's frame layout; here it flips the column
+    // between stacked and tabbed.
+    Mod+U hotkey-overlay-title="Stack Into Column on the Left" { consume-or-expel-window-left; }
+    Mod+O hotkey-overlay-title="Expel Window From Column" { expel-window-from-column; }
+    Mod+Space repeat=false { toggle-column-tabbed-display; }
+    Mod+R     { switch-preset-column-width; }
+
+    // Input method: Alt+Shift is fcitx5's own (see wayland/fcitx5/config), not bound here
+
+    // Resize by 50 logical pixels, repeating while held
+    Mod+Alt+Left hotkey-overlay-title="Narrower" { set-column-width "-50"; }
+    Mod+Alt+Right hotkey-overlay-title="Wider" { set-column-width "+50"; }
+    // Up/Down move the divider between stacked windows the way the arrow
+    // points, whichever side of it the focused window is (see resize.sh)
+    Mod+Alt+Up hotkey-overlay-title="Move Divider Up" { spawn-sh "~/.config/niri/resize.sh up"; }
+    Mod+Alt+Down hotkey-overlay-title="Move Divider Down" { spawn-sh "~/.config/niri/resize.sh down"; }
+    Mod+Alt+H     { set-column-width "-50"; }
+    Mod+Alt+L     { set-column-width "+50"; }
+    Mod+Alt+K     { spawn-sh "~/.config/niri/resize.sh up"; }
+    Mod+Alt+J     { spawn-sh "~/.config/niri/resize.sh down"; }
+
+    // Layouting
+    // Super+S floats or tiles the window; Super+Shift+S hops between the
+    // floating windows and the tiled ones
+    Mod+S       repeat=false { toggle-window-floating; }
+    Mod+Shift+S repeat=false { switch-focus-between-floating-and-tiling; }
+    // Super+Shift+F maximizes: fills the monitor but keeps the bar and gaps
+    Mod+Shift+F repeat=false { maximize-column; }
+    Mod+F       repeat=false { fullscreen-window; }
+    // Hyprland's pseudotiling has no counterpart; centring the column is the nearest
+    Mod+P       { center-column; }
+
+    // Workspaces: Super+N goes to the focused monitor's Nth, Super+Shift+N
+    // sends the window there and stays
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+Shift+1 { move-window-to-workspace 1 focus=false; }
+    Mod+Shift+2 { move-window-to-workspace 2 focus=false; }
+    Mod+Shift+3 { move-window-to-workspace 3 focus=false; }
+    Mod+Shift+4 { move-window-to-workspace 4 focus=false; }
+    Mod+Shift+5 { move-window-to-workspace 5 focus=false; }
+    // Super+arrows move focus, so next/previous sits on Ctrl, on Up/Down
+    // since niri stacks workspaces vertically (Hyprland's sit side by side
+    // and use Left/Right)
+    Mod+Ctrl+Down { focus-workspace-down; }
+    Mod+Ctrl+Up   { focus-workspace-up; }
+    // and Shift on top takes the window along
+    Mod+Ctrl+Shift+Down { move-window-to-workspace-down; }
+    Mod+Ctrl+Shift+Up   { move-window-to-workspace-up; }
+    Mod+Period     { focus-workspace-down; }
+    Mod+Comma      { focus-workspace-up; }
+
+    // Mouse: Super+drag moves and Super+right-drag resizes without binds.
+    // Super+wheel scrolls through workspaces, like the touchpad's swipes
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+
+    // Media keys work on the lock screen too (allow-when-locked) and repeat when held.
+    // Bare F1-F3 double as volume keys; F6/F7 stay free since yazi uses F5/F6.
+    XF86AudioRaiseVolume  allow-when-locked=true { spawn-sh "~/.config/wayland/volume.sh up"; }
+    XF86AudioLowerVolume  allow-when-locked=true { spawn-sh "~/.config/wayland/volume.sh down"; }
+    XF86AudioMute         allow-when-locked=true repeat=false { spawn-sh "~/.config/wayland/volume.sh mute"; }
+    F1                    allow-when-locked=true repeat=false { spawn-sh "~/.config/wayland/volume.sh mute"; }
+    F2                    allow-when-locked=true { spawn-sh "~/.config/wayland/volume.sh down"; }
+    F3                    allow-when-locked=true { spawn-sh "~/.config/wayland/volume.sh up"; }
+    XF86AudioMicMute      allow-when-locked=true repeat=false { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn-sh "~/.config/wayland/brightness.sh up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "~/.config/wayland/brightness.sh down"; }
+    XF86AudioPlay         allow-when-locked=true repeat=false { spawn "playerctl" "play-pause"; }
+    XF86AudioNext         allow-when-locked=true repeat=false { spawn "playerctl" "next"; }
+    XF86AudioPrev         allow-when-locked=true repeat=false { spawn "playerctl" "previous"; }
+
+    // Escape hatch for an app (a VM, a remote desktop) that grabs every key
+    Mod+Shift+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+}
+
+// ---------- Rules ----------
+// From herbstluftwm's rules, for apps still installed here. Floating windows
+// open centred unless a rule places them.
+window-rule {
+    match app-id="firefox$" title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// mako's popups stay out of screen shares and recordings, shown as a black
+// box there; screenshots still have them
+layer-rule {
+    match namespace="^notifications$"
+    block-out-from "screencast"
+}
+
+// Satty's annotation window over whatever was captured, popup terminals, the
+// qr alias's feh, and swayimg (gopass-menu's QR codes), which ignores its
+// --class on Wayland, so it's matched as itself
+window-rule {
+    match app-id=r#"^com\.gabm\.satty$"#
+    match app-id=r#"^ghostty\.floatingTerminal$"#
+    match app-id="^qrcode$"
+    match app-id="^swayimg$"
+    match app-id="^blueman-manager$"
+    open-floating true
+}
+
+// Super+Shift+Enter's terminal opens unfocused, so the view stays put while
+// niri/stack.sh moves it into the focused column
+window-rule {
+    match app-id=r#"^ghostty\.stacked$"#
+    open-focused false
+}
+
+// The clock's calendar: a popup dropped under the clock, as the network and
+// Bluetooth ones sit under theirs, still wide enough for the month view
+window-rule {
+    match app-id=r#"^org\.gnome\.Calendar$"#
+    open-floating true
+    default-column-width { fixed 960; }
+    default-window-height { fixed 640; }
+    default-floating-position x=0 y=6 relative-to="top"
+}
+
+// Opened by Calendar's Online Accounts (see wayland/dbus/org.gnome.Settings.service)
+window-rule {
+    match app-id=r#"^org\.gnome\.Settings$"#
+    open-floating true
+    default-column-width { proportion 0.5; }
+    default-window-height { proportion 0.7; }
+}
+
+// waybar's Bluetooth and network clicks: small popups tucked under the bar's right end
+window-rule {
+    match app-id=r#"^ghostty\.(bluetui|nmtui)Popup$"#
+    match app-id="^nm-connection-editor$"
+    open-floating true
+    default-column-width { fixed 640; }
+    default-window-height { fixed 400; }
+    default-floating-position x=6 y=6 relative-to="top-right"
+}
+
+window-rule {
+    match app-id="^nm-connection-editor$"
+    default-window-height { fixed 480; }
+}
+
+// Firefox on the Dell when it's plugged in. Hyprland put it on workspace 1;
+// niri's workspaces don't outlive their windows, so it's the monitor instead.
+// The snap's app id is firefox_firefox.
+// Firefox draws its own title bar, with a 1px dark outline just outside
+// its window that covers the inner half of niri's border; clipping it to the
+// window keeps the border the full 2px, as on other windows.
+window-rule {
+    match app-id="^firefox(_firefox)?$"
+    open-on-output "Dell Inc. DELL U2723QX 9TM1ZN3"
+    clip-to-geometry true
+}

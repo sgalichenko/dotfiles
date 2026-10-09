@@ -1,0 +1,11 @@
+# /etc/xdg/autostart/im-launch.desktop, kept out of niri. niri runs XDG
+# autostart (Hyprland doesn't), and im-config falls back to IBus here, which
+# would fight the fcitx5 that config.kdl starts. GNOME still runs it.
+[Desktop Entry]
+Name=im-launch
+Exec=sh -c 'IM_CONFIG_CHECK_ENV=1 im-launch true'
+TryExec=im-launch
+Type=Application
+NoDisplay=true
+NotShowIn=niri;
+X-Ubuntu-Gettext-Domain=im-config

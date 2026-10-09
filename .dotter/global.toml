@@ -129,3 +129,19 @@ depends = ["wayland"]
 "hyprland/hyprsunset.conf" = "~/.config/hypr/hyprsunset.conf"
 "hyprland/xdg-desktop-portal/hyprland-portals.conf" = "~/.config/xdg-desktop-portal/hyprland-portals.conf"
 "hyprland/xdg-desktop-portal-wlr/config" = "~/.config/xdg-desktop-portal-wlr/config"
+
+[niri]
+# niri next to GNOME (and Hyprland, if enabled); niri/install.sh builds it
+# and the packages it adds on top of hyprland/install.sh's
+depends = ["wayland"]
+
+[niri.files]
+"niri/config.kdl" = "~/.config/niri/config.kdl"
+"niri/reload.sh" = "~/.config/niri/reload.sh"
+"niri/move.sh" = "~/.config/niri/move.sh"
+"niri/stack.sh" = "~/.config/niri/stack.sh"
+"niri/resize.sh" = "~/.config/niri/resize.sh"
+"niri/autostart/im-launch.desktop" = "~/.config/autostart/im-launch.desktop"
+"niri/autostart/SACMonitor.desktop" = "~/.config/autostart/SACMonitor.desktop"
+"niri/autostart/nm-applet.desktop" = "~/.config/autostart/nm-applet.desktop"
+"niri/xdg-desktop-portal/niri-portals.conf" = "~/.config/xdg-desktop-portal/niri-portals.conf"

@@ -1,0 +1,12 @@
+# /etc/xdg/autostart/SACMonitor.desktop, kept out of niri, whose bar needn't
+# show the SafeNet token's tray icon. SACSrv, the service the token works
+# through, still runs; GNOME still starts the monitor.
+[Desktop Entry]
+Name=SafeNet Authentication Client
+GenericName=SACMonitor
+Exec=/usr/bin/SACMonitor
+Icon=SACMonitor
+Type=Application
+Terminal=false
+Categories=Utility
+NotShowIn=niri;
