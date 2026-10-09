@@ -6,7 +6,7 @@
 # size loses nothing.
 #
 # Opening one records "<host client> <width> <height> <host size> [popup
-# args]" in @popup-<session> (see .tmux.conf, and __fsel_ssh in .zshrc for
+# args]" in @popup-<session> (see .tmux.conf, and ~/.ssh/bin/sshpick for
 # the ssh picker, which passes its border style); a client attached to that
 # session is the open popup. The client-resized hook runs this with no arguments: while a
 # popup is open, its #{client_name} names the popup's client, not the host.
