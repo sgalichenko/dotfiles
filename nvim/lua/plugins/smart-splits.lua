@@ -5,6 +5,15 @@
 return {
   "mrjones2014/smart-splits.nvim",
   lazy = false,
+  -- A tmux popup (sshmgmt's Ctrl+E) sets $TMUX but no $TMUX_PANE, as it
+  -- isn't a pane: there are no panes to move into, and the tmux side would
+  -- warn "could not detect pane ID" on every start. Set in init, since the
+  -- plugin picks its multiplexer as it loads, before setup() runs.
+  init = function()
+    if vim.env.TMUX and not vim.env.TMUX_PANE then
+      vim.g.smart_splits_multiplexer_integration = false
+    end
+  end,
   opts = {},
   config = function(_, opts)
     local ss = require("smart-splits")
