@@ -15,17 +15,7 @@
 "nvim" = "~/.config/nvim"
 
 [rofi.files]
-# rofi-pass.conf is kept in the repo for reference but not mapped: rofi-pass
-# isn't installed here, and its `pass` backend isn't either (gopass is).
 "rofi" = "~/.config/rofi"
-
-[vifm.files]
-# Individual files, not the directory: ~/.config/vifm also holds colors/,
-# scripts/, vifminfo.json and vifm's shipped vifm-help.txt, which a
-# directory symlink would hide.
-"vifm/vifmrc" = "~/.config/vifm/vifmrc"
-"vifm/vifmimg" = "~/.config/vifm/vifmimg"
-"vifm/vimfm" = "~/.config/vifm/vimfm"
 
 [firefox.files]
 # Firefox here is the Ubuntu snap, so userChrome.css belongs under
@@ -35,7 +25,6 @@
 # in ~/firefox, where Firefox never reads them.
 "firefox/userChrome.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/userChrome.css"
 "firefox/userContent.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/userContent.css"
-"firefox/treestyletab.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/treestyletab.css"
 
 [wezterm.files]
 "wezterm/.wezterm.lua" = "~/.wezterm.lua"
@@ -61,9 +50,6 @@
 # {{filename}} / {{selectedRef}} placeholders, which dotter would otherwise
 # try to render as handlebars templates and blank out.
 "lazygit/config.yml" = { target = "~/.config/lazygit/config.yml", type = "symbolic" }
-
-[fzf.files]
-"fzf/.fzf.zsh" = "~/.fzf.zsh"
 
 [yazi.files]
 # Individual files, not the directory: `ya pkg` installs plugins into
