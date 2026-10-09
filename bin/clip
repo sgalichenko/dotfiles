@@ -24,7 +24,9 @@ fi
 
 if [ -n "$sock" ]; then
 	export WAYLAND_DISPLAY="$sock"
-	copy() { wl-copy; }
+	# Always text: wl-copy guesses the type from the data, and offers a PEM key
+	# only as application/x-pem-key, which text-only pasters cannot take
+	copy() { wl-copy --type text/plain; }
 	paste() { wl-paste --no-newline; }
 	clear() { wl-copy --clear; }
 else
