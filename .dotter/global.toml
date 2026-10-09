@@ -19,14 +19,15 @@
 [rofi.files]
 "rofi" = "~/.config/rofi"
 
-[firefox.files]
-# Firefox here is the Ubuntu snap, so userChrome.css belongs under
-# ~/snap/firefox/common/.mozilla/firefox/<profile>/chrome/ and needs
-# toolkit.legacyUserProfileCustomizations.stylesheets=true in about:config.
-# The old mapping target was a bare relative path and deposited these files
-# in ~/firefox, where Firefox never reads them.
-"firefox/userChrome.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/userChrome.css"
-"firefox/userContent.css" = "~/snap/firefox/common/.mozilla/firefox/i00sdrlv.default/chrome/userContent.css"
+[firefox]
+# No files here: the profile directory is random per machine, so the mapping
+# lives in .dotter/local.toml. Firefox here is the Ubuntu snap; the files go in
+# the profile's chrome/ and need
+# toolkit.legacyUserProfileCustomizations.stylesheets=true in about:config:
+#
+#   [files]
+#   "firefox/userChrome.css" = "~/snap/firefox/common/.mozilla/firefox/<profile>/chrome/userChrome.css"
+#   "firefox/userContent.css" = "~/snap/firefox/common/.mozilla/firefox/<profile>/chrome/userContent.css"
 
 [wezterm.files]
 "wezterm/.wezterm.lua" = "~/.wezterm.lua"
