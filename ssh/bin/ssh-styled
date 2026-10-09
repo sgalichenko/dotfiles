@@ -14,23 +14,53 @@ resolved=$(ssh -G "$@" 2>/dev/null)
 host=$(awk '$1 == "host" { print $2; exit }' <<< "$resolved")
 [[ -n $host ]] && "$HOME/.ssh/bin/sshmgmt" record "$host" 2>/dev/null
 
-# Outside tmux, or with no style for this host, just hand off to ssh.
+# Outside tmux, just hand off to ssh.
 if [[ -z ${TMUX_PANE:-} ]]; then
   exec ssh "$@"
 fi
 
 style=$(sed -n "s/^localcommand .*'\(bg=[^']*\)'.*/\1/p" <<< "$resolved" | head -1)
 
-if [[ -z $style ]]; then
-  exec ssh "$@"
+# Badge colour for each pane tint in ~/.ssh/config, one Nord accent per role.
+# Unlisted tints keep tmux.conf's default badge (nord8).
+badge_colour() {
+  case ${1,,} in
+    '#2b2124') echo '#bf616a' ;;  # prod     -> nord11 red
+    '#1b2830') echo '#81a1c1' ;;  # staging  -> nord9 blue
+    '#142115') echo '#a3be8c' ;;  # dev/test -> nord14 green
+    '#1d2b2a') echo '#8fbcbb' ;;  # new      -> nord7 teal
+    '#19172a') echo '#b48ead' ;;  # jump     -> nord15 purple
+    *) return 1 ;;
+  esac
+}
+
+cleanup() {
+  [[ -n $style ]] && tmux select-pane -P "${old:-default}" -t "$TMUX_PANE" 2>/dev/null
+  [[ -n $host ]] && tmux set -pu -t "$TMUX_PANE" @ssh_host \; \
+    set -pu -t "$TMUX_PANE" @ssh_badge_bg \; refresh-client -S 2>/dev/null
+}
+# Reset the pane even when the wrapper is killed (SIGKILL aside)
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+if [[ -n $style ]]; then
+  old=$(tmux select-pane -g -t "$TMUX_PANE" 2>/dev/null)
+  tmux select-pane -P "$style" -t "$TMUX_PANE" 2>/dev/null
 fi
 
-old=$(tmux select-pane -g -t "$TMUX_PANE" 2>/dev/null)
-tmux select-pane -P "$style" -t "$TMUX_PANE" 2>/dev/null
+# The status bar shows @ssh_host on the right while this pane is connected,
+# coloured after the pane tint (tmux.conf supplies the default colour)
+if [[ -n $host ]]; then
+  tmux set -p -t "$TMUX_PANE" @ssh_host "$host" 2>/dev/null
+  tint=$(grep -o 'bg=#[0-9a-fA-F]\{6\}' <<< "$style" | cut -c4-)
+  if badge=$(badge_colour "$tint"); then
+    tmux set -p -t "$TMUX_PANE" @ssh_badge_bg "$badge" 2>/dev/null
+  fi
+  tmux refresh-client -S 2>/dev/null
+fi
 
 # PermitLocalCommand=no so the master connection doesn't style it a second time
 ssh -o PermitLocalCommand=no "$@"
-ret=$?
-
-tmux select-pane -P "${old:-default}" -t "$TMUX_PANE" 2>/dev/null
-exit $ret
+exit $?

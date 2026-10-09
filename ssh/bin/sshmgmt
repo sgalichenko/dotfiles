@@ -264,13 +264,14 @@ yank_cmd() {
 
 # Inside tmux the buffer goes out as OSC 52 (set-clipboard is on), which
 # also reaches the local clipboard over ssh and needs no X11 tool.
+#
+# The picker runs this from a hidden session with no pane, so tmux can't tell
+# which client is the user's; sshpick names it in SSHMGMT_CLIENT.
 copy() {
   if [[ -n ${TMUX:-} ]]; then
-    tmux load-buffer -w -
-  elif [[ -n ${WAYLAND_DISPLAY:-} ]] && command -v wl-copy >/dev/null; then
-    wl-copy
+    tmux load-buffer -w ${SSHMGMT_CLIENT:+-t "$SSHMGMT_CLIENT"} -
   else
-    xsel -ib
+    "$HOME/bin/clip"
   fi
 }
 
@@ -281,8 +282,8 @@ yank_hosts() {
   out=${out%$'\n'}
   printf '%s' "$out" | copy
   if [[ -n ${TMUX:-} ]]; then
-    if (( $# == 1 )); then tmux display-message "Copied: $out"
-    else tmux display-message "Copied $# ssh commands"; fi
+    if (( $# == 1 )); then tmux display-message ${SSHMGMT_CLIENT:+-c "$SSHMGMT_CLIENT"} "Copied: $out"
+    else tmux display-message ${SSHMGMT_CLIENT:+-c "$SSHMGMT_CLIENT"} "Copied $# ssh commands"; fi
   fi
   return 0
 }
@@ -620,7 +621,7 @@ close_host() {
   echo
   [[ $ans == [yY] ]] || return 0
   ssh -O exit "$target" 2>/dev/null
-  [[ -n ${TMUX:-} ]] && tmux display-message "Closed the connection to $target"
+  [[ -n ${TMUX:-} ]] && tmux display-message ${SSHMGMT_CLIENT:+-c "$SSHMGMT_CLIENT"} "Closed the connection to $target"
   return 0
 }
 

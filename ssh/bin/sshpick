@@ -1,0 +1,217 @@
+#!/usr/bin/env zsh
+# The ssh picker behind Ctrl+S in zsh: prints the chosen hosts, shell-quoted,
+# for the fzf-ssh widget in .zshrc to connect to. Runs fzf in a tmux popup,
+# or full-terminal outside tmux.
+# Usage: sshpick [fzf options...]
+
+# The look shared with zsh's other pickers (FZF_DEFAULT_OPTS, set in .zshrc)
+fzf_general_opts=$FZF_DEFAULT_OPTS
+nord1="#d8dee9"
+nord3="#ebcb8b"
+
+pick() {
+  local sshmgmt="$HOME/.ssh/bin/sshmgmt"
+  local sshw="$HOME/.ssh/bin/ssh-styled"
+
+  # The preview label doubles as the view state: while it says "resolved"
+  # (Ctrl+G) the preview shows the resolved config, while it says "keys" (?)
+  # the help below, and otherwise the host's raw block.
+  local label_raw="  Ctrl+E  󰆏 Ctrl+Y  󰘖 Ctrl+F  󰢻 Ctrl+G  󰛑 Ctrl+H  󰘥 ? "
+  local label_resolved=" 󰢻 resolved by ssh -G  Ctrl+G raw "
+  local label_help=" 󰘥 keys  ? back "
+
+  local dir
+  dir=$(mktemp -d) || return 1
+
+  local k=$'\e[1;38;5;151m' v=$'\e[1;38;5;73m' d=$'\e[38;5;244m' w=$'\e[1;38;5;179m' r=$'\e[0m'
+  local -a missing=(${(f)"$("$sshmgmt" missing)"})
+  local -a help_keys=(
+    "Enter"      "connect; several marked open one tiled, synced window"
+    "Tab"        "mark host (Ctrl+A marks all)"
+    "Ctrl+T"     "open in a new window, picker stays open"
+    "Ctrl+V"     "open in a split of the current window"
+    "Ctrl+Y"     "copy ssh command (one per marked host)"
+    "Ctrl+E"     "edit the host's config"
+    "Ctrl+O"     "new host, copying the current one's settings"
+    "Ctrl+R"     "check the host and its jumps respond"
+    "Ctrl+X"     "close its shared connection (drops its sessions)"
+    "Alt+I"      "manage Includes: add, remove, edit"
+    "Ctrl+G"     "resolved config (ssh -G) / raw block"
+    "Ctrl+F"     "cycle preview layout"
+    "Ctrl+H"     "hide / show preview"
+    "Ctrl+D/U"   "scroll half a page"
+    "?"          "this help"
+  )
+  {
+    # First, so it is not cut off below the fold of a short preview
+    if (( ${#missing} )); then
+      print -r -- " "
+      print -r -- " ${w}Include paths matching no file${r} ${d}(their hosts are not listed)${r}"
+      print -r -- " "
+      print -rl -- " ${v}"${^missing}"${r}"
+    fi
+    print -r -- " "
+    print -r -- " ${k}Keys${r}"
+    print -r -- " "
+    printf " ${k}%-9s${r}  ${v}%s${r}\n" "${help_keys[@]}"
+    print -r -- " "
+    print -r -- " ${k}Tips${r}"
+    print -r -- " "
+    print -r -- " ${d}Search matches addresses and instance IDs too.${r}"
+    print -r -- " ${d}Type a group (sp-tsa), Ctrl+A, Enter: all of it, tiled and synced.${r}"
+    print -r -- " ${d}Hosts you use most, recently, are listed first.${r}"
+    print -r -- " ${d}󰌘 connected: a live ControlMaster, connects instantly.${r}"
+    print -r -- " ${d}prefix C-s toggles pane sync in a multi-host window.${r}"
+  } > "$dir/help"
+
+  # Spacing under the count, plus a warning when an Include matches nothing.
+  # sshmgmt writes it, so the refresh after Alt+I/Ctrl+O comes out the same.
+  # A small window gets a near-full popup with the preview below the list,
+  # since 60%x50% split in two is too cramped to read; a large one keeps the
+  # original 60%x50% with the preview beside it. Outside tmux fzf fills the
+  # terminal, so its size decides.
+  # A script has no COLUMNS/LINES of its own (stdout is the widget's pipe), so
+  # ask the terminal
+  local cols rows
+  read rows cols < <(stty size </dev/tty)
+  if [[ -n ${TMUX:-} ]]; then
+    cols=$(command tmux display -p '#{client_width}')
+    rows=$(command tmux display -p '#{client_height}')
+  fi
+  local popup_w=60% popup_h=50% preview_window="right:50%:nowrap:border-sharp"
+  if (( cols < 120 || rows < 40 )); then
+    popup_w=96% popup_h=90% preview_window="down:20%:wrap:border-top"
+  fi
+
+  local header_opt
+  header_opt="--header=\"$("$sshmgmt" missing --header)\""
+
+  # The pointer fills both columns fzf allows it, so the gaps around the
+  # checkbox come from the marker's leading space and each row's (see
+  # sshmgmt list).
+  #
+  # Ctrl+T/Ctrl+V open a host while the picker stays up. The new window
+  # becomes current, so Ctrl+T then Ctrl+V builds a window of several hosts.
+  # Ctrl+Y copies a command for every marked host (or the current one).
+  local fzf_opts
+  fzf_opts=$(cat <<-END
+	$fzf_general_opts
+	--border none
+	--padding 1,2
+	--preview-window="$preview_window"
+	--ansi
+	--scheme=history
+	--accept-nth=1
+	--marker=" 󰄲"
+	$header_opt
+	--color="header:$nord3"
+	--preview-label="$label_raw"
+  --prompt="󰒋 SSH  "
+  --bind "ctrl-e:execute(TERM=xterm-256color $sshmgmt edit {1})+reload($sshmgmt list)+refresh-preview"
+	--bind "ctrl-y:execute-silent($sshmgmt yank {+1})+abort"
+	--bind "ctrl-g:transform-preview-label([[ \$FZF_PREVIEW_LABEL == *resolved* ]] && echo '$label_raw' || echo '$label_resolved')+refresh-preview"
+	--bind "?:transform-preview-label([[ \$FZF_PREVIEW_LABEL == *keys* ]] && echo '$label_raw' || echo '$label_help')+show-preview+refresh-preview"
+	--bind "ctrl-o:execute(TERM=xterm-256color $sshmgmt new {1})+reload($sshmgmt list)+transform-header($sshmgmt missing --header)+refresh-preview"
+	--bind "alt-i:execute(TERM=xterm-256color $sshmgmt includes)+reload($sshmgmt list)+transform-header($sshmgmt missing --header)+refresh-preview"
+	--bind "ctrl-r:show-preview+preview($sshmgmt reach {1})"
+	--bind "ctrl-x:execute(TERM=xterm-256color $sshmgmt close {1})+refresh-preview"
+	--bind "ctrl-t:execute-silent(tmux neww $sshw {1})"
+	--bind "ctrl-v:execute-silent(tmux splitw $sshw {1} && tmux select-layout tiled)"
+	--bind "ctrl-f:change-preview-window(wrap|down,20%,border-top,wrap|down,80%,border-top,wrap|hidden|)"
+	--preview="if [[ \$FZF_PREVIEW_LABEL == *keys* ]]; then cat $dir/help; elif [[ \$FZF_PREVIEW_LABEL == *resolved* ]]; then $sshmgmt show -r {1}; else $sshmgmt show {1}; fi"
+	END
+  )
+
+  local hosts
+  hosts=$("$sshmgmt" list)
+
+  setopt localoptions pipefail no_aliases 2>/dev/null
+
+  # Outside tmux there is no popup, so let fzf draw its own border again.
+  if [[ -z ${TMUX:-} ]]; then
+    FZF_DEFAULT_OPTS="${fzf_opts/--border none/--border sharp}" \
+    SSHMGMT_FZF_OPTS="$fzf_general_opts" \
+      fzf -m "$@" <<< "$hosts" \
+      | while read -r item; do
+          echo -n "${(q)item} "
+        done
+    local ret=$?
+    rm -rf -- "$dir"
+    echo
+    return $ret
+  fi
+
+  # Run fzf in a popup created here rather than via `fzf-tmux -p`.
+  #
+  # fzf-tmux always passes `display-popup -B`, which tells tmux to draw no
+  # border and leaves fzf to draw its own. That border is gone the instant
+  # Ctrl+E's execute() hands the terminal to the editor, so the editor
+  # appeared unframed. Nested popups are not possible (one per client), so
+  # instead tmux owns the border here and it stays put while the editor runs.
+  #
+  # What fzf does not get for free there:
+  #  * It runs with the tmux *server's* environment, not this shell's, so fzf
+  #    is invoked by absolute path (the server's PATH lacks linuxbrew).
+  #  * Options are passed via a file, because they are multi-line and quoted.
+  #  * FZF_DEFAULT_OPTS is blanked: a server started from a shell inherits it,
+  #    and it takes precedence over FZF_DEFAULT_OPTS_FILE, which would put
+  #    fzf's own `--border sharp` back and double the frame.
+  #  * sshmgmt's own pickers (Alt+I, Ctrl+O) get fzf's path and look via
+  #    SSHMGMT_FZF*, as they must not read this picker's options file.
+  print -r -- "$hosts"    > "$dir/hosts"
+  print -r -- "$fzf_opts" > "$dir/opts"
+
+  # fzf runs in a hidden session that the popup only attaches to, as the
+  # Alt+1..3 popups do, so popup-resize can reopen the popup at a new size
+  # when the window is resized without losing the query or marks. fzf gets
+  # this shell's TMUX back, and no TMUX_PANE (tmux would prefer it), so what
+  # it runs (Ctrl+T/Ctrl+V windows, sshmgmt's messages) lands in this
+  # session's current window rather than the hidden one. Without a pane tmux
+  # can't tell which client to copy to (Ctrl+Y) or show messages on, and
+  # would pick the one inside the popup, so sshmgmt is told: SSHMGMT_CLIENT.
+  local session="sshpick-$$" client popup_args="-b single -S fg=$nord1"
+  client=$(command tmux display -p '#{client_name}')
+  command tmux new-session -d -s "$session" \
+    -e "SSHMGMT_CLIENT=$client" \
+    -e "FZF_DEFAULT_OPTS_FILE=$dir/opts" \
+    -e "FZF_DEFAULT_OPTS=" \
+    -e "SSHMGMT_FZF=${commands[fzf]}" \
+    -e "SSHMGMT_FZF_OPTS=$fzf_general_opts --border none --padding 1,2" \
+    "env -u TMUX_PANE TMUX='$TMUX' ${commands[fzf]} -m < $dir/hosts > $dir/out" \; \
+    set -t "=$session:" status off
+  command tmux set -g "@popup-$session" "$client $popup_w $popup_h ${cols}x${rows} $popup_args"
+
+  # Sized by the window (see popup_w, above)
+  command tmux display-popup -c "$client" -xC -yC -w $popup_w -h $popup_h \
+    ${=popup_args} -E "tmux attach-session -t '=$session'"
+
+  # The session ends with fzf. Until then keep waiting, as the popup closing
+  # may be popup-resize swapping it for a bigger one; but a session left
+  # unattached for a second means the popup was closed some other way, and
+  # fzf would wait there for good.
+  local idle=0
+  while command tmux has-session -t "=$session" 2>/dev/null; do
+    if [[ $(command tmux display -p -t "=$session:" '#{session_attached}') == 0 ]]; then
+      (( ++idle >= 5 )) && command tmux kill-session -t "=$session"
+    else
+      idle=0
+    fi
+    sleep 0.2
+  done
+  command tmux set -gu "@popup-$session"
+
+  local ret=0
+  if [[ -s $dir/out ]]; then
+    while IFS= read -r item; do
+      echo -n "${(q)item} "
+    done < "$dir/out"
+  else
+    ret=130   # cancelled
+  fi
+
+  rm -rf -- "$dir"
+  echo
+  return $ret
+}
+
+pick "$@"
