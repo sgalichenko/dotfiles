@@ -1,0 +1,19 @@
+// The bar under niri: base.jsonc plus its workspaces
+{
+    "include": ["~/.config/waybar/base.jsonc"],
+    "modules-left": ["niri/workspaces"],
+
+    // The same dots as under Hyprland, but niri's workspaces belong to a
+    // monitor, so each bar shows its own monitor's, the free one at the bottom
+    // included. waybar picks "empty" before "focused", so an empty workspace
+    // you're on stays hollow and only its colour says it's focused (style.css).
+    "niri/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "focused": "󰄯",
+            "active": "󰄯",
+            "empty": "󰄰",
+            "default": "󰐾"
+        }
+    }
+}

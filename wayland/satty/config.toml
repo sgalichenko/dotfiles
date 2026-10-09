@@ -1,0 +1,23 @@
+# Screenshot annotation, opened by Print / Super+Ctrl+P (see hyprland/hyprland.lua, niri/config.kdl).
+# Enter copies the annotated shot and closes; Ctrl+S saves it to the
+# screenshots folder and closes; Escape throws it away.
+[general]
+initial-tool = "rectangle"
+copy-command = "wl-copy"
+output-filename = "~/Pictures/screenshots/%Y%m%d-%H%M%S.png"
+early-exit = ["copy", "save"]
+actions-on-enter = ["save-to-clipboard"]
+actions-on-escape = ["exit"]
+corner-roundness = 0
+disable-notifications = true
+
+# Nord: the swatches are aurora, frost and snow; the picker beside them starts
+# on snow and offers all sixteen (polar night, snow storm, frost, aurora)
+[color-palette]
+palette = ["#bf616a", "#d08770", "#ebcb8b", "#a3be8c", "#b48ead", "#88c0d0", "#81a1c1", "#eceff4"]
+custom = [
+  "#eceff4", "#e5e9f0", "#d8dee9",
+  "#2e3440", "#3b4252", "#434c5e", "#4c566a",
+  "#8fbcbb", "#88c0d0", "#81a1c1", "#5e81ac",
+  "#bf616a", "#d08770", "#ebcb8b", "#a3be8c", "#b48ead",
+]

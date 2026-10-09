@@ -1,0 +1,101 @@
+// Minimal Nord bar: workspaces, clock, status. Shared by Hyprland and niri:
+// hyprland.jsonc and niri.jsonc include this and add their workspaces module
+// (`wm bar` starts the right one), so this file holds no compositor calls.
+{
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "spacing": 0,
+    "modules-center": ["clock"],
+    "modules-right": ["tray", "custom/ime", "pulseaudio", "custom/vpn", "bluetooth", "network", "battery", "custom/power"],
+
+    "clock": {
+        "format": "{:%a %d %b  %H:%M:%S}",
+        "interval": 1,
+        "tooltip": false,
+        // Toggles the calendar in a popup under the clock, like network's and
+        // Bluetooth's under theirs
+        "on-click": "~/.config/wayland/wm toggle org.gnome.Calendar ~/.config/wayland/calendar.sh"
+    },
+    "tray": {
+        "spacing": 8
+    },
+    // Latin, hiragana or cyrillic glyph. ime.sh keeps running and prints the
+    // mode whenever it changes, by Alt+Shift (fcitx5's own) or a click
+    "custom/ime": {
+        "exec": "~/.config/wayland/ime.sh",
+        "return-type": "json",
+        "on-click": "~/.config/wayland/ime.sh toggle"
+    },
+    // pulseaudio, not wireplumber: this waybar build lacks the wireplumber
+    // module, and pipewire-pulse serves it the same sink
+    "pulseaudio": {
+        // Every icon on the bar is drawn one size up from the text, so they match
+        "format": "<span size='large'>{icon}</span> {volume}%",
+        "format-muted": "<span size='large'>󰝟</span>",
+        "format-icons": { "default": ["󰕿", "󰖀", "󰕾"] },
+        "on-click": "~/.config/wayland/volume.sh mute",
+        "on-scroll-up": "~/.config/wayland/volume.sh up",
+        "on-scroll-down": "~/.config/wayland/volume.sh down"
+    },
+    // The icon says what kind of link; the label says where you are on it.
+    // Hover for the details, with live traffic.
+    // Shield when ~/bin/vpn's tunnel is up; click toggles it in a terminal
+    "custom/vpn": {
+        "exec": "~/.config/waybar/vpn.sh",
+        "return-type": "json",
+        "interval": 5,
+        "on-click": "~/.config/waybar/vpn.sh toggle",
+        "on-click-right": "~/bin/ghostty-popup --class=ghostty.floatingTerminal -e zsh -lc '~/bin/vpn status; printf \"\\nPress Enter to close\"; read _'",
+        "exec-on-event": true
+    },
+    "network": {
+        "interval": 5,
+        "format-wifi": "<span size='large'>{icon}</span>",
+        "format-ethernet": "<span size='large'>󰈀</span>",
+        "format-linked": "<span size='large'>󰈂</span>",
+        "format-disconnected": "<span size='large'>󰤭</span>",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format": "{ifname}  {ipaddr}/{cidr}\ngateway  {gwaddr}\n󰇚 {bandwidthDownBytes}   󰕒 {bandwidthUpBytes}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%, {frequency} GHz)\n{ifname}  {ipaddr}/{cidr}\ngateway  {gwaddr}\n󰇚 {bandwidthDownBytes}   󰕒 {bandwidthUpBytes}",
+        "tooltip-format-disconnected": "No network",
+        // Click drops down wayland/scripts/network.sh's menu, as nm-applet's would
+        // (niri's autostart keeps nm-applet off the tray); right-click toggles
+        // nmtui's live list. A second right-click closes it.
+        "on-click": "~/.config/wayland/network.sh",
+        "on-click-right": "~/.config/wayland/wm toggle ghostty.nmtuiPopup '~/bin/ghostty-popup --class=ghostty.nmtuiPopup -e nmtui connect'"
+    },
+    // Glyph only; hover lists connected devices. Click toggles bluetui in a
+    // popup (like network's), right-click toggles power.
+    "bluetooth": {
+        "format": "<span size='large'>󰂯</span>",
+        "format-off": "<span size='large'>󰂲</span>",
+        "format-disabled": "<span size='large'>󰂲</span>",
+        "format-connected": "<span size='large'>󰂱</span>",
+        "format-no-controller": "",
+        "tooltip-format": "{controller_alias}  {status}",
+        "tooltip-format-connected": "{controller_alias}\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}",
+        "tooltip-format-enumerate-connected-battery": "{device_alias}  {device_battery_percentage}%",
+        "on-click": "~/.config/wayland/wm toggle ghostty.bluetuiPopup '~/bin/ghostty-popup --class=ghostty.bluetuiPopup -e zsh -lc bluetui'",
+        "on-click-right": "bluetoothctl show | grep -q 'Powered: yes' && bluetoothctl power off || bluetoothctl power on"
+    },
+    // The percentage hides at 100%: "partial" (anything up to 99) and the
+    // warning levels carry the number, the plain format is the full battery.
+    // Keyed on capacity, not status, as the 90% charge limit also reads
+    // "Not charging".
+    "battery": {
+        "format": "<span size='large'>{icon}</span>",
+        "format-partial": "<span size='large'>{icon}</span> {capacity}%",
+        "format-warning": "<span size='large'>{icon}</span> {capacity}%",
+        "format-critical": "<span size='large'>{icon}</span> {capacity}%",
+        "format-charging": "<span size='large'>󰂄</span> {capacity}%",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "states": { "partial": 99, "warning": 20, "critical": 10 }
+    },
+    "custom/power": {
+        "format": "<span size='large'>󰐥</span>",
+        "tooltip-format": "Power menu",
+        "on-click": "~/.config/wayland/sysmenu.sh"
+    }
+}

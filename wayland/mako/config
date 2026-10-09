@@ -1,0 +1,42 @@
+# Nord notifications for Hyprland and niri. GNOME shows its own and never starts mako.
+font=JetBrainsMono Nerd Font 11
+# Lifted off the bar's #2f343f with nord1 and framed in frost, the bar's accent
+background-color=#3b4252
+text-color=#eceff4
+border-color=#88c0d0
+border-size=2
+border-radius=0
+padding=10
+margin=8
+width=360
+# 60s, and for every app: many (browsers, Teams) ask for a few seconds of their
+# own, which ignore-timeout overrides so this default applies to them too
+default-timeout=60000
+ignore-timeout=1
+# Missed ones stay listed for wayland/scripts/notifications.sh (Super+N); mako keeps 5
+max-history=50
+
+# Bold summary line, so the sender stands out from the body
+format=<b>%s</b>\n%b
+
+# A click runs the notification's default action and then focuses the window
+# that sent it, straight to the Teams tab in Firefox (see notify-click.sh)
+on-button-left=exec ~/.config/wayland/notify-click.sh "$id"
+
+# Volume popups from wayland/scripts/volume.sh: one line over a nord10 progress bar, gone fast
+[category=osd]
+format=%s
+progress-color=over #5e81ac
+default-timeout=1500
+
+# Shown again from wayland/scripts/notifications.sh, already in the history once
+[category=replay]
+history=0
+
+[urgency=low]
+border-color=#4c566a
+
+[urgency=critical]
+background-color=#4c3a42
+border-color=#bf616a
+default-timeout=0

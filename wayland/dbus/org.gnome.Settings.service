@@ -1,0 +1,7 @@
+# GNOME Settings refuses to start unless XDG_CURRENT_DESKTOP names GNOME, so
+# under Hyprland apps that open it over D-Bus (Calendar's Online Accounts,
+# for one) got nothing. This user copy shadows /usr/share/dbus-1/services'
+# and says GNOME; under GNOME itself it changes nothing.
+[D-BUS Service]
+Name=org.gnome.Settings
+Exec=/usr/bin/env XDG_CURRENT_DESKTOP=GNOME /usr/bin/gnome-control-center

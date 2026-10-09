@@ -1,0 +1,12 @@
+/* GNOME Calendar draws week numbers beside its month picker and has no
+   setting for them (it ignores org.gnome.desktop.calendar show-weekdate).
+   GTK4 CSS has no display: none, so they're shrunk to nothing instead. */
+datechooser .weeknum {
+  opacity: 0;
+  font-size: 1px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+}

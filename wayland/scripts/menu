@@ -1,0 +1,19 @@
+#!/bin/sh
+# Called first thing by each fuzzel menu, so its key toggles it: the key that
+# opened a menu closes it, and another menu's key swaps the open one for its
+# own. fuzzel runs one at a time (it holds a lock), so without this a second
+# key did nothing.
+# Usage: menu NAME || exit 0   (fails when it closed NAME instead)
+set -eu
+
+open=${XDG_RUNTIME_DIR:-/tmp}/menu-open
+
+if pkill -x fuzzel; then
+	[ "$(cat "$open" 2>/dev/null)" != "$1" ] || exit 1
+	# Wait (up to 1 s) for it to let go of its lock
+	for _ in 1 2 3 4 5 6 7 8 9 10; do
+		pgrep -x fuzzel >/dev/null || break
+		sleep 0.1
+	done
+fi
+echo "$1" >"$open"

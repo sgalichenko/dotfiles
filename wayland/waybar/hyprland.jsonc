@@ -1,0 +1,17 @@
+// The bar under Hyprland: base.jsonc plus its workspaces
+{
+    "include": ["~/.config/waybar/base.jsonc"],
+    "modules-left": ["hyprland/workspaces"],
+
+    // herbstluftwm-style dots: filled is focused, dotted holds windows, hollow is empty.
+    // No visible/urgent icons, so those fall through to empty or default; urgency is colour only.
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "all-outputs": true,
+        "format-icons": {
+            "active": "󰄯",
+            "empty": "󰄰",
+            "default": "󰐾"
+        }
+    }
+}

@@ -74,3 +74,45 @@
 
 [gnome]
 # No files: gnome/settings.sh applies gsettings, run by .dotter/post_deploy.sh
+
+[wayland.files]
+# What the Hyprland and niri sessions share: bar, launcher, notifications,
+# lock and idle, input method, and the scripts in wayland/scripts/, which ask
+# wayland/scripts/wm to talk to whichever compositor is running. Pulled in by either
+# package below rather than enabled by hand.
+"wayland/scripts/wm" = "~/.config/wayland/wm"
+"wayland/scripts/launcher.sh" = "~/.config/wayland/launcher.sh"
+"wayland/scripts/sysmenu.sh" = "~/.config/wayland/sysmenu.sh"
+"wayland/scripts/network.sh" = "~/.config/wayland/network.sh"
+"wayland/scripts/calendar.sh" = "~/.config/wayland/calendar.sh"
+"wayland/scripts/notifications.sh" = "~/.config/wayland/notifications.sh"
+"wayland/scripts/notify-watch.sh" = "~/.config/wayland/notify-watch.sh"
+"wayland/scripts/notify-focus.sh" = "~/.config/wayland/notify-focus.sh"
+"wayland/scripts/notify-click.sh" = "~/.config/wayland/notify-click.sh"
+"wayland/scripts/volume.sh" = "~/.config/wayland/volume.sh"
+"wayland/scripts/brightness.sh" = "~/.config/wayland/brightness.sh"
+"wayland/scripts/ime.sh" = "~/.config/wayland/ime.sh"
+"wayland/scripts/hotplug.sh" = "~/.config/wayland/hotplug.sh"
+"wayland/scripts/menu" = "~/.config/wayland/menu"
+"wayland/scripts/clipboard.sh" = "~/.config/wayland/clipboard.sh"
+"wayland/scripts/cliphist-store.sh" = "~/.config/wayland/cliphist-store.sh"
+# hypridle, hyprlock and hyprpolkitagent work on niri too and read ~/.config/hypr
+"wayland/hypr/hypridle.conf" = "~/.config/hypr/hypridle.conf"
+"wayland/hypr/hyprlock.conf" = "~/.config/hypr/hyprlock.conf"
+"wayland/hypr/hyprtoolkit.conf" = "~/.config/hypr/hyprtoolkit.conf"
+"wayland/satty/config.toml" = "~/.config/satty/config.toml"
+"wayland/satty/overrides.css" = "~/.config/satty/overrides.css"
+"wayland/waybar/base.jsonc" = "~/.config/waybar/base.jsonc"
+"wayland/waybar/hyprland.jsonc" = "~/.config/waybar/hyprland.jsonc"
+"wayland/waybar/niri.jsonc" = "~/.config/waybar/niri.jsonc"
+"wayland/waybar/style.css" = "~/.config/waybar/style.css"
+"wayland/waybar/vpn.sh" = "~/.config/waybar/vpn.sh"
+"wayland/fuzzel/fuzzel.ini" = "~/.config/fuzzel/fuzzel.ini"
+"wayland/fuzzel/notifications.ini" = "~/.config/fuzzel/notifications.ini"
+"wayland/fuzzel/dot-missed.svg" = "~/.config/fuzzel/dot-missed.svg"
+"wayland/fuzzel/dot-read.svg" = "~/.config/fuzzel/dot-read.svg"
+"wayland/mako/config" = "~/.config/mako/config"
+"wayland/fcitx5/org.fcitx.Fcitx5.desktop" = "~/.config/autostart/org.fcitx.Fcitx5.desktop"
+"wayland/fcitx5/themes/nord/theme.conf" = "~/.local/share/fcitx5/themes/nord/theme.conf"
+"wayland/dbus/org.gnome.Settings.service" = "~/.local/share/dbus-1/services/org.gnome.Settings.service"
+"wayland/gtk-4.0/gtk.css" = "~/.config/gtk-4.0/gtk.css"

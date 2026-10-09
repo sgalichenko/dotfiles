@@ -1,0 +1,37 @@
+# Alt+Shift, in either order, cycles US → Mozc → Russian (the profile's
+# order). fcitx5 handles it itself rather than Hyprland or niri binding it:
+# it acts when the keys come up, and only if nothing else was pressed with
+# them, where a compositor bind took the second key from the app mid-press,
+# which left the app thinking Alt was still held (a terminal then sent
+# Alt+letters, Esc-prefixed, flipping zsh's vi mode). Its other triggers stay
+# cleared: Ctrl+Space belongs to the launcher, and a lone Left Shift would flip
+# modes mid-word.
+[Hotkey]
+EnumerateWithTriggerKeys=True
+EnumerateSkipFirst=False
+
+[Hotkey/TriggerKeys]
+
+[Hotkey/AltTriggerKeys]
+
+[Hotkey/EnumerateForwardKeys]
+0=Alt+Shift_L
+1=Shift+Alt_L
+# Alt pressed after Shift: the layout makes it Meta_L
+2=Shift+Meta_L
+
+[Hotkey/EnumerateBackwardKeys]
+
+# waybar's custom/ime already shows the mode, so drop fcitx5's own tray icon
+# and the banner it flashes on every switch. One mode for every window, as
+# that one indicator says: per window, Alt+Shift (fcitx5-remote) switched only
+# the input context fcitx5 thought focused, and under niri a window can have
+# two (the Wayland input method's and the IBus one GTK apps use), so the
+# switch often missed the one being typed into until the window was refocused.
+[Behavior]
+ShareInputState=All
+ShowInputMethodInformation=False
+ShowInputMethodInformationWhenFocusIn=False
+
+[Behavior/DisabledAddons]
+0=notificationitem

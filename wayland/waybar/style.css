@@ -1,0 +1,92 @@
+/* Minimal Nord bar: flat, square, one accent for the active workspace. */
+* {
+  font-family: "Ubuntu Nerd Font";
+  font-size: 14px;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+}
+
+window#waybar {
+  background: #2f343f;
+  color: #d8dee9;
+}
+
+#workspaces button {
+  padding: 0 5px;
+  color: #d8dee9;
+  background: transparent;
+}
+
+#workspaces button.empty {
+  color: #4c566a;
+}
+
+#workspaces button.visible {
+  color: #d8dee9;
+}
+
+/* Hyprland's focused workspace is .active. niri marks it .focused and the one
+   each monitor shows .active; both light up, as each niri bar lists only the
+   workspaces of its own monitor */
+#workspaces button.active,
+#workspaces button.focused {
+  color: #eceff4;
+}
+
+/* Same dimmed nord13 as the urgent window border in hyprland.lua and niri/config.kdl */
+#workspaces button.urgent {
+  color: #9f8f6d;
+}
+
+#workspaces button:hover {
+  background: #3b4252;
+  box-shadow: none;
+}
+
+#clock {
+  color: #eceff4;
+}
+
+#tray,
+#pulseaudio,
+#bluetooth,
+#network,
+#battery,
+#custom-ime,
+#custom-vpn,
+#custom-power {
+  padding: 0 10px;
+}
+
+#clock:hover,
+#pulseaudio:hover,
+#bluetooth:hover,
+#network:hover,
+#custom-ime:hover,
+#custom-vpn:hover,
+#custom-power:hover {
+  background: #3b4252;
+}
+
+#bluetooth.connected {
+  color: #88c0d0;
+}
+
+#pulseaudio.muted,
+#custom-vpn.down,
+#bluetooth.off,
+#bluetooth.disabled,
+#custom-ime.off,
+#network.disconnected {
+  color: #4c566a;
+}
+
+#battery.warning {
+  color: #ebcb8b;
+}
+
+#battery.critical {
+  color: #bf616a;
+}

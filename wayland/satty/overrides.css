@@ -1,0 +1,63 @@
+/* Satty, lightened: flat Nord toolbars with small borderless buttons, and the
+   canvas around the screenshot in the same colour instead of black.
+   Layered over Satty's built-in CSS (satty/src/assets/default.css). */
+
+.root {
+  min-width: 40rem;
+  min-height: 6rem;
+}
+
+.outer_box,
+.toolbar,
+.inner_box {
+  background-color: #2e3440;
+}
+
+.toolbar {
+  color: #d8dee9;
+  padding: 2px 4px;
+  font-size: 0.85em;
+}
+
+.toolbar button {
+  background: none;
+  box-shadow: none;
+  border: none;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 3px;
+  margin: 0;
+  border-radius: 4px;
+  -gtk-icon-size: 18px;
+}
+
+.toolbar button:hover {
+  background-color: #3b4252;
+}
+
+.toolbar button:checked,
+.toolbar button:active {
+  background-color: #434c5e;
+}
+
+/* The selected tool, and the S/M/L size picked */
+.toolbar button:checked,
+button.editing {
+  color: #88c0d0;
+}
+
+.toolbar separator {
+  background-color: #3b4252;
+  margin: 4px 3px;
+}
+
+.toolbar spinbutton {
+  min-height: 0;
+  background: none;
+  box-shadow: none;
+  border: none;
+}
+
+.toolbar spinbutton text {
+  min-width: 2.5em;
+}

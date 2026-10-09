@@ -1,0 +1,92 @@
+#!/bin/sh
+# The few compositor calls the shared scripts and waybar need, for Hyprland
+# or niri, whichever started this process (each sets its own socket variable).
+# Usage: wm windows             open windows as JSON, [{id, workspace, app, title}],
+#                               most recently focused first and the focused one last
+#        wm focus ID            focus a window from `wm windows`
+#        wm spawn CMD           run a shell command from the compositor, not as our child
+#        wm toggle APP-ID CMD   close that app's window if it's open, else run CMD
+#        wm bar                 (re)start waybar with this compositor's config
+#        wm exit                end the session
+#        wm dpms on|off         monitors on or off
+set -eu
+
+if [ -n "${NIRI_SOCKET:-}" ]; then
+	wm=niri
+elif [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+	wm=hyprland
+else
+	echo "wm: neither niri nor Hyprland is running" >&2
+	exit 1
+fi
+
+windows() {
+	case $wm in
+	niri)
+		# Workspaces are labelled by their index on their monitor, as the bar shows them
+		niri msg -j workspaces | jq -c --argjson w "$(niri msg -j windows)" '
+			map({key: (.id | tostring), value: (.name // (.idx | tostring))}) | from_entries as $ws
+			| $w | sort_by(.is_focused, -(.focus_timestamp.secs // 0), -(.focus_timestamp.nanos // 0))
+			| map({id: (.id | tostring), workspace: $ws[.workspace_id | tostring],
+				app: (.app_id // ""), title: (.title // "")})'
+		;;
+	hyprland)
+		# focusHistoryID is 0 for the focused window, 1 for the one before
+		hyprctl clients -j | jq -c '
+			map(select(.mapped and .workspace.id > 0))
+			| sort_by(if .focusHistoryID == 0 then 1e9 else .focusHistoryID end)
+			| map({id: .address, workspace: (.workspace.id | tostring), app: .class, title})'
+		;;
+	esac
+}
+
+spawn() {
+	case $wm in
+	niri) niri msg action spawn-sh -- "$1" >/dev/null ;;
+	# A Lua long string, so the command needs no escaping
+	hyprland) hyprctl dispatch "hl.dsp.exec_cmd([[$1]])" >/dev/null ;;
+	esac
+}
+
+cmd=${1:-}
+[ $# -gt 0 ] && shift
+case $cmd in
+windows) windows ;;
+focus)
+	case $wm in
+	niri) niri msg action focus-window --id "$1" >/dev/null ;;
+	hyprland) hyprctl dispatch "hl.dsp.focus({ window = \"address:$1\" })" >/dev/null ;;
+	esac
+	;;
+spawn) spawn "$1" ;;
+toggle)
+	id=$(windows | jq -r --arg app "$1" 'map(select(.app == $app)) | .[0].id // empty')
+	if [ -z "$id" ]; then
+		spawn "$2"
+	elif [ $wm = niri ]; then
+		niri msg action close-window --id "$id" >/dev/null
+	else
+		hyprctl dispatch "hl.dsp.window.close({ window = \"address:$id\" })" >/dev/null
+	fi
+	;;
+bar)
+	pkill -x waybar || true
+	spawn "waybar -c ~/.config/waybar/$wm.jsonc"
+	;;
+exit)
+	case $wm in
+	niri) niri msg action quit --skip-confirmation ;;
+	hyprland) hyprctl dispatch 'hl.dsp.exit()' >/dev/null ;;
+	esac
+	;;
+dpms)
+	case $wm in
+	niri) niri msg action "power-$1-monitors" ;;
+	hyprland) hyprctl dispatch "hl.dsp.dpms({ action = \"$1\" })" >/dev/null ;;
+	esac
+	;;
+*)
+	sed -n '4,11s/^# \{0,1\}//p' "$0" >&2
+	exit 2
+	;;
+esac

@@ -1,0 +1,7 @@
+# Keeps the system-wide fcitx5 autostart out of GNOME, which uses IBus.
+# Hyprland and niri start fcitx5 themselves (niri runs XDG autostart, but
+# this entry hides it there too).
+[Desktop Entry]
+Type=Application
+Name=Fcitx 5
+Hidden=true
