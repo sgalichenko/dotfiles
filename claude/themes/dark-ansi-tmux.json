@@ -1,0 +1,7 @@
+{
+  "name": "Dark ANSI (tmux selection)",
+  "base": "dark-ansi",
+  "overrides": {
+    "selectionBg": "#3f4f66"
+  }
+}

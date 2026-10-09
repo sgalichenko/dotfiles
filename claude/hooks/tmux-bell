@@ -1,0 +1,10 @@
+#!/bin/sh
+# Claude Code hook (Stop, and Notification on permission_prompt): ring the bell
+# in the tmux pane Claude runs in. tmux turns a background window's tab red and
+# passes the bell to Ghostty, which asks Hyprland for attention: a yellow
+# border and waybar dot (see hyprland/hyprland.lua). Does nothing outside tmux.
+# Wired up by hand in ~/.claude/settings.json; see .dotter/global.toml.
+[ -n "$TMUX_PANE" ] || exit 0
+tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) || exit 0
+printf '\a' >"$tty" 2>/dev/null
+exit 0

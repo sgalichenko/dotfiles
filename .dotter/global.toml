@@ -145,3 +145,12 @@ depends = ["wayland"]
 "niri/autostart/SACMonitor.desktop" = "~/.config/autostart/SACMonitor.desktop"
 "niri/autostart/nm-applet.desktop" = "~/.config/autostart/nm-applet.desktop"
 "niri/xdg-desktop-portal/niri-portals.conf" = "~/.config/xdg-desktop-portal/niri-portals.conf"
+
+[claude.files]
+# Not ~/.claude/settings.json: Claude Code rewrites it and it carries
+# machine-specific state. Set these in it by hand:
+#   "theme": "custom:dark-ansi-tmux" (dark-ansi with tmux's mode-style selection)
+#   hooks.Stop, and hooks.Notification with matcher "permission_prompt", each a
+#   command hook running ~/.claude/hooks/tmux-bell
+"claude/themes/dark-ansi-tmux.json" = "~/.claude/themes/dark-ansi-tmux.json"
+"claude/hooks/tmux-bell" = "~/.claude/hooks/tmux-bell"
