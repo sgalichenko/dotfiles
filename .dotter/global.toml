@@ -37,6 +37,7 @@
 # (Alt+p rofi-gopass, Super+m ddcswitch).
 "bin/rofi-gopass" = "~/bin/rofi-gopass"
 "bin/rofi-gopass-modi" = "~/bin/rofi-gopass-modi"
+"bin/clip" = "~/bin/clip"
 "bin/ghostty-popup" = "~/bin/ghostty-popup"
 "bin/ddcswitch" = "~/bin/ddcswitch"
 

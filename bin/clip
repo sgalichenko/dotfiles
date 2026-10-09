@@ -1,0 +1,51 @@
+#!/bin/sh
+# Copy stdin to the clipboard, or print the clipboard with -o.
+#
+# -s copies a secret (gopass-menu's passwords): it's kept out of the clipboard
+# history (see wayland/scripts/cliphist-store.sh) and cleared after CLIP_TIMEOUT
+# seconds (45), unless something else has been copied over it by then.
+#
+# wl-clipboard while Hyprland or niri is running, xsel otherwise (GNOME keeps
+# its X11 and Wayland clipboards in sync, so xsel reaches both there). The
+# compositor's socket is looked up each time rather than read from
+# WAYLAND_DISPLAY: tmux panes keep the environment of the login they were
+# started in, which may be an earlier GNOME, Hyprland or niri session.
+sock=$(hyprctl instances 2>/dev/null | awk '/wl socket:/ { print $3; exit }')
+# niri names its IPC socket niri.<wayland socket>.<pid>.sock; a crashed niri
+# leaves a stale one behind, so only take it if that pid is still niri
+if [ -z "$sock" ]; then
+	for ipc in "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"/niri.wayland-*.sock; do
+		pid=${ipc%.sock}; pid=${pid##*.}
+		[ "$(cat "/proc/$pid/comm" 2>/dev/null)" = niri ] || continue
+		sock=${ipc##*/niri.}; sock=${sock%."$pid".sock}
+		break
+	done
+fi
+
+if [ -n "$sock" ]; then
+	export WAYLAND_DISPLAY="$sock"
+	copy() { wl-copy; }
+	paste() { wl-paste --no-newline; }
+	clear() { wl-copy --clear; }
+else
+	copy() { xsel --clipboard --input; }
+	paste() { xsel --clipboard --output; }
+	clear() { xsel --clipboard --clear; }
+fi
+
+case ${1:-} in
+-o) paste ;;
+-s)
+	# The x keeps any trailing newline, so the secret is copied as given
+	secret=$(cat; echo x); secret=${secret%x}
+	touch "${XDG_RUNTIME_DIR:-/tmp}/clip-secret"
+	printf %s "$secret" | copy
+	# In the background, detached from the caller's output so it isn't kept waiting
+	(
+		sleep "${CLIP_TIMEOUT:-45}"
+		now=$(paste 2>/dev/null; echo x)
+		[ "${now%x}" != "$secret" ] || clear
+	) >/dev/null 2>&1 </dev/null &
+	;;
+*) copy ;;
+esac
