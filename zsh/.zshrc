@@ -76,6 +76,18 @@ export SUDO_PROMPT=" $FULLNAME: "
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 
+# Mark prompts and command output for tmux (OSC 133), which Ghostty's shell
+# integration would do if it reached inside tmux: copy mode's [ and ] jump
+# between prompts, and a long command finishing in a background window rings
+# its bell (pane-command-finished in .tmux.conf). The prompt mark is part of
+# PROMPT itself: printed from precmd, zle's redraw of the line would drop it
+PROMPT=$'%{\e]133;A\e\\%}'"$PROMPT"
+_osc133_precmd()  { print -n "\e]133;D;$?\e\\\\" }
+_osc133_preexec() { print -n '\e]133;C\e\\' }
+# First, so $? is still the command's and not another hook's
+precmd_functions=(_osc133_precmd $precmd_functions)
+preexec_functions+=(_osc133_preexec)
+
 # Editor
 export EDITOR='nvim'
 export VISUAL='nvim'
