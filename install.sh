@@ -38,6 +38,8 @@ sudo update-alternatives --set x-terminal-emulator /usr/bin/ghostty
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 brew install dotter tmux neovim yazi lazygit fzf ripgrep fd jq zoxide starship \
 	eza bat git-delta hunk gum sevenzip
+# sudo's secure_path lacks linuxbrew; this lets `sudo vi` (aliased to nvim) and sudoedit find it
+sudo ln -sf /home/linuxbrew/.linuxbrew/bin/nvim /usr/local/bin/nvim
 
 # gopass from its release .deb: Homebrew's would bring its own gnupg (and,
 # through it, systemd), a second gpg-agent beside Ubuntu's; Ubuntu's gopass is 1.5
