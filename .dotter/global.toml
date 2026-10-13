@@ -144,6 +144,7 @@ depends = ["wayland"]
 "niri/move.sh" = "~/.config/niri/move.sh"
 "niri/stack.sh" = "~/.config/niri/stack.sh"
 "niri/resize.sh" = "~/.config/niri/resize.sh"
+"niri/displays.sh" = "~/.config/niri/displays.sh"
 "niri/autostart/im-launch.desktop" = "~/.config/autostart/im-launch.desktop"
 "niri/autostart/SACMonitor.desktop" = "~/.config/autostart/SACMonitor.desktop"
 "niri/autostart/nm-applet.desktop" = "~/.config/autostart/nm-applet.desktop"

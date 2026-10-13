@@ -12,25 +12,11 @@
 // - No pinned (all-workspace) windows, so Picture-in-Picture just floats.
 
 // ---------- Monitors ----------
-// The 4K Dell sits left of the laptop at scale 1.5 (2560x1440 logical), so the
-// laptop starts at x=2560 and drops 240 to line up their bottom edges.
-// Anything else is auto-placed at its preferred mode; niri picks its scale.
-output "Dell Inc. DELL U2723QX 9TM1ZN3" {
-    scale 1.5
-    position x=0 y=0
-}
-
-output "eDP-1" {
-    scale 1
-    position x=2560 y=240
-}
-
-// The 1080p Dell sits on top of the laptop; both are 1920 wide, so it's
-// directly above at the laptop's x
-output "Dell Inc. DELL U2417H FFVVR73V167L" {
-    scale 1
-    position x=2560 y=-840
-}
+// Where each monitor sits differs per laptop (the same Dell is left of one,
+// right of the other), so the layout isn't tracked: Super+Shift+P (displays.sh)
+// arranges them in wdisplays and saves the result to outputs.kdl. Without that
+// file, every monitor is auto-placed at its preferred mode; niri picks its scale.
+include optional=true "~/.config/niri/outputs.kdl"
 
 // ---------- Environment ----------
 // For everything niri starts. niri-session already exports WAYLAND_DISPLAY,
@@ -305,6 +291,7 @@ binds {
     Mod+F       repeat=false { fullscreen-window; }
     // Hyprland's pseudotiling has no counterpart; centring the column is the nearest
     Mod+P       { center-column; }
+    Mod+Shift+P hotkey-overlay-title="Arrange Displays" { spawn "~/.config/niri/displays.sh"; }
 
     // Workspaces: Super+N goes to the focused monitor's Nth, Super+Shift+N
     // sends the window there and stays
