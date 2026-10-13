@@ -6,9 +6,9 @@ if wezterm.config_builder then
 end
 
 config.native_macos_fullscreen_mode = true
--- -A attaches to `main` if it exists instead of creating a new session per
--- window; the trailing zsh keeps the window open if the tmux server is gone
-config.default_prog = { '/usr/bin/zsh', '-lc', 'tmux new-session -A -s main || exec zsh' }
+-- A fresh tmux session per window, `main` if that name is free, killed when
+-- the window closes; the trailing zsh keeps the window open if tmux fails
+config.default_prog = { '/usr/bin/zsh', '-lc', 'tmux new-session $(tmux has-session -t main 2>/dev/null || echo -s main) \\; set destroy-unattached on || exec zsh' }
 config.color_scheme = 'nord'
 config.font = wezterm.font 'RobotoMono Nerd Font'
 config.font_size = 11.0

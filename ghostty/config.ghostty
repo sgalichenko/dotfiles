@@ -48,14 +48,15 @@ app-notifications = no-clipboard-copy
 # Anything running in Ghostty can then read it, remote hosts over ssh too.
 clipboard-read = allow
 
-# Attach to tmux's `main` session, or fall
-# back to a plain zsh if tmux fails. -l for the login PATH (Homebrew).
-command = /usr/bin/zsh -lc 'tmux new-session -A -s main || exec zsh'
+# A fresh tmux session per window, named `main` if no session has that name
+# yet, else numbered, and killed when the window closes. Falls back to a plain
+# zsh if tmux fails. -l for the login PATH (Homebrew).
+command = /usr/bin/zsh -lc 'tmux new-session $(tmux has-session -t main 2>/dev/null || echo -s main) \; set destroy-unattached on || exec zsh'
 # Every shell runs inside tmux, where Ghostty's zsh integration never
 # reaches; without this it would only wrap the zsh -lc launcher above
 shell-integration = none
-# tmux is always running, so Ghostty would ask on every close; closing only
-# detaches the client and the session carries on
+# tmux is always running, so Ghostty would ask on every close; closing ends
+# the window's session (destroy-unattached, see command above)
 confirm-close-surface = false
 
 # Quick-select lives in tmux (tmux-fingers, see .tmux.conf), not here.

@@ -147,8 +147,8 @@ bind(mod .. " + SHIFT + C", hl.dsp.window.close())
 
 -- Apps
 -- A fresh tmux session per window, killed when its window closes so they don't pile up;
--- Ghostty's own command still attaches to `main`, which survives
-bind(mod .. " + Return", exec(term .. " -e /usr/bin/zsh -lc 'tmux new-session \\; set destroy-unattached on || exec zsh'"))
+-- named `main` if that name is free, as Ghostty's own command does
+bind(mod .. " + Return", exec(term .. " -e /usr/bin/zsh -lc 'tmux new-session $(tmux has-session -t main 2>/dev/null || echo -s main) \\; set destroy-unattached on || exec zsh'"))
 bind("CTRL + Space", exec(wl .. "launcher.sh"))
 -- Yazi in its own tmux session, gone once yazi quits or the window closes
 bind(mod .. " + Y", exec(term .. " -e /usr/bin/zsh -lc 'tmux new-session yazi \\; set destroy-unattached on || exec yazi'"))

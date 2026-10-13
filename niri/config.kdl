@@ -218,11 +218,11 @@ binds {
 
     // Apps
     // A fresh tmux session per window, killed when its window closes so they don't pile up;
-    // Ghostty's own command still attaches to `main`, which survives
-    Mod+Return repeat=false { spawn "ghostty" "-e" "/usr/bin/zsh" "-lc" r"tmux new-session \; set destroy-unattached on || exec zsh"; }
+    // named `main` if that name is free, as Ghostty's own command does
+    Mod+Return repeat=false { spawn "ghostty" "-e" "/usr/bin/zsh" "-lc" r"tmux new-session $(tmux has-session -t main 2>/dev/null || echo -s main) \; set destroy-unattached on || exec zsh"; }
     // The same, stacked at the bottom of the focused window's column (see
     // stack.sh and the ghostty.stacked rule)
-    Mod+Shift+Return repeat=false hotkey-overlay-title="Terminal Stacked Under This Column" { spawn "~/.config/niri/stack.sh" "/usr/bin/zsh" "-lc" r"tmux new-session \; set destroy-unattached on || exec zsh"; }
+    Mod+Shift+Return repeat=false hotkey-overlay-title="Terminal Stacked Under This Column" { spawn "~/.config/niri/stack.sh" "/usr/bin/zsh" "-lc" r"tmux new-session $(tmux has-session -t main 2>/dev/null || echo -s main) \; set destroy-unattached on || exec zsh"; }
     Ctrl+Space repeat=false { spawn-sh "~/.config/wayland/launcher.sh"; }
     // Yazi in its own tmux session, gone once yazi quits or the window closes
     Mod+Y repeat=false { spawn "ghostty" "-e" "/usr/bin/zsh" "-lc" r"tmux new-session yazi \; set destroy-unattached on || exec yazi"; }
