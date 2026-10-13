@@ -31,8 +31,10 @@ sudo apt-get install -y --no-install-recommends \
 	swaybg pipx python3-gi gir1.2-gtk-3.0
 
 # Waypaper, the wallpaper picker (drawn by swaybg), isn't packaged. Its
-# PyGObject comes from python3-gi above: PyPI's builds from source.
-command -v waypaper >/dev/null || pipx install --system-site-packages waypaper
+# PyGObject comes from python3-gi above (PyPI's builds from source), which only
+# Ubuntu's Python sees, not Homebrew's that pipx would otherwise pick.
+command -v waypaper >/dev/null ||
+	pipx install --python /usr/bin/python3 --system-site-packages waypaper
 
 src=$(mktemp -d)
 trap 'rm -rf "$src"' EXIT
