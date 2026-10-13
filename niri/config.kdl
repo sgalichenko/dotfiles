@@ -366,7 +366,6 @@ window-rule {
     match app-id="^qrcode$"
     match app-id="^swayimg$"
     match app-id="^blueman-manager$"
-    match app-id="(?i)vpn$"
     open-floating true
 }
 
@@ -420,6 +419,13 @@ window-rule {
     match app-id="^firefox(_firefox)?$"
     open-on-output "Dell Inc. DELL U2723QX 9TM1ZN3"
     clip-to-geometry true
+}
+
+// VPN clients (app IDs ending in "vpn", any case) in a narrow column, the
+// smallest preset width
+window-rule {
+    match app-id="(?i)vpn$"
+    default-column-width { proportion 0.33333; }
 }
 
 // Thunderbird at half the screen, whatever size it restores from its last
