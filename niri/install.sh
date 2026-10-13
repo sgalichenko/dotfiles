@@ -28,7 +28,7 @@ sudo apt-get install -y --no-install-recommends \
 	libwayland-dev libinput-dev libdbus-1-dev libsystemd-dev libseat-dev \
 	libpipewire-0.3-dev libpango1.0-dev libdisplay-info-dev \
 	libxcb1-dev libxcb-cursor-dev xwayland \
-	xdg-desktop-portal-gnome gnome-keyring wlsunset wdisplays jq \
+	xdg-desktop-portal-gnome gnome-keyring wlsunset wdisplays jq socat \
 	swaybg pipx python3-gi gir1.2-gtk-3.0
 
 # Waypaper, the wallpaper picker (drawn by swaybg), isn't packaged. Its
