@@ -94,8 +94,12 @@ export VISUAL='nvim'
 
 ### Aliases ###
 
-alias sudo='sudo -v; sudo '
-alias please='gum input --password --prompt=" " --placeholder="   Semyon" | sudo -nS'
+# Password first, then the command. A function, not `alias sudo='sudo -v; sudo '`,
+# so `… | sudo tee` pipes into the command rather than into `sudo -v`; the alias
+# keeps the trailing space, so the next word's alias still expands (sudo vi → nvim)
+function sudo { command sudo -v && command sudo "$@"; }
+alias sudo='sudo '
+alias please='gum input --password --prompt=" " --placeholder="   Semyon" | command sudo -nS'
 alias vi='nvim'
 alias vim='nvim'
 alias glog='git log --oneline --decorate --graph --remotes'
