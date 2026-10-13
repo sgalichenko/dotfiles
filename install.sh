@@ -37,7 +37,17 @@ sudo update-alternatives --set x-terminal-emulator /usr/bin/ghostty
 	NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 brew install dotter tmux neovim yazi lazygit fzf ripgrep fd jq zoxide starship \
-	eza bat git-delta gopass hunk gum sevenzip
+	eza bat git-delta hunk gum sevenzip
+
+# gopass from its release .deb: Homebrew's would bring its own gnupg (and,
+# through it, systemd), a second gpg-agent beside Ubuntu's; Ubuntu's gopass is 1.5
+gopass=1.17.3
+if ! gopass --version 2>/dev/null | grep -q "^gopass $gopass "; then
+	deb=$(mktemp --suffix=.deb)
+	curl -fsSL -o "$deb" "https://github.com/gopasspw/gopass/releases/download/v$gopass/gopass_${gopass}_linux_amd64.deb"
+	sudo apt-get install -y "$deb"
+	rm -f "$deb"
+fi
 
 # Rust, for niri, xwayland-satellite, Satty and bluetui. .zprofile puts
 # ~/.cargo/bin on PATH, so rustup leaves the shell files alone.
