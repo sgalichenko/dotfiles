@@ -43,7 +43,7 @@ sudo ln -sf /home/linuxbrew/.linuxbrew/bin/nvim /usr/local/bin/nvim
 
 # gopass from its release .deb: Homebrew's would bring its own gnupg (and,
 # through it, systemd), a second gpg-agent beside Ubuntu's; Ubuntu's gopass is 1.5
-gopass=1.17.3
+gopass=1.17.4
 if ! gopass --version 2>/dev/null | grep -q "^gopass $gopass "; then
 	deb=$(mktemp --suffix=.deb)
 	curl -fsSL -o "$deb" "https://github.com/gopasspw/gopass/releases/download/v$gopass/gopass_${gopass}_linux_amd64.deb"
