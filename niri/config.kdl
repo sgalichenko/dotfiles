@@ -418,3 +418,11 @@ window-rule {
     open-on-output "Dell Inc. DELL U2723QX 9TM1ZN3"
     clip-to-geometry true
 }
+
+// Thunderbird at half the screen, whatever size it restores from its last
+// session. Case-insensitive to match the deb (thunderbird), the snap
+// (thunderbird_thunderbird) and the flatpak (org.mozilla.Thunderbird)
+window-rule {
+    match app-id=r#"(?i)thunderbird"#
+    default-column-width { proportion 0.5; }
+}
