@@ -6,10 +6,11 @@
 #
 # 24.04 packages neither. niri's build dependencies are the ones its wiki lists
 # for 24.04; libinput-dev, libxkbcommon-dev and libdisplay-info-dev come from
-# the Hyprland PPA (hyprland/install.sh pins those), matching the libraries
-# Hyprland already put in place. Everything else the session uses (waybar,
-# fuzzel, mako, hypridle, hyprlock, hyprpolkitagent, fcitx5) comes from
-# hyprland/install.sh; this adds only what niri needs on top.
+# the Hyprland PPA (wayland/install.sh pins those), matching the libraries
+# hyprlock and the rest already put in place. Everything else the session uses
+# (waybar, fuzzel, mako, hypridle, hyprlock, hyprpolkitagent, fcitx5) comes
+# from wayland/install.sh, run with sudo first; this adds only what niri needs
+# on top. Hyprland itself isn't needed.
 #
 # niri runs X11 apps through xwayland-satellite, which it starts on demand
 # from $PATH. It goes in /usr/local/bin rather than ~/.cargo/bin so it's found

@@ -2,7 +2,7 @@
 # Builds Satty into ~/.cargo/bin, patched to start on the S annotation size
 # (it hardcodes M and has no setting for it). Run as yourself, not root.
 # Not packaged for 24.04, and the release binary needs a newer glibc, so it's
-# built; that needs libadwaita-1-dev and libgtk-4-dev (hyprland/install.sh).
+# built; that needs libadwaita-1-dev and libgtk-4-dev (wayland/install.sh).
 set -eu
 
 version=0.22.0

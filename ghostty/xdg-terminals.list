@@ -1,0 +1,5 @@
+# The terminal xdg-terminal-exec picks (the first one installed), for launchers
+# that open Terminal=true apps through it. Ctrl+Alt+T goes through
+# x-terminal-emulator instead, which install.sh points at Ghostty
+com.mitchellh.ghostty.desktop
+org.gnome.Terminal.desktop

@@ -72,6 +72,7 @@
 [ghostty.files]
 "ghostty/config.ghostty" = "~/.config/ghostty/config.ghostty"
 "ghostty/popup.ghostty" = "~/.config/ghostty/popup.ghostty"
+"ghostty/xdg-terminals.list" = "~/.config/xdg-terminals.list"
 
 [gnome]
 # No files: gnome/settings.sh applies gsettings, run by .dotter/post_deploy.sh
@@ -120,7 +121,7 @@
 
 [hyprland]
 # Hyprland next to GNOME and niri, the default session; hyprland/install.sh
-# installs the packages (needs sudo)
+# installs it and wayland/install.sh's packages (needs sudo)
 depends = ["wayland"]
 
 [hyprland.files]
@@ -134,7 +135,7 @@ depends = ["wayland"]
 [niri]
 # niri next to GNOME (and Hyprland, if enabled), as the default session;
 # niri/install.sh builds it, makes GDM preselect it and installs the packages
-# it adds on top of hyprland/install.sh's
+# it adds on top of wayland/install.sh's
 depends = ["wayland"]
 
 [niri.files]

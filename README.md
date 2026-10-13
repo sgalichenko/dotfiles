@@ -6,6 +6,19 @@ and the two cannot drift apart.
 
 ## Bootstrap
 
+On a fresh Ubuntu 24.04 desktop, `install.sh` does everything below unattended
+(one sudo prompt at the start): tools from apt, Homebrew and cargo, every
+package but `hyprland` and `wezterm`, the Firefox profile mapping, and niri as
+the default session. Safe to run again.
+
+```sh
+sudo apt-get install -y git
+git clone https://github.com/sgalichenko/dotfiles.git ~/dotfiles
+~/dotfiles/install.sh
+```
+
+By hand, or to pick other packages:
+
 ```sh
 git clone https://github.com/sgalichenko/dotfiles.git ~/dotfiles
 cd ~/dotfiles
@@ -52,8 +65,9 @@ you're on and holds anything machine-specific.
    in `global.toml` has the lines to copy.
 2. `dotter deploy`
 3. Per package, as needed:
-   - `hyprland` or `niri`: `sudo hyprland/install.sh` (niri needs it too), then
-     `niri/install.sh` as yourself, then `wayland/satty/install.sh`;
+   - `hyprland` or `niri`: `sudo wayland/install.sh` for what both share, or
+     `sudo hyprland/install.sh`, which runs it and adds Hyprland; for niri,
+     `niri/install.sh` as yourself; then `wayland/satty/install.sh`;
      `cargo install --locked bluetui` for waybar's Bluetooth click
    - `yazi`: `ya pkg install` (see below)
    - `firefox`: set `toolkit.legacyUserProfileCustomizations.stylesheets=true`
