@@ -85,16 +85,20 @@ keybindings() {
   echo "Control+w  Remove word back"
 }
 
+# Entries with their path parts split by 󰇙; a typed name can still use /
+entries() {
+  gopass ls --flat | sed 's#/# 󰇙 #g'
+}
+
 if [[ $menu == fuzzel ]]; then
-  selection=$(gopass ls --flat | sed -r 's/\//  /g' |
-    fuzzelrun --prompt '󰌋  ' --placeholder 'Alt+h for keys')
+  selection=$(entries | fuzzelrun --prompt '󰌋  ' --placeholder 'Alt+h for keys')
 else
-  selection=$(gopass ls --flat | sed -r 's/\//  /g' | rofirun)
+  selection=$(entries | rofirun)
 fi
 retv="$?"
 set -e
 
-selection=$(echo "$selection" | sed -r 's/  /\//g')
+selection=$(echo "$selection" | sed -r 's/ *󰇙 */\//g; s/ +$//')
 case "$retv" in
   # Enter, or custom-1 (exit code: 10) Alt+c
   0|10) gopass show -o "$selection" | head -1 | "$HOME/bin/clip" -s ;;
