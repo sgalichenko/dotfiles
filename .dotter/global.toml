@@ -149,6 +149,9 @@ depends = ["wayland"]
 "niri/autostart/SACMonitor.desktop" = "~/.config/autostart/SACMonitor.desktop"
 "niri/autostart/nm-applet.desktop" = "~/.config/autostart/nm-applet.desktop"
 "niri/xdg-desktop-portal/niri-portals.conf" = "~/.config/xdg-desktop-portal/niri-portals.conf"
+# Wallpaper picker: swaybg as the backend (feh, its default, draws only on X11)
+# and the wallpapers folder. Picking one rewrites the file through the symlink
+"niri/waypaper/config.ini" = "~/.config/waypaper/config.ini"
 
 [claude.files]
 # Not ~/.claude/settings.json: Claude Code rewrites it and it carries
