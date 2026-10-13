@@ -6,6 +6,9 @@
 set -eu
 
 version=0.22.0
+# Already built at this version: nothing to do
+[ "$(satty --version 2>/dev/null)" != "satty $version" ] || exit 0
+
 src=$(mktemp -d)
 trap 'rm -rf "$src"' EXIT
 
