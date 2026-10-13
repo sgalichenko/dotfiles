@@ -366,6 +366,7 @@ window-rule {
     match app-id="^qrcode$"
     match app-id="^swayimg$"
     match app-id="^blueman-manager$"
+    match app-id="(?i)vpn$"
     open-floating true
 }
 
