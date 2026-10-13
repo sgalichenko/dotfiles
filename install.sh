@@ -49,11 +49,14 @@ if ! gopass --version 2>/dev/null | grep -q "^gopass $gopass "; then
 	rm -f "$deb"
 fi
 
-# Rust, for niri, xwayland-satellite, Satty and bluetui. .zprofile puts
-# ~/.cargo/bin on PATH, so rustup leaves the shell files alone.
-command -v cargo >/dev/null || [ -x ~/.cargo/bin/cargo ] ||
+# Rust through rustup, for niri, xwayland-satellite, Satty and bluetui, on the
+# latest stable: their dependencies follow new rustc releases closely.
+# .zprofile puts ~/.cargo/bin on PATH, so rustup leaves the shell files alone.
+[ -x ~/.cargo/bin/rustup ] ||
 	curl -fsSL https://sh.rustup.rs | sh -s -- -y --no-modify-path
 PATH=$HOME/.cargo/bin:$PATH
+rustup update stable
+rustup default stable
 
 command -v claude >/dev/null || [ -x ~/.local/bin/claude ] ||
 	curl -fsSL https://claude.ai/install.sh | bash
