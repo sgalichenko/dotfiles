@@ -12,6 +12,11 @@
 # libinput >= 1.30 and libxkbcommon >= 1.12.3, and niri builds against the
 # same. Both keep their soname, so GNOME uses them as is.
 #
+# A bare name in a pin only matches the native architecture. With i386
+# enabled (Steam), the i386 copies of those libraries would stay on Ubuntu's
+# version, and apt refuses to upgrade the amd64 ones away from them, so the
+# pin names the i386 ones too.
+#
 # Satty (screenshot annotation) isn't packaged and its release binary needs a
 # newer glibc than 24.04's, so it's built afterwards, as yourself, with
 # wayland/satty/install.sh; libadwaita-1-dev is here for that build.
@@ -28,7 +33,7 @@ Package: *
 Pin: release o=LP-PPA-cppiber-hyprland
 Pin-Priority: 1
 
-Package: hyprland hyprland-data hyprland-guiutils hyprlock hypridle hyprpolkitagent libhypr* libaquamarine* libxcb-errors* libudis86* libsdbus-c++* libdisplay-info* libinput* libxkbcommon* libxkbregistry* waybar libgtk-layer-shell* fuzzel hyprsunset
+Package: hyprland hyprland-data hyprland-guiutils hyprlock hypridle hyprpolkitagent libhypr* libaquamarine* libxcb-errors* libudis86* libsdbus-c++* libdisplay-info* libinput* libxkbcommon* libxkbregistry* waybar libgtk-layer-shell* fuzzel hyprsunset libinput*:i386 libxkbcommon*:i386 libxkbregistry*:i386
 Pin: release o=LP-PPA-cppiber-hyprland
 Pin-Priority: 990
 PIN
