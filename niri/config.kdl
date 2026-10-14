@@ -159,20 +159,20 @@ layout {
         off
     }
 
-    // nord9 (a step dimmer than nord8) on the focused window, nord1 on the
+    // A dimmed nord4 on the focused window, nord1 on the
     // rest. A window that asks for attention (a terminal bell rang in it, see
     // Ghostty's bell-features) gets nord13 with 40% nord0 mixed in until it's
     // focused; niri has an urgent colour of its own, so no tag rule is needed.
     border {
-        width 2
-        active-color "#81a1c1"
+        width 3
+        active-color "#b8bec9"
         inactive-color "#3b4252"
         urgent-color "#9f8f6d"
     }
 
     // Tabbed columns (Super+Space): tabs in the border colours
     tab-indicator {
-        active-color "#81a1c1"
+        active-color "#b8bec9"
         inactive-color "#3b4252"
         urgent-color "#9f8f6d"
     }
