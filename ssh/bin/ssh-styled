@@ -61,6 +61,8 @@ if [[ -n $host ]]; then
   tmux refresh-client -S 2>/dev/null
 fi
 
-# PermitLocalCommand=no so the master connection doesn't style it a second time
-ssh -o PermitLocalCommand=no "$@"
+# PermitLocalCommand=no so the master connection doesn't style it a second time.
+# Older servers lack tmux-256color terminfo, which breaks readline's line
+# wrapping there; xterm-256color is known everywhere.
+TERM=xterm-256color ssh -o PermitLocalCommand=no "$@"
 exit $?
