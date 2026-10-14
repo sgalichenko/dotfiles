@@ -1,13 +1,15 @@
 # Nord notifications for Hyprland and niri. GNOME shows its own and never starts mako.
 font=JetBrainsMono Nerd Font 11
-# Lifted off the bar's #2f343f with nord1 and framed in frost, the bar's accent
+# Lifted off the bar's #2f343f with nord1 and framed like niri's focused window
+# (the dimmed nord4 border in niri/config.kdl)
 background-color=#3b4252
 text-color=#eceff4
-border-color=#88c0d0
-border-size=2
+border-color=#b8bec9
+border-size=3
 border-radius=0
 padding=10
-margin=8
+# niri's gaps: 6px from the bar, the screen edge and each other, like the windows
+margin=6
 width=360
 # 60s, and for every app: many (browsers, Teams) ask for a few seconds of their
 # own, which ignore-timeout overrides so this default applies to them too
