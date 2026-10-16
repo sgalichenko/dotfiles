@@ -1,5 +1,5 @@
 # Nord notifications for Hyprland and niri. GNOME shows its own and never starts mako.
-font=JetBrainsMono Nerd Font 11
+font=RobotoMono Nerd Font 11
 # Lifted off the bar's #2f343f with nord1 and framed like niri's focused window
 # (the dimmed nord4 border in niri/config.kdl)
 background-color=#3b4252

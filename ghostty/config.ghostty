@@ -4,7 +4,7 @@
 
 theme = Nord
 font-family = RobotoMono Nerd Font
-font-size = 11
+font-size = 12
 
 # Ignored at startup on Linux/Wayland (1.3.1): Ghostty presents the window
 # before the compositor handles the fullscreen request, and the request is
